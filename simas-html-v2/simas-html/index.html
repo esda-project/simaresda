@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — SIMARESDA Arsip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SIMARESDA — Global Stylesheet
+   Font: Instrument Sans + Fraunces (display)
+   Theme: Refined Government — warm neutral + deep indigo
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=Instrument+Sans:wght@400;500;600;700&display=swap');
+
+/* ── TOKENS ─────────────────────────────────────────── */
+:root {
+  --bg:       #F6F4EF;
+  --surface:  #FFFFFF;
+  --surface2: #F0EDE6;
+  --border:   #E3DFD5;
+  --border2:  #CEC9BE;
+
+  --text:     #1C1A16;
+  --text2:    #6B6558;
+  --text3:    #A09890;
+
+  --accent:   #1E3A6E;
+  --accent2:  #2B52A0;
+  --accentL:  #EBF0FA;
+  --accentM:  #C7D5F0;
+
+  --green:    #1A5C3A;
+  --greenL:   #E6F4EC;
+  --yellow:   #7A5200;
+  --yellowL:  #FEF6E0;
+  --red:      #8B1C1C;
+  --redL:     #FAEBEB;
+  --blue:     #164F6B;
+  --blueL:    #E3F3FA;
+  --purple:   #4A2270;
+  --purpleL:  #F3EBF9;
+
+  --radius:   6px;
+  --radius-lg:12px;
+  --radius-xl:18px;
+  --shadow:   0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 16px rgba(0,0,0,.09);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.12);
+
+  --sidebar-w:248px;
+  --topbar-h: 56px;
+
+  --font:     'Instrument Sans', system-ui, sans-serif;
+  --font-d:   'Fraunces', Georgia, serif;
+
+  --ease:     cubic-bezier(.4,0,.2,1);
+  --t:        .18s;
+}
+
+/* Dark mode */
+body.dark {
+  --bg:#121110; --surface:#1D1C1A; --surface2:#252420;
+  --border:#2E2C28; --border2:#3E3C36;
+  --text:#EAE7E0; --text2:#9B9488; --text3:#5E5A52;
+  --accentL:#1A2540; --accentM:#253660;
+  --greenL:#122A1E; --yellowL:#271C00; --redL:#2A1212;
+  --blueL:#0F2330; --purpleL:#1E1030;
+  --shadow:0 1px 3px rgba(0,0,0,.3); --shadow-md:0 4px 16px rgba(0,0,0,.4);
+}
+
+/* ── RESET ──────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px;font-family:var(--font);color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+body{display:flex;min-height:100vh;overflow:hidden;transition:background .3s,color .3s}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--font);cursor:pointer}
+input,select,textarea{font-family:var(--font)}
+img{display:block;max-width:100%}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+#sidebar {
+  width:var(--sidebar-w);
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;flex-shrink:0;
+  z-index:200;transition:var(--t) var(--ease);
+  position:relative;
+}
+.logo-wrap {
+  padding:20px 18px 16px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.logo-icon {
+  width:34px;height:34px;border-radius:10px;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.logo-title {
+  font-family:var(--font-d);font-size:15px;font-weight:700;
+  color:var(--accent);letter-spacing:-.2px;line-height:1.2;
+}
+.logo-year {font-size:10px;color:var(--text3);letter-spacing:.4px}
+
+.nav-scroll {flex:1;overflow-y:auto;padding:10px 8px}
+.nav-section {
+  font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;
+  color:var(--text3);padding:10px 10px 5px;margin-top:4px;
+}
+.nav-item {
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:var(--radius);
+  color:var(--text2);font-size:13px;font-weight:500;
+  transition:var(--t) var(--ease);margin-bottom:1px;
+  border:none;background:none;width:100%;text-align:left;
+  position:relative;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accentL);color:var(--accent);font-weight:600}
+.nav-item.active::before {
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:60%;background:var(--accent);border-radius:0 3px 3px 0;
+}
+.nav-icon{width:16px;text-align:center;flex-shrink:0;font-size:14px}
+.nav-badge {
+  margin-left:auto;background:var(--accent);color:#fff;
+  font-size:10px;font-weight:700;padding:1px 6px;border-radius:99px;
+}
+
+.sidebar-footer {
+  padding:12px;border-top:1px solid var(--border);
+}
+.user-pill {
+  display:flex;align-items:center;gap:9px;
+  padding:8px;border-radius:var(--radius);
+  background:var(--surface2);cursor:pointer;
+  transition:var(--t);
+}
+.user-pill:hover{background:var(--border)}
+.avatar {
+  width:32px;height:32px;border-radius:50%;
+  background:var(--accentL);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;flex-shrink:0;
+}
+.user-info{flex:1;min-width:0}
+.user-name{font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.user-role{font-size:10px;color:var(--text3)}
+.logout-btn {
+  width:100%;margin-top:8px;padding:7px;border-radius:var(--radius);
+  border:1px solid var(--border);background:none;color:var(--text2);
+  font-size:12px;font-weight:500;transition:var(--t);display:flex;
+  align-items:center;justify-content:center;gap:6px;
+}
+.logout-btn:hover{background:var(--redL);color:var(--red);border-color:#F5BABA}
+
+/* ── MAIN ────────────────────────────────────────────── */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* Notif bar */
+.notif-bar {
+  background:var(--accentL);border-bottom:1px solid var(--accentM);
+  padding:7px 20px;font-size:12px;color:var(--accent);
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  transition:var(--t);
+}
+.notif-bar:hover{background:var(--accentM)}
+.notif-pulse {
+  width:7px;height:7px;border-radius:50%;background:var(--accent);
+  flex-shrink:0;animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+/* Topbar */
+.topbar {
+  height:var(--topbar-h);
+  background:var(--surface);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;padding:0 20px;flex-shrink:0;
+}
+.topbar-title{font-family:var(--font-d);font-size:16px;font-weight:600;color:var(--text)}
+.topbar-actions{margin-left:auto;display:flex;align-items:center;gap:6px}
+.icon-btn {
+  width:32px;height:32px;border-radius:var(--radius);
+  border:1px solid var(--border);background:none;color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;transition:var(--t);cursor:pointer;
+}
+.icon-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+
+/* Search */
+.search-wrap{position:relative;flex:1;max-width:260px}
+.search-wrap input{
+  width:100%;padding:6px 10px 6px 32px;
+  border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface2);color:var(--text);font-size:12px;
+  transition:var(--t);outline:none;
+}
+.search-wrap input:focus{background:var(--surface);border-color:var(--accent);box-shadow:0 0 0 3px var(--accentL)}
+.search-ico{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);pointer-events:none;font-size:13px}
+
+/* Content */
+.content{flex:1;overflow-y:auto;padding:20px}
+
+/* ── COMPONENTS ──────────────────────────────────────── */
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+.card-title{font-family:var(--font-d);font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title small{font-family:var(--font);font-size:11px;font-weight:500;color:var(--text3)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:var(--radius);font-size:12px;font-weight:600;cursor:pointer;border:none;transition:var(--t);font-family:var(--font);white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,58,110,.25)}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);background:var(--accentL)}
+.btn-danger{background:var(--redL);color:var(--red);border:1px solid #F0BABA}
+.btn-danger:hover{background:#F7D0D0}
+.btn-success{background:var(--greenL);color:var(--green);border:1px solid #AEDABC}
+.btn-success:hover{background:#CCE9D5}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:10px}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-blue{background:var(--blueL);color:var(--blue)}
+.b-green{background:var(--greenL);color:var(--green)}
+.b-yellow{background:var(--yellowL);color:var(--yellow)}
+.b-red{background:var(--redL);color:var(--red)}
+.b-purple{background:var(--purpleL);color:var(--purple)}
+.b-gray{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.b-accent{background:var(--accentL);color:var(--accent)}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.stat-card {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:16px;
+  cursor:pointer;transition:var(--t) var(--ease);
+}
+.stat-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.stat-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;font-size:16px}
+.stat-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px}
+.stat-val{font-family:var(--font-d);font-size:24px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:3px;font-weight:500}
+
+/* Tables */
+.table-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:12px}
+thead{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{transition:var(--t)}
+tbody tr:hover td{background:var(--surface2)}
+.td-mono{font-family:'Courier New',monospace;font-size:11px;color:var(--text3)}
+
+/* Toolbar above table */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar select,.toolbar input[type=text]{
+  padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);color:var(--text);font-size:12px;outline:none;
+  transition:var(--t);font-family:var(--font);
+}
+.toolbar select:focus,.toolbar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentL)}
+
+/* Forms */
+.form-group{margin-bottom:14px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.form-label .req{color:var(--red)}
+.form-control {
+  width:100%;padding:8px 11px;border-radius:var(--radius);
+  border:1px solid var(--border);background:var(--surface);
+  color:var(--text);font-size:13px;transition:var(--t);outline:none;
+  font-family:var(--font);
+}
+.form-control:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accentL)}
+.form-control[readonly]{background:var(--surface2);cursor:default}
+textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.form-hint{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Modal */
+.modal-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);animation:fadeIn .15s var(--ease);
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal {
+  background:var(--surface);border-radius:var(--radius-xl);
+  width:min(580px,95vw);max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg);animation:slideUp .2s var(--ease);
+}
+@keyframes slideUp{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-lg{width:min(720px,95vw)}
+.modal-header {
+  padding:18px 20px 14px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--surface);z-index:1;
+}
+.modal-title{font-family:var(--font-d);font-size:15px;font-weight:600;color:var(--text)}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface)}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--border);margin-bottom:16px}
+.tab-btn {
+  padding:8px 16px;font-size:12px;font-weight:600;color:var(--text3);
+  cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;
+  margin-bottom:-2px;transition:var(--t);font-family:var(--font);
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:12px}
+.tl-item{display:flex;gap:10px}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
+.tl-body{flex:1}
+.tl-title{font-size:12px;font-weight:600;color:var(--text)}
+.tl-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.tl-time{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* Alert banners */
+.alert{padding:10px 14px;border-radius:var(--radius);font-size:12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start}
+.alert-warn{background:var(--yellowL);color:var(--yellow);border:1px solid #F0D090}
+.alert-danger{background:var(--redL);color:var(--red);border:1px solid #F0BABA}
+.alert-info{background:var(--blueL);color:var(--blue);border:1px solid #A8D8EF}
+.alert-success{background:var(--greenL);color:var(--green);border:1px solid #A8D8B8}
+
+/* Empty state */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-ico{font-size:36px;margin-bottom:10px}
+.empty-txt{font-size:13px;font-weight:500}
+
+/* Pagination */
+.pagination{display:flex;align-items:center;gap:4px;margin-top:14px;justify-content:flex-end}
+.page-btn{width:28px;height:28px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;transition:var(--t);display:flex;align-items:center;justify-content:center}
+.page-btn:hover,.page-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.page-info{font-size:12px;color:var(--text3);margin:0 8px}
+
+/* Print */
+@media print {
+  #sidebar,.topbar,.notif-bar,.toolbar,.no-print,.modal-overlay{display:none!important}
+  #main{overflow:visible}
+  .content{padding:0}
+  .table-wrap{border:1px solid #ccc}
+  th,td{padding:6px 10px}
+}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* Page sections */
+.page{display:none}
+.page.active{display:block}
+
+/* Charts grid */
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px}
+.chart-wrap{position:relative;height:220px}
+
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div id="sidebar"></div>
+<div id="main">
+  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">🔔 Sistem siap — Notifikasi real-time aktif</span></div>
+  <div class="topbar">
+    <div class="topbar-title">Dashboard</div>
+    <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" placeholder="Cari arsip, nomor surat..."></div>
+    <div class="topbar-actions no-print">
+      <button class="icon-btn" id="btn-theme" onclick="toggleDark()" title="Tema">🌙</button>
+      <button class="icon-btn" onclick="window.print()">🖨️</button>
+      <div style="position:relative">
+        <button class="icon-btn" onclick="openNotifModal()">🔔</button>
+        <span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card" onclick="location.href='surat-masuk.html'">
+        <div class="stat-ico" style="background:var(--accentL)">📥</div>
+        <div class="stat-label">Surat Masuk</div>
+        <div class="stat-val">247</div>
+        <div class="stat-sub" style="color:var(--green)">↑ 12 bulan ini</div>
+      </div>
+      <div class="stat-card" onclick="location.href='surat-keluar.html'">
+        <div class="stat-ico" style="background:var(--greenL)">📤</div>
+        <div class="stat-label">Surat Keluar</div>
+        <div class="stat-val">189</div>
+        <div class="stat-sub" style="color:var(--green)">↑ 8 bulan ini</div>
+      </div>
+      <div class="stat-card" onclick="location.href='penyimpanan.html'">
+        <div class="stat-ico" style="background:var(--yellowL)">🗄️</div>
+        <div class="stat-label">Total Arsip</div>
+        <div class="stat-val">1,284</div>
+        <div class="stat-sub">1.089 aktif · 195 inaktif</div>
+      </div>
+      <div class="stat-card" onclick="location.href='peminjaman.html'">
+        <div class="stat-ico" style="background:var(--purpleL)">🔖</div>
+        <div class="stat-label">Dipinjam</div>
+        <div class="stat-val">23</div>
+        <div class="stat-sub" style="color:var(--red)">5 terlambat</div>
+      </div>
+      <div class="stat-card" onclick="location.href='pemusnahan.html'">
+        <div class="stat-ico" style="background:var(--redL)">🗑️</div>
+        <div class="stat-label">Dimusnahkan</div>
+        <div class="stat-val">67</div>
+        <div class="stat-sub">↑ 3 bulan ini</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-title">Tren Surat Masuk & Keluar (2025) <small>Per bulan</small></div>
+        <div class="chart-wrap"><canvas id="chartTren"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Kategori Arsip</div>
+        <div class="chart-wrap"><canvas id="chartKat"></canvas></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM GRID -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <!-- Timeline -->
+      <div class="card">
+        <div class="card-title">Aktivitas Terkini <small id="live-dot" style="color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite"></span>Live</small></div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <!-- Surat Masuk Terbaru -->
+      <div class="card">
+        <div class="card-title">Surat Masuk Terbaru <a href="surat-masuk.html" style="font-family:var(--font);font-size:11px;color:var(--accent)">Lihat semua →</a></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>No. Agenda</th><th>Asal</th><th>Perihal</th><th>Status</th></tr></thead>
+            <tbody id="tbl-recent-masuk"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overdue + Stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
+      <div class="card">
+        <div class="card-title">⚠️ Peminjaman Terlambat</div>
+        <div id="overdue-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Status Surat Masuk</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="chartStatus"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗓 Tahun Anggaran</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="ta-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar injection -->
+<script>
+// ============================================================
+// SIMARESDA — Shared UI Utilities (simas-ui.js)
+// ============================================================
+
+// ── SUPABASE CONFIG (ganti sebelum deploy) ────────────────
+window.SIMARESDA_CONFIG = {
+  SUPABASE_URL:      'https://YOUR_PROJECT_ID.supabase.co',
+  SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
+};
+
+// ── DARK MODE ─────────────────────────────────────────────
+function initDarkMode() {
+  const saved = localStorage.getItem('simas-dark');
+  if (saved === 'true') document.body.classList.add('dark');
+  updateThemeBtn();
+}
+function toggleDark() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('simas-dark', document.body.classList.contains('dark'));
+  updateThemeBtn();
+  if (window.simasCharts) window.simasCharts.forEach(c => c && c.update());
+}
+function updateThemeBtn() {
+  const btn = document.getElementById('btn-theme');
+  if (btn) btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+}
+
+// ── BADGE STATUS ──────────────────────────────────────────
+const STATUS_MAP = {
+  'Disposisi':   'b-yellow',
+  'Diproses':    'b-blue',
+  'Selesai':     'b-green',
+  'Arsip':       'b-gray',
+  'Terkirim':    'b-green',
+  'Draft':       'b-yellow',
+  'Dibatalkan':  'b-red',
+  'Aktif':       'b-green',
+  'Inaktif':     'b-gray',
+  'Dipindah':    'b-blue',
+  'Dimusnahkan': 'b-red',
+  'Dipinjam':    'b-blue',
+  'Dikembalikan':'b-green',
+  'Terlambat':   'b-red',
+  'Menunggu':    'b-yellow',
+  'Disetujui':   'b-green',
+  'Ditolak':     'b-red',
+  'Berhasil':    'b-green',
+  'GAGAL':       'b-red',
+};
+function badge(text) {
+  const cls = STATUS_MAP[text] || 'b-gray';
+  return `<span class="badge ${cls}">${text}</span>`;
+}
+function badgePlain(text, cls) {
+  return `<span class="badge ${cls || 'b-gray'}">${text}</span>`;
+}
+
+// ── MODAL ─────────────────────────────────────────────────
+function openModal(id)  { const m = document.getElementById(id); if (m) { m.style.display = 'flex'; document.body.style.overflow='hidden'; } }
+function closeModal(id) { const m = document.getElementById(id); if (m) { m.style.display = 'none'; document.body.style.overflow=''; } }
+function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(m => { m.style.display='none'; document.body.style.overflow=''; }); }
+
+// ── TABS ──────────────────────────────────────────────────
+function switchTab(containerId, tabId, btn) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const pane = document.getElementById(tabId);
+  if (pane) pane.classList.add('active');
+  if (btn)  btn.classList.add('active');
+}
+
+// ── TABLE FILTER ──────────────────────────────────────────
+function filterTable(tblBodyId, query) {
+  const q = query.toLowerCase();
+  document.querySelectorAll(`#${tblBodyId} tr`).forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ── TOAST NOTIFICATION ────────────────────────────────────
+function showToast(msg, type = 'info', duration = 4000) {
+  let container = document.getElementById('toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toast-container';
+    container.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:340px';
+    document.body.appendChild(container);
+  }
+  const colors = { info:'var(--blueL)', success:'var(--greenL)', warn:'var(--yellowL)', danger:'var(--redL)' };
+  const borders = { info:'var(--blue)', success:'var(--green)', warn:'var(--yellow)', danger:'var(--red)' };
+  const toast = document.createElement('div');
+  toast.style.cssText = `
+    padding:10px 14px;border-radius:8px;font-size:12px;font-weight:500;
+    background:${colors[type]||colors.info};color:${borders[type]||borders.info};
+    border:1px solid ${borders[type]||borders.info};
+    box-shadow:0 4px 16px rgba(0,0,0,.15);
+    animation:slideInRight .2s ease;max-width:340px;line-height:1.5;
+    font-family:'Instrument Sans',system-ui,sans-serif;
+  `;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity='0'; toast.style.transition='opacity .3s'; setTimeout(() => toast.remove(), 300); }, duration);
+}
+
+// ── EXPORT CSV ────────────────────────────────────────────
+function exportCSV(tableId, filename) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  const rows = [];
+  const ths = Array.from(table.querySelectorAll('thead th')).filter(th => !th.classList.contains('no-print'));
+  rows.push(ths.map(th => '"' + th.textContent.trim() + '"').join(','));
+  table.querySelectorAll('tbody tr').forEach(tr => {
+    if (tr.style.display === 'none') return;
+    const tds = Array.from(tr.querySelectorAll('td')).filter(td => !td.classList.contains('no-print'));
+    rows.push(tds.map(td => '"' + td.textContent.trim().replace(/"/g, '""') + '"').join(','));
+  });
+  const blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (filename || 'export') + '-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
+const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
+
+// ── FORMAT TANGGAL ────────────────────────────────────────
+const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function formatTanggal(str) {
+  if (!str) return '—';
+  const d = new Date(str);
+  return `${d.getDate()} ${BULAN_ID[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ── CONFIRM DELETE ────────────────────────────────────────
+function confirmDelete(msg, onConfirm) {
+  if (confirm(msg || 'Yakin ingin menghapus data ini?')) onConfirm();
+}
+
+// ── USER SESSION (mock — ganti dengan Supabase Auth) ──────
+window.SIMARESDA_USER = JSON.parse(sessionStorage.getItem('simas-user') || 'null');
+
+function setUser(user) {
+  window.SIMARESDA_USER = user;
+  sessionStorage.setItem('simas-user', JSON.stringify(user));
+  document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user?.nama || '—');
+  document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user?.role || '—');
+  document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user?.nama||'?').slice(0,2).toUpperCase());
+  applyRoleGuards(user?.role);
+}
+
+function applyRoleGuards(role) {
+  if (!role) return;
+  document.querySelectorAll('[data-require-role]').forEach(el => {
+    const roles = el.dataset.requireRole.split(',').map(r => r.trim());
+    if (!roles.includes(role)) el.style.display = 'none';
+  });
+}
+
+function requireLogin() {
+  if (!window.SIMARESDA_USER) {
+    window.location.href = 'login.html';
+    return false;
+  }
+  setUser(window.SIMARESDA_USER);
+  return true;
+}
+
+function logout() {
+  sessionStorage.removeItem('simas-user');
+  window.location.href = 'login.html';
+}
+
+// ── REALTIME NOTIF BAR ────────────────────────────────────
+const notifQueue = [];
+function pushNotif(msg, type = 'info') {
+  const time = new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
+  notifQueue.unshift({ msg, type, time, read: false });
+  const bar = document.getElementById('notif-text');
+  if (bar) bar.textContent = '🔔 ' + msg;
+  showToast(msg, type);
+  updateNotifBadge();
+}
+function updateNotifBadge() {
+  const badge = document.getElementById('notif-count');
+  const unread = notifQueue.filter(n => !n.read).length;
+  if (badge) { badge.textContent = unread; badge.style.display = unread ? '' : 'none'; }
+}
+function openNotifModal() {
+  notifQueue.forEach(n => n.read = true);
+  updateNotifBadge();
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+  const typeMap = { info:'b-blue', success:'b-green', warn:'b-yellow', danger:'b-red' };
+  list.innerHTML = notifQueue.length === 0
+    ? '<div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">Belum ada notifikasi</div></div>'
+    : notifQueue.map(n => `
+      <div style="display:flex;gap:10px;padding:10px;border:1px solid var(--border);border-radius:6px;align-items:flex-start">
+        <span class="badge ${typeMap[n.type]||'b-gray'}" style="white-space:nowrap">${n.time}</span>
+        <span style="font-size:12px;color:var(--text)">${n.msg}</span>
+      </div>`).join('');
+  openModal('modal-notif');
+}
+
+// ── INIT (call on every page) ─────────────────────────────
+function simasInit() {
+  initDarkMode();
+  if (!requireLogin()) return;
+  // Demo: simulate realtime ping every 15s
+  setInterval(() => {
+    const msgs = [
+      '📥 Surat masuk baru diterima dari Kemenkes',
+      '✏️ Status peminjaman ARK-2025-003 diperbarui',
+      '✅ Surat keluar SK-2025-008 berhasil dikirim',
+      '⚠️ Peminjaman FP-2025-002 melewati batas kembali',
+    ];
+    pushNotif(msgs[Math.floor(Math.random() * msgs.length)], ['info','success','warn','danger'][Math.floor(Math.random()*4)]);
+  }, 15000);
+}
+
+// CSS animation for toast
+const style = document.createElement('style');
+style.textContent = '@keyframes slideInRight{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
+document.head.appendChild(style);
+
+</script>
+<script>
+// Inject sidebar
+document.getElementById('sidebar').innerHTML = `
+  <div class="logo-wrap">
+    <div class="logo-icon">📁</div>
+    <div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div>
+  </div>
+  <nav class="nav-scroll">
+    <div class="nav-section">Menu Utama</div>
+    <a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge">12</span></a>
+    <a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a>
+    <div class="nav-section">Arsip</div>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a>
+    <a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a>
+    <a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a>
+    <div class="nav-section">Referensi</div>
+    <a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a>
+    <a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar" data-user-avatar>AD</div>
+      <div class="user-info">
+        <div class="user-name" data-user-name>Administrator</div>
+        <div class="user-role" data-user-role>Admin · Aktif</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">↩ Keluar</button>
+  </div>`;
+
+simasInit();
+
+// ── DATA ──────────────────────────────────────────────────
+const timelineData = [
+  {icon:'📥',bg:'var(--accentL)',title:'Surat masuk baru diterima',sub:'SM-2025-089 dari Kemenkes RI',time:'10 mnt lalu'},
+  {icon:'✅',bg:'var(--greenL)',title:'Surat keluar terkirim',sub:'SK-2025-042 ke Kemendagri',time:'1 jam lalu'},
+  {icon:'🔖',bg:'var(--purpleL)',title:'Arsip dipinjam',sub:'ARK-2024-012 oleh Budi Santoso',time:'2 jam lalu'},
+  {icon:'⚠️',bg:'var(--yellowL)',title:'Peminjaman terlambat',sub:'FP-2025-002 — Siti Rahayu',time:'Kemarin'},
+  {icon:'🗑️',bg:'var(--redL)',title:'Pemusnahan disetujui',sub:'ARK-2010-001 — BA-2024-001',time:'2 hari lalu'},
+];
+document.getElementById('timeline').innerHTML = timelineData.map(t=>`
+  <div class="tl-item">
+    <div class="tl-dot" style="background:${t.bg}">${t.icon}</div>
+    <div class="tl-body">
+      <div class="tl-title">${t.title}</div>
+      <div class="tl-sub">${t.sub}</div>
+      <div class="tl-time">${t.time}</div>
+    </div>
+  </div>`).join('');
+
+const recentMasuk = [
+  {id:'SM-2025-089',asal:'Kemenkes RI',perihal:'Laporan Program Kesehatan 2025',status:'Disposisi'},
+  {id:'SM-2025-088',asal:'BPKP',perihal:'Undangan Rapat Koordinasi',status:'Diproses'},
+  {id:'SM-2025-087',asal:'BKN',perihal:'Surat Pengantar Peserta Diklat',status:'Selesai'},
+  {id:'SM-2025-086',asal:'Kemendagri',perihal:'Edaran Tata Kelola Kepegawaian',status:'Arsip'},
+];
+document.getElementById('tbl-recent-masuk').innerHTML = recentMasuk.map(s=>`
+  <tr onclick="location.href='surat-masuk.html'" style="cursor:pointer">
+    <td class="td-mono">${s.id}</td>
+    <td><strong>${s.asal}</strong></td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.perihal}</td>
+    <td>${badge(s.status)}</td>
+  </tr>`).join('');
+
+const overdueData = [
+  {nama:'Siti Rahayu',kode:'ARK-2023-089',due:'15 Jan 2025',hari:7},
+  {nama:'Andi Wijaya',kode:'ARK-2022-034',due:'18 Jan 2025',hari:4},
+  {nama:'Dewi Sartika',kode:'ARK-2024-012',due:'20 Jan 2025',hari:2},
+];
+document.getElementById('overdue-list').innerHTML = overdueData.map(o=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--redL);border-radius:6px;border:1px solid #F0BABA">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--red)">${o.nama}</div>
+      <div style="font-size:11px;color:var(--text3)">${o.kode} · Due: ${o.due}</div>
+    </div>
+    <span class="badge b-red">+${o.hari}h</span>
+  </div>`).join('');
+
+const taData = [
+  {tahun:'2025',masuk:247,keluar:189,pct:48},
+  {tahun:'2026',masuk:0,keluar:0,pct:0},
+  {tahun:'2027',masuk:0,keluar:0,pct:0},
+];
+document.getElementById('ta-list').innerHTML = taData.map(t=>`
+  <div style="padding:10px;border:1px solid var(--border);border-radius:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:700">TA ${t.tahun}</span>
+      <span class="badge b-accent">${t.pct}%</span>
+    </div>
+    <div style="background:var(--surface2);border-radius:99px;height:5px;overflow:hidden">
+      <div style="background:var(--accent);height:100%;width:${t.pct}%;border-radius:99px;transition:.4s"></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px">Masuk: ${t.masuk} · Keluar: ${t.keluar}</div>
+  </div>`).join('');
+
+// ── CHARTS ────────────────────────────────────────────────
+function getChartColors() {
+  const dark = document.body.classList.contains('dark');
+  return { text: dark?'#9B9488':'#6B6558', grid: dark?'#2E2C28':'#E3DFD5' };
+}
+function initCharts() {
+  const {text,grid} = getChartColors();
+  if(window._c1){window._c1.destroy();window._c2.destroy();window._c3.destroy()}
+  window._c1 = new Chart(document.getElementById('chartTren'),{
+    type:'bar',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+      datasets:[
+        {label:'Surat Masuk',data:[20,28,22,31,25,19,24,30,26,28,21,23],backgroundColor:'rgba(30,58,110,0.75)',borderRadius:4},
+        {label:'Surat Keluar',data:[15,22,18,26,20,16,19,24,20,22,17,18],backgroundColor:'rgba(26,92,58,0.65)',borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:text,font:{size:11}}}},scales:{x:{ticks:{color:text},grid:{color:grid}},y:{ticks:{color:text},grid:{color:grid}}}}
+  });
+  window._c2 = new Chart(document.getElementById('chartKat'),{
+    type:'doughnut',
+    data:{
+      labels:['Umum','Keuangan','Kepegawaian','Teknis','Rahasia'],
+      datasets:[{data:[35,25,20,15,5],backgroundColor:['#1E3A6E','#1A5C3A','#7A5200','#164F6B','#8B1C1C'],borderWidth:0,hoverOffset:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,font:{size:11},padding:10}}}}
+  });
+  window._c3 = new Chart(document.getElementById('chartStatus'),{
+    type:'pie',
+    data:{
+      labels:['Disposisi','Diproses','Selesai','Arsip'],
+      datasets:[{data:[45,30,60,112],backgroundColor:['#FEF6E0','#E3F3FA','#E6F4EC','#F0EDE6'],borderColor:['#7A5200','#164F6B','#1A5C3A','#A09890'],borderWidth:1.5}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,font:{size:10},padding:8}}}}
+  });
+}
+initCharts();
+
+// Re-init charts on dark mode toggle
+const origToggle = window.toggleDark;
+window.toggleDark = function(){origToggle();setTimeout(initCharts,120)};
+</script>
+
+<!-- Notif Modal -->
+<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')">
+  <div class="modal" style="width:min(420px,95vw)">
+    <div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div>
+    <div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
+      <div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">Belum ada notifikasi</div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
