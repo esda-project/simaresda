@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pemusnahan Arsip — SIMARESDA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/simas.css">
+</head>
+<body>
+<div id="sidebar"></div>
+<div id="main">
+  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
+  <div class="topbar"><div class="topbar-title">Pemusnahan Arsip</div><div class="topbar-actions no-print"><button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button><button class="icon-btn" onclick="window.print()">🖨️</button><div style="position:relative"><button class="icon-btn" onclick="openNotifModal()">🔔</button><span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span></div></div></div>
+  <div class="content">
+    <div class="alert alert-danger no-print">⚠️ <strong>Perhatian:</strong> Pemusnahan arsip bersifat permanen. Data akan di-soft delete dan wajib dicatat dalam Berita Acara Pemusnahan sesuai Pasal 66 PP No. 28 Tahun 2012. Diperlukan persetujuan pejabat berwenang.</div>
+    <div class="toolbar no-print">
+      <button class="btn btn-danger" onclick="openModal('modal-musna')" data-require-role="Admin,Pengelola">🗑️ Ajukan Pemusnahan</button>
+      <select id="f-status" onchange="applyFilter()" style="width:148px"><option value="">Semua Status</option><option>Menunggu</option><option>Disetujui</option><option>Ditolak</option><option>Selesai</option></select>
+      <input type="text" id="g-search" placeholder="Cari kode, perihal..." oninput="applyFilter()" style="width:220px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:var(--font);background:var(--surface);color:var(--text);outline:none">
+      <button class="btn btn-secondary" onclick="exportCSV('tbl-musna','pemusnahan-arsip')">⬇ CSV</button>
+      <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
+    </div>
+    <div class="table-wrap">
+      <table id="tbl-musna">
+        <thead><tr><th>Kode Arsip</th><th>Perihal</th><th>Alasan</th><th>No. BA</th><th>Tgl Ajuan</th><th>Diajukan Oleh</th><th>Tgl Persetujuan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
+        <tbody id="body-musna"></tbody>
+      </table>
+    </div>
+    <!-- Audit log mini -->
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">📝 Log Pemusnahan (Audit Trail)</div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Waktu</th><th>Kode Arsip</th><th>Aksi</th><th>Dilakukan Oleh</th><th>Keterangan</th></tr></thead>
+        <tbody id="body-log"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AJUKAN -->
+<div class="modal-overlay" id="modal-musna" style="display:none" onclick="if(event.target===this)closeModal('modal-musna')">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">🗑️ Ajukan Pemusnahan Arsip</div><button class="icon-btn" onclick="closeModal('modal-musna')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert alert-warn">⚠️ Pastikan arsip sudah melewati masa retensi dan mendapat persetujuan pimpinan.</div>
+      <div class="form-group"><label class="form-label">Kode Arsip <span class="req">*</span></label><input class="form-control" id="mn-kode" placeholder="Cth: ARK-2020-001"></div>
+      <div class="form-group"><label class="form-label">Perihal Arsip <span class="req">*</span></label><input class="form-control" id="mn-perihal" placeholder="Deskripsi arsip yang dimusnahkan"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Alasan Pemusnahan <span class="req">*</span></label><select class="form-control" id="mn-alasan"><option>Masa retensi habis</option><option>Duplikasi arsip</option><option>Tidak relevan</option><option>Kondisi rusak berat</option><option>Alih media selesai</option></select></div>
+        <div class="form-group"><label class="form-label">Metode Pemusnahan</label><select class="form-control" id="mn-metode"><option>Pencacahan / Shredding</option><option>Pembakaran</option><option>Penghancuran Kimia</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Nomor Berita Acara</label><input class="form-control" id="mn-ba" placeholder="BA-MUSNA-2025-XXX"></div>
+      <div class="form-group"><label class="form-label">Catatan / Justifikasi</label><textarea class="form-control" id="mn-ket" placeholder="Justifikasi pemusnahan arsip..."></textarea></div>
+      <div class="alert alert-danger" style="margin-top:0">🔒 Data akan di-soft delete. Record tetap tersimpan di audit trail sesuai regulasi.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-musna')">Batal</button><button class="btn btn-danger" onclick="saveMusna()">🗑️ Ajukan Pemusnahan</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
+
+<script src="assets/simas-ui.js"></script>
+<script>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item active" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+simasInit();
+
+let data=[
+  {kode:'ARK-2010-001',perihal:'Laporan Harian 2010',alasan:'Masa retensi habis',metode:'Pencacahan / Shredding',ba:'BA-MUSNA-2024-001',tglAjuan:'2024-12-01',diajukan:'Admin',tglPersetujuan:'2024-12-15',status:'Selesai',ket:'Disaksikan 3 saksi'},
+  {kode:'ARK-2011-034',perihal:'Arsip Surat Edaran 2011',alasan:'Masa retensi habis',metode:'Pembakaran',ba:'BA-MUSNA-2024-002',tglAjuan:'2024-12-05',diajukan:'Pengelola',tglPersetujuan:'2024-12-20',status:'Disetujui',ket:''},
+  {kode:'ARK-2012-019',perihal:'Dokumen Perencanaan 2012',alasan:'Duplikasi arsip',metode:'Pencacahan / Shredding',ba:'',tglAjuan:'2025-01-10',diajukan:'Pengelola',tglPersetujuan:'',status:'Menunggu',ket:'Menunggu persetujuan kepala unit'},
+];
+let logData=[
+  {waktu:'2024-12-15 10:30',kode:'ARK-2010-001',aksi:'DIMUSNAHKAN',user:'Admin',ket:'BA-MUSNA-2024-001 — Pencacahan'},
+  {waktu:'2024-12-05 09:00',kode:'ARK-2011-034',aksi:'DIAJUKAN',user:'Pengelola',ket:'Masa retensi habis'},
+  {waktu:'2025-01-10 14:22',kode:'ARK-2012-019',aksi:'DIAJUKAN',user:'Pengelola',ket:'Duplikasi arsip'},
+];
+let seq=3,filtered=[...data];
+
+function renderTable(){
+  const q=document.getElementById('g-search').value.toLowerCase();
+  const st=document.getElementById('f-status').value;
+  filtered=data.filter(d=>{
+    if(q&&!JSON.stringify(d).toLowerCase().includes(q))return false;
+    if(st&&d.status!==st)return false;
+    return true;
+  });
+  document.getElementById('body-musna').innerHTML=filtered.length?filtered.map(d=>`
+    <tr>
+      <td class="td-mono" style="color:var(--red);font-weight:600">${d.kode}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.perihal}</td>
+      <td>${d.alasan}</td>
+      <td class="td-mono">${d.ba||'—'}</td>
+      <td>${d.tglAjuan}</td>
+      <td>${d.diajukan}</td>
+      <td>${d.tglPersetujuan||'—'}</td>
+      <td>${badge(d.status)}</td>
+      <td class="no-print" style="white-space:nowrap">
+        ${d.status==='Menunggu'?`<button class="btn btn-success btn-xs" onclick="setujui('${d.kode}')" data-require-role="Admin">✅ Setujui</button><button class="btn btn-danger btn-xs" onclick="tolak('${d.kode}')" data-require-role="Admin">✕ Tolak</button>`:''}
+      </td>
+    </tr>`).join(''):`<tr><td colspan="9"><div class="empty"><div class="empty-ico">🗑️</div><div class="empty-txt">Tidak ada data pemusnahan</div></div></td></tr>`;
+  document.getElementById('row-count').textContent=filtered.length?`${filtered.length} record`:'';
+  renderLog();applyRoleGuards(window.SIMARESDA_USER?.role);
+}
+function applyFilter(){renderTable();}
+function renderLog(){
+  document.getElementById('body-log').innerHTML=logData.map(l=>`
+    <tr><td class="td-mono" style="font-size:11px">${l.waktu}</td><td class="td-mono" style="color:var(--red)">${l.kode}</td>
+    <td><span style="font-family:monospace;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px">${l.aksi}</span></td>
+    <td>${l.user}</td><td style="color:var(--text2);font-size:12px">${l.ket}</td></tr>`).join('');
+}
+
+function saveMusna(){
+  const kode=document.getElementById('mn-kode').value.trim();
+  const perihal=document.getElementById('mn-perihal').value.trim();
+  const alasan=document.getElementById('mn-alasan').value;
+  if(!kode||!perihal){showToast('Harap isi field wajib (*)','danger');return;}
+  seq++;
+  const now=new Date().toISOString().slice(0,10);
+  const user=window.SIMARESDA_USER?.nama||'Admin';
+  const obj={kode,perihal,alasan,metode:document.getElementById('mn-metode').value,
+    ba:document.getElementById('mn-ba').value||'',tglAjuan:now,diajukan:user,tglPersetujuan:'',status:'Menunggu',ket:document.getElementById('mn-ket').value};
+  data.unshift(obj);
+  logData.unshift({waktu:now+' '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),kode,aksi:'DIAJUKAN',user,ket:alasan});
+  closeModal('modal-musna');renderTable();
+  showToast('✅ Pengajuan pemusnahan berhasil dikirim','success');
+  pushNotif(`🗑️ Pemusnahan arsip ${kode} diajukan — menunggu persetujuan`,'warn');
+}
+function setujui(kode){
+  if(!confirm(`Setujui pemusnahan arsip ${kode}?\nTindakan ini tidak dapat dibatalkan.`))return;
+  const d=data.find(x=>x.kode===kode);if(!d)return;
+  const now=new Date().toISOString().slice(0,10);
+  d.status='Disetujui';d.tglPersetujuan=now;
+  const user=window.SIMARESDA_USER?.nama||'Admin';
+  logData.unshift({waktu:now+' '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),kode,aksi:'DISETUJUI',user,ket:'Persetujuan kepala unit'});
+  renderTable();showToast(`✅ Pemusnahan ${kode} disetujui`,'success');
+  pushNotif(`🗑️ Pemusnahan ${kode} telah disetujui`,'danger');
+}
+function tolak(kode){
+  const alasan=prompt('Alasan penolakan:');if(!alasan)return;
+  const d=data.find(x=>x.kode===kode);if(!d)return;
+  d.status='Ditolak';
+  const user=window.SIMARESDA_USER?.nama||'Admin';
+  logData.unshift({waktu:new Date().toISOString().slice(0,10),kode,aksi:'DITOLAK',user,ket:alasan});
+  renderTable();showToast(`❌ Pemusnahan ${kode} ditolak`,'warn');
+}
+renderTable();
+</script>
+</body>
+</html>

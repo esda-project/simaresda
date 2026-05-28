@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — SIMARESDA Arsip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/simas.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div id="sidebar"></div>
+<div id="main">
+  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">🔔 Sistem siap — Notifikasi real-time aktif</span></div>
+  <div class="topbar">
+    <div class="topbar-title">Dashboard</div>
+    <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" placeholder="Cari arsip, nomor surat..."></div>
+    <div class="topbar-actions no-print">
+      <button class="icon-btn" id="btn-theme" onclick="toggleDark()" title="Tema">🌙</button>
+      <button class="icon-btn" onclick="window.print()">🖨️</button>
+      <div style="position:relative">
+        <button class="icon-btn" onclick="openNotifModal()">🔔</button>
+        <span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card" onclick="location.href='surat-masuk.html'">
+        <div class="stat-ico" style="background:var(--accentL)">📥</div>
+        <div class="stat-label">Surat Masuk</div>
+        <div class="stat-val">247</div>
+        <div class="stat-sub" style="color:var(--green)">↑ 12 bulan ini</div>
+      </div>
+      <div class="stat-card" onclick="location.href='surat-keluar.html'">
+        <div class="stat-ico" style="background:var(--greenL)">📤</div>
+        <div class="stat-label">Surat Keluar</div>
+        <div class="stat-val">189</div>
+        <div class="stat-sub" style="color:var(--green)">↑ 8 bulan ini</div>
+      </div>
+      <div class="stat-card" onclick="location.href='penyimpanan.html'">
+        <div class="stat-ico" style="background:var(--yellowL)">🗄️</div>
+        <div class="stat-label">Total Arsip</div>
+        <div class="stat-val">1,284</div>
+        <div class="stat-sub">1.089 aktif · 195 inaktif</div>
+      </div>
+      <div class="stat-card" onclick="location.href='peminjaman.html'">
+        <div class="stat-ico" style="background:var(--purpleL)">🔖</div>
+        <div class="stat-label">Dipinjam</div>
+        <div class="stat-val">23</div>
+        <div class="stat-sub" style="color:var(--red)">5 terlambat</div>
+      </div>
+      <div class="stat-card" onclick="location.href='pemusnahan.html'">
+        <div class="stat-ico" style="background:var(--redL)">🗑️</div>
+        <div class="stat-label">Dimusnahkan</div>
+        <div class="stat-val">67</div>
+        <div class="stat-sub">↑ 3 bulan ini</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="charts-grid">
+      <div class="card">
+        <div class="card-title">Tren Surat Masuk & Keluar (2025) <small>Per bulan</small></div>
+        <div class="chart-wrap"><canvas id="chartTren"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Kategori Arsip</div>
+        <div class="chart-wrap"><canvas id="chartKat"></canvas></div>
+      </div>
+    </div>
+
+    <!-- BOTTOM GRID -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <!-- Timeline -->
+      <div class="card">
+        <div class="card-title">Aktivitas Terkini <small id="live-dot" style="color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite"></span>Live</small></div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+      <!-- Surat Masuk Terbaru -->
+      <div class="card">
+        <div class="card-title">Surat Masuk Terbaru <a href="surat-masuk.html" style="font-family:var(--font);font-size:11px;color:var(--accent)">Lihat semua →</a></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>No. Agenda</th><th>Asal</th><th>Perihal</th><th>Status</th></tr></thead>
+            <tbody id="tbl-recent-masuk"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overdue + Stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
+      <div class="card">
+        <div class="card-title">⚠️ Peminjaman Terlambat</div>
+        <div id="overdue-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Status Surat Masuk</div>
+        <div class="chart-wrap" style="height:160px"><canvas id="chartStatus"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🗓 Tahun Anggaran</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="ta-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sidebar injection -->
+<script src="assets/simas-ui.js"></script>
+<script>
+// Inject sidebar
+document.getElementById('sidebar').innerHTML = `
+  <div class="logo-wrap">
+    <div class="logo-icon">📁</div>
+    <div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div>
+  </div>
+  <nav class="nav-scroll">
+    <div class="nav-section">Menu Utama</div>
+    <a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a>
+    <a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge">12</span></a>
+    <a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a>
+    <div class="nav-section">Arsip</div>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a>
+    <a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a>
+    <a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a>
+    <div class="nav-section">Referensi</div>
+    <a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a>
+    <a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-pill">
+      <div class="avatar" data-user-avatar>AD</div>
+      <div class="user-info">
+        <div class="user-name" data-user-name>Administrator</div>
+        <div class="user-role" data-user-role>Admin · Aktif</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">↩ Keluar</button>
+  </div>`;
+
+simasInit();
+
+// ── DATA ──────────────────────────────────────────────────
+const timelineData = [
+  {icon:'📥',bg:'var(--accentL)',title:'Surat masuk baru diterima',sub:'SM-2025-089 dari Kemenkes RI',time:'10 mnt lalu'},
+  {icon:'✅',bg:'var(--greenL)',title:'Surat keluar terkirim',sub:'SK-2025-042 ke Kemendagri',time:'1 jam lalu'},
+  {icon:'🔖',bg:'var(--purpleL)',title:'Arsip dipinjam',sub:'ARK-2024-012 oleh Budi Santoso',time:'2 jam lalu'},
+  {icon:'⚠️',bg:'var(--yellowL)',title:'Peminjaman terlambat',sub:'FP-2025-002 — Siti Rahayu',time:'Kemarin'},
+  {icon:'🗑️',bg:'var(--redL)',title:'Pemusnahan disetujui',sub:'ARK-2010-001 — BA-2024-001',time:'2 hari lalu'},
+];
+document.getElementById('timeline').innerHTML = timelineData.map(t=>`
+  <div class="tl-item">
+    <div class="tl-dot" style="background:${t.bg}">${t.icon}</div>
+    <div class="tl-body">
+      <div class="tl-title">${t.title}</div>
+      <div class="tl-sub">${t.sub}</div>
+      <div class="tl-time">${t.time}</div>
+    </div>
+  </div>`).join('');
+
+const recentMasuk = [
+  {id:'SM-2025-089',asal:'Kemenkes RI',perihal:'Laporan Program Kesehatan 2025',status:'Disposisi'},
+  {id:'SM-2025-088',asal:'BPKP',perihal:'Undangan Rapat Koordinasi',status:'Diproses'},
+  {id:'SM-2025-087',asal:'BKN',perihal:'Surat Pengantar Peserta Diklat',status:'Selesai'},
+  {id:'SM-2025-086',asal:'Kemendagri',perihal:'Edaran Tata Kelola Kepegawaian',status:'Arsip'},
+];
+document.getElementById('tbl-recent-masuk').innerHTML = recentMasuk.map(s=>`
+  <tr onclick="location.href='surat-masuk.html'" style="cursor:pointer">
+    <td class="td-mono">${s.id}</td>
+    <td><strong>${s.asal}</strong></td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.perihal}</td>
+    <td>${badge(s.status)}</td>
+  </tr>`).join('');
+
+const overdueData = [
+  {nama:'Siti Rahayu',kode:'ARK-2023-089',due:'15 Jan 2025',hari:7},
+  {nama:'Andi Wijaya',kode:'ARK-2022-034',due:'18 Jan 2025',hari:4},
+  {nama:'Dewi Sartika',kode:'ARK-2024-012',due:'20 Jan 2025',hari:2},
+];
+document.getElementById('overdue-list').innerHTML = overdueData.map(o=>`
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--redL);border-radius:6px;border:1px solid #F0BABA">
+    <div>
+      <div style="font-size:12px;font-weight:600;color:var(--red)">${o.nama}</div>
+      <div style="font-size:11px;color:var(--text3)">${o.kode} · Due: ${o.due}</div>
+    </div>
+    <span class="badge b-red">+${o.hari}h</span>
+  </div>`).join('');
+
+const taData = [
+  {tahun:'2025',masuk:247,keluar:189,pct:48},
+  {tahun:'2026',masuk:0,keluar:0,pct:0},
+  {tahun:'2027',masuk:0,keluar:0,pct:0},
+];
+document.getElementById('ta-list').innerHTML = taData.map(t=>`
+  <div style="padding:10px;border:1px solid var(--border);border-radius:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:700">TA ${t.tahun}</span>
+      <span class="badge b-accent">${t.pct}%</span>
+    </div>
+    <div style="background:var(--surface2);border-radius:99px;height:5px;overflow:hidden">
+      <div style="background:var(--accent);height:100%;width:${t.pct}%;border-radius:99px;transition:.4s"></div>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin-top:5px">Masuk: ${t.masuk} · Keluar: ${t.keluar}</div>
+  </div>`).join('');
+
+// ── CHARTS ────────────────────────────────────────────────
+function getChartColors() {
+  const dark = document.body.classList.contains('dark');
+  return { text: dark?'#9B9488':'#6B6558', grid: dark?'#2E2C28':'#E3DFD5' };
+}
+function initCharts() {
+  const {text,grid} = getChartColors();
+  if(window._c1){window._c1.destroy();window._c2.destroy();window._c3.destroy()}
+  window._c1 = new Chart(document.getElementById('chartTren'),{
+    type:'bar',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
+      datasets:[
+        {label:'Surat Masuk',data:[20,28,22,31,25,19,24,30,26,28,21,23],backgroundColor:'rgba(30,58,110,0.75)',borderRadius:4},
+        {label:'Surat Keluar',data:[15,22,18,26,20,16,19,24,20,22,17,18],backgroundColor:'rgba(26,92,58,0.65)',borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:text,font:{size:11}}}},scales:{x:{ticks:{color:text},grid:{color:grid}},y:{ticks:{color:text},grid:{color:grid}}}}
+  });
+  window._c2 = new Chart(document.getElementById('chartKat'),{
+    type:'doughnut',
+    data:{
+      labels:['Umum','Keuangan','Kepegawaian','Teknis','Rahasia'],
+      datasets:[{data:[35,25,20,15,5],backgroundColor:['#1E3A6E','#1A5C3A','#7A5200','#164F6B','#8B1C1C'],borderWidth:0,hoverOffset:6}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,font:{size:11},padding:10}}}}
+  });
+  window._c3 = new Chart(document.getElementById('chartStatus'),{
+    type:'pie',
+    data:{
+      labels:['Disposisi','Diproses','Selesai','Arsip'],
+      datasets:[{data:[45,30,60,112],backgroundColor:['#FEF6E0','#E3F3FA','#E6F4EC','#F0EDE6'],borderColor:['#7A5200','#164F6B','#1A5C3A','#A09890'],borderWidth:1.5}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,font:{size:10},padding:8}}}}
+  });
+}
+initCharts();
+
+// Re-init charts on dark mode toggle
+const origToggle = window.toggleDark;
+window.toggleDark = function(){origToggle();setTimeout(initCharts,120)};
+</script>
+
+<!-- Notif Modal -->
+<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')">
+  <div class="modal" style="width:min(420px,95vw)">
+    <div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div>
+    <div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
+      <div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">Belum ada notifikasi</div></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

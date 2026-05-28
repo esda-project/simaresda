@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Penyimpanan Arsip — SIMARESDA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/simas.css">
+</head>
+<body>
+<div id="sidebar"></div>
+<div id="main">
+  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
+  <div class="topbar">
+    <div class="topbar-title">Penyimpanan Arsip</div>
+    <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" id="g-search" placeholder="Cari kode, perihal, lokasi..." oninput="applyFilter()"></div>
+    <div class="topbar-actions no-print">
+      <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
+      <button class="icon-btn" onclick="window.print()">🖨️</button>
+      <div style="position:relative"><button class="icon-btn" onclick="openNotifModal()">🔔</button><span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <!-- Stats mini -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Total Arsip</div><div class="stat-val" id="st-total">0</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Arsip Aktif</div><div class="stat-val" id="st-aktif" style="color:var(--green)">0</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Arsip Inaktif</div><div class="stat-val" id="st-inaktif" style="color:var(--yellow)">0</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Retensi Habis</div><div class="stat-val" id="st-habis" style="color:var(--red)">0</div></div>
+    </div>
+    <div class="toolbar no-print">
+      <button class="btn btn-primary" onclick="openAdd()" data-require-role="Admin,Pengelola">+ Tambah Arsip</button>
+      <select id="f-status" onchange="applyFilter()" style="width:140px"><option value="">Semua Status</option><option>Aktif</option><option>Inaktif</option><option>Dipindah</option></select>
+      <select id="f-kat" onchange="applyFilter()" style="width:140px"><option value="">Semua Kategori</option><option>Umum</option><option>Keuangan</option><option>Kepegawaian</option><option>Teknis</option><option>Rahasia</option></select>
+      <select id="f-tahun" onchange="applyFilter()" style="width:110px"><option value="">Semua Tahun</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option></select>
+      <button class="btn btn-secondary" onclick="exportCSV('tbl-simpan','penyimpanan-arsip')">⬇ CSV</button>
+      <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
+      <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
+    </div>
+    <div class="table-wrap">
+      <table id="tbl-simpan">
+        <thead><tr><th>Kode Arsip</th><th>Perihal</th><th>Tahun</th><th>Kategori</th><th>Jenis</th><th>Lokasi</th><th>Retensi</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
+        <tbody id="body-simpan"></tbody>
+      </table>
+    </div>
+    <div class="pagination no-print" id="pagination"></div>
+  </div>
+</div>
+
+<!-- MODAL FORM -->
+<div class="modal-overlay" id="modal-simpan" style="display:none" onclick="if(event.target===this)closeModal('modal-simpan')">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="m-title">🗄️ Tambah Arsip</div><button class="icon-btn" onclick="closeModal('modal-simpan')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Kode Arsip <span class="req">*</span></label><input class="form-control" id="m-kode" placeholder="ARK-2025-XXX"></div>
+        <div class="form-group"><label class="form-label">Tahun Arsip <span class="req">*</span></label><input class="form-control" id="m-tahun" type="number" min="2000" max="2030" placeholder="2025"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Perihal / Deskripsi <span class="req">*</span></label><textarea class="form-control" id="m-perihal" placeholder="Deskripsi arsip"></textarea></div>
+      <div class="form-row3">
+        <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="m-kat"><option>Umum</option><option>Keuangan</option><option>Kepegawaian</option><option>Teknis</option><option>Rahasia</option></select></div>
+        <div class="form-group"><label class="form-label">Jenis</label><select class="form-control" id="m-jenis"><option>Arsip Aktif</option><option>Arsip Inaktif</option></select></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="m-status"><option>Aktif</option><option>Inaktif</option><option>Dipindah</option></select></div>
+      </div>
+      <div class="form-row3">
+        <div class="form-group"><label class="form-label">Rak</label><input class="form-control" id="m-rak" placeholder="Rak A-01"></div>
+        <div class="form-group"><label class="form-label">Box / Map</label><input class="form-control" id="m-box" placeholder="Box 01"></div>
+        <div class="form-group"><label class="form-label">Laci / Folder</label><input class="form-control" id="m-laci" placeholder="Laci 2"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Retensi Aktif (tahun)</label><input class="form-control" id="m-ret-aktif" type="number" placeholder="5"></div>
+        <div class="form-group"><label class="form-label">Retensi Inaktif (tahun)</label><input class="form-control" id="m-ret-inaktif" type="number" placeholder="10"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nasib Akhir</label><select class="form-control" id="m-nasib"><option>Musnah</option><option>Permanen</option></select></div>
+        <div class="form-group"><label class="form-label">Tanggal Arsip Dibuat</label><input class="form-control" type="date" id="m-tgl"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Keterangan</label><textarea class="form-control" id="m-ket" placeholder="Catatan tambahan..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-simpan')">Batal</button><button class="btn btn-primary" onclick="saveArsip()">💾 Simpan</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
+
+<script src="assets/simas-ui.js"></script>
+<script>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item active" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+simasInit();
+
+let data=[
+  {kode:'ARK-2025-001',perihal:'Laporan Kinerja Triwulan I 2025',tahun:2025,kat:'Umum',jenis:'Arsip Aktif',rak:'Rak A-01',box:'Box 01',laci:'',retAktif:5,retInaktif:10,nasib:'Musnah',status:'Aktif',tgl:'2025-01-15',ket:''},
+  {kode:'ARK-2025-002',perihal:'Berkas Pengadaan Barang dan Jasa 2025',tahun:2025,kat:'Keuangan',jenis:'Arsip Aktif',rak:'Rak B-03',box:'Box 02',laci:'Laci 1',retAktif:10,retInaktif:10,nasib:'Permanen',status:'Aktif',tgl:'2025-01-10',ket:''},
+  {kode:'ARK-2024-012',perihal:'Laporan Realisasi Anggaran Q3 2024',tahun:2024,kat:'Keuangan',jenis:'Arsip Aktif',rak:'Rak B-05',box:'Box 03',laci:'',retAktif:10,retInaktif:10,nasib:'Permanen',status:'Aktif',tgl:'2024-10-01',ket:'Sedang dipinjam'},
+  {kode:'ARK-2023-089',perihal:'Notulen Rapat Pimpinan 2023',tahun:2023,kat:'Umum',jenis:'Arsip Inaktif',rak:'Rak C-02',box:'Box 08',laci:'',retAktif:5,retInaktif:5,nasib:'Musnah',status:'Inaktif',tgl:'2023-12-31',ket:''},
+  {kode:'ARK-2022-034',perihal:'SK Pengangkatan Jabatan Fungsional',tahun:2022,kat:'Kepegawaian',jenis:'Arsip Aktif',rak:'Rak D-01',box:'Box 01',laci:'Laci 3',retAktif:0,retInaktif:0,nasib:'Permanen',status:'Aktif',tgl:'2022-03-15',ket:'Retensi permanen'},
+  {kode:'ARK-2022-019',perihal:'Laporan Audit BPK 2022',tahun:2022,kat:'Keuangan',jenis:'Arsip Inaktif',rak:'Rak C-05',box:'Box 12',laci:'',retAktif:10,retInaktif:10,nasib:'Permanen',status:'Inaktif',tgl:'2022-07-01',ket:''},
+];
+let editKode=null,page=1,filtered=[...data];
+const RPP=10;
+
+function updateStats(){
+  document.getElementById('st-total').textContent=data.length;
+  document.getElementById('st-aktif').textContent=data.filter(d=>d.status==='Aktif').length;
+  document.getElementById('st-inaktif').textContent=data.filter(d=>d.status==='Inaktif').length;
+  const yr=new Date().getFullYear();
+  document.getElementById('st-habis').textContent=data.filter(d=>d.nasib==='Musnah'&&d.tahun+d.retAktif+d.retInaktif<=yr).length;
+}
+
+function renderTable(){
+  const start=(page-1)*RPP,rows=filtered.slice(start,start+RPP);
+  document.getElementById('body-simpan').innerHTML=rows.length?rows.map(a=>`
+    <tr>
+      <td class="td-mono" style="color:var(--accent);font-weight:600">${a.kode}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.perihal}">${a.perihal}</td>
+      <td>${a.tahun}</td>
+      <td>${badgePlain(a.kat,'b-gray')}</td>
+      <td>${badgePlain(a.jenis,a.jenis==='Arsip Aktif'?'b-green':'b-yellow')}</td>
+      <td style="font-size:11px;color:var(--text2)">${[a.rak,a.box,a.laci].filter(Boolean).join(' · ')}</td>
+      <td style="font-size:11px">${a.nasib==='Permanen'?badgePlain('Permanen','b-accent'):(a.retAktif||0)+'A / '+(a.retInaktif||0)+'I th'}</td>
+      <td>${badge(a.status)}</td>
+      <td class="no-print" style="white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick='editRow(${JSON.stringify(a)})' data-require-role="Admin,Pengelola">✏️</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteRow('${a.kode}')" data-require-role="Admin">🗑</button>
+      </td>
+    </tr>`).join(''):`<tr><td colspan="9"><div class="empty"><div class="empty-ico">🗄️</div><div class="empty-txt">Tidak ada data arsip</div></div></td></tr>`;
+  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} arsip`:'';
+  renderPagination();applyRoleGuards(window.SIMARESDA_USER?.role);updateStats();
+}
+function renderPagination(){
+  const total=Math.ceil(filtered.length/RPP),el=document.getElementById('pagination');
+  if(total<=1){el.innerHTML='';return;}
+  let h=`<button class="page-btn" onclick="gp(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  for(let i=1;i<=total;i++)h+=`<button class="page-btn ${i===page?'active':''}" onclick="gp(${i})">${i}</button>`;
+  h+=`<button class="page-btn" onclick="gp(${page+1})" ${page===total?'disabled':''}>›</button>`;
+  el.innerHTML=h;
+}
+function gp(p){const t=Math.ceil(filtered.length/RPP);if(p<1||p>t)return;page=p;renderTable();}
+function applyFilter(){
+  const q=document.getElementById('g-search').value.toLowerCase();
+  const st=document.getElementById('f-status').value;
+  const kt=document.getElementById('f-kat').value;
+  const th=document.getElementById('f-tahun').value;
+  filtered=data.filter(a=>{
+    if(q&&!JSON.stringify(a).toLowerCase().includes(q))return false;
+    if(st&&a.status!==st)return false;
+    if(kt&&a.kat!==kt)return false;
+    if(th&&String(a.tahun)!==th)return false;
+    return true;
+  });
+  page=1;renderTable();
+}
+function resetFilter(){document.getElementById('g-search').value='';document.getElementById('f-status').value='';document.getElementById('f-kat').value='';document.getElementById('f-tahun').value='';filtered=[...data];page=1;renderTable();}
+
+function openAdd(){
+  editKode=null;document.getElementById('m-title').textContent='🗄️ Tambah Arsip';
+  ['m-kode','m-perihal','m-rak','m-box','m-laci','m-ret-aktif','m-ret-inaktif','m-ket'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-tahun').value=new Date().getFullYear();
+  document.getElementById('m-tgl').value=new Date().toISOString().slice(0,10);
+  openModal('modal-simpan');
+}
+function editRow(a){
+  editKode=a.kode;document.getElementById('m-title').textContent='✏️ Edit Arsip';
+  document.getElementById('m-kode').value=a.kode;document.getElementById('m-tahun').value=a.tahun;
+  document.getElementById('m-perihal').value=a.perihal;document.getElementById('m-kat').value=a.kat;
+  document.getElementById('m-jenis').value=a.jenis;document.getElementById('m-status').value=a.status;
+  document.getElementById('m-rak').value=a.rak||'';document.getElementById('m-box').value=a.box||'';
+  document.getElementById('m-laci').value=a.laci||'';document.getElementById('m-ret-aktif').value=a.retAktif||'';
+  document.getElementById('m-ret-inaktif').value=a.retInaktif||'';document.getElementById('m-nasib').value=a.nasib||'Musnah';
+  document.getElementById('m-tgl').value=a.tgl||'';document.getElementById('m-ket').value=a.ket||'';
+  openModal('modal-simpan');
+}
+function saveArsip(){
+  const kode=document.getElementById('m-kode').value.trim();
+  const perihal=document.getElementById('m-perihal').value.trim();
+  const tahun=document.getElementById('m-tahun').value;
+  if(!kode||!perihal||!tahun){showToast('Harap isi field wajib (*)','danger');return;}
+  const obj={kode,perihal,tahun:Number(tahun),kat:document.getElementById('m-kat').value,jenis:document.getElementById('m-jenis').value,status:document.getElementById('m-status').value,
+    rak:document.getElementById('m-rak').value,box:document.getElementById('m-box').value,laci:document.getElementById('m-laci').value,
+    retAktif:Number(document.getElementById('m-ret-aktif').value)||0,retInaktif:Number(document.getElementById('m-ret-inaktif').value)||0,
+    nasib:document.getElementById('m-nasib').value,tgl:document.getElementById('m-tgl').value,ket:document.getElementById('m-ket').value};
+  if(editKode){const i=data.findIndex(d=>d.kode===editKode);if(i>=0)data[i]=obj;}
+  else{if(data.find(d=>d.kode===kode)){showToast('Kode arsip sudah ada!','danger');return;}data.unshift(obj);}
+  editKode=null;closeModal('modal-simpan');filtered=[...data];renderTable();
+  showToast('✅ Data arsip disimpan','success');
+}
+function deleteRow(kode){
+  if(!confirm(`Hapus arsip ${kode}?\nData akan di-soft delete dan tercatat di audit trail.`))return;
+  data=data.filter(d=>d.kode!==kode);filtered=[...data];renderTable();
+  showToast(`🗑️ Arsip ${kode} dihapus (soft delete)`,'warn');
+  pushNotif(`🗑️ Arsip ${kode} dihapus — tercatat di audit trail`,'warn');
+}
+renderTable();
+</script>
+</body>
+</html>

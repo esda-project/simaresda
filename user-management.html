@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manajemen User — SIMARESDA</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/simas.css">
+</head>
+<body>
+<div id="sidebar"></div>
+<div id="main">
+  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
+  <div class="topbar">
+    <div class="topbar-title">Manajemen Pengguna</div>
+    <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" id="g-search" placeholder="Cari nama, email, jabatan..." oninput="applyFilter()"></div>
+    <div class="topbar-actions no-print">
+      <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
+      <div style="position:relative"><button class="icon-btn" onclick="openNotifModal()">🔔</button><span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span></div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="alert alert-info no-print">🔒 Halaman ini hanya dapat diakses oleh <strong>Admin</strong>. Perubahan role dan status user tercatat di Audit Trail.</div>
+
+    <!-- Stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Total User</div><div class="stat-val" id="st-total">0</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Admin</div><div class="stat-val" id="st-admin" style="color:var(--red)">0</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">Pengelola</div><div class="stat-val" id="st-pengelola" style="color:var(--blue)">0</div></div>
+      <div class="stat-card" style="padding:12px"><div class="stat-label">TU</div><div class="stat-val" id="st-tu" style="color:var(--text2)">0</div></div>
+    </div>
+
+    <div class="toolbar no-print">
+      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Pengguna</button>
+      <select id="f-role" onchange="applyFilter()" style="width:140px"><option value="">Semua Role</option><option>Admin</option><option>Pengelola</option><option>TU</option></select>
+      <select id="f-status" onchange="applyFilter()" style="width:140px"><option value="">Semua Status</option><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
+      <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
+    </div>
+
+    <!-- User cards grid -->
+    <div id="user-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+    <div id="user-empty" class="empty" style="display:none"><div class="empty-ico">👤</div><div class="empty-txt">Tidak ada pengguna ditemukan</div></div>
+  </div>
+</div>
+
+<!-- MODAL FORM USER -->
+<div class="modal-overlay" id="modal-user" style="display:none" onclick="if(event.target===this)closeModal('modal-user')">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="u-title">👤 Tambah Pengguna</div><button class="icon-btn" onclick="closeModal('modal-user')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nama Lengkap <span class="req">*</span></label><input class="form-control" id="u-nama" placeholder="Nama lengkap pengguna"></div>
+        <div class="form-group"><label class="form-label">Email <span class="req">*</span></label><input class="form-control" type="email" id="u-email" placeholder="nama@instansi.go.id"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">NIP</label><input class="form-control" id="u-nip" placeholder="Nomor Induk Pegawai"></div>
+        <div class="form-group"><label class="form-label">Jabatan</label><input class="form-control" id="u-jabatan" placeholder="Jabatan / pangkat"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Unit Kerja</label><input class="form-control" id="u-unit" placeholder="Unit kerja / bidang"></div>
+        <div class="form-group"><label class="form-label">Role <span class="req">*</span></label>
+          <select class="form-control" id="u-role">
+            <option value="TU">Tata Usaha (TU)</option>
+            <option value="Pengelola">Pengelola Arsip</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row" id="pw-section">
+        <div class="form-group"><label class="form-label">Password <span class="req">*</span></label><input class="form-control" type="password" id="u-pw" placeholder="Min. 8 karakter"></div>
+        <div class="form-group"><label class="form-label">Konfirmasi Password</label><input class="form-control" type="password" id="u-pw2" placeholder="Ulangi password"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Status Akun</label>
+        <select class="form-control" id="u-aktif"><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
+      </div>
+      <div class="alert alert-info">💡 Password awal akan dikirim ke email pengguna. Pengguna wajib ganti password saat login pertama kali.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-user')">Batal</button><button class="btn btn-primary" onclick="saveUser()">💾 Simpan</button></div>
+  </div>
+</div>
+
+<!-- MODAL RESET PW -->
+<div class="modal-overlay" id="modal-reset" style="display:none" onclick="if(event.target===this)closeModal('modal-reset')">
+  <div class="modal" style="width:min(400px,95vw)">
+    <div class="modal-header"><div class="modal-title">🔑 Reset Password</div><button class="icon-btn" onclick="closeModal('modal-reset')">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Reset password untuk: <strong id="reset-target-name">—</strong></p>
+      <div class="form-group"><label class="form-label">Password Baru <span class="req">*</span></label><input class="form-control" type="password" id="reset-pw" placeholder="Min. 8 karakter"></div>
+      <div class="form-group"><label class="form-label">Konfirmasi Password</label><input class="form-control" type="password" id="reset-pw2" placeholder="Ulangi password baru"></div>
+      <div class="alert alert-warn">⚠️ Tindakan ini akan langsung mengganti password pengguna dan tercatat di Audit Trail.</div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-reset')">Batal</button><button class="btn btn-primary" onclick="doResetPw()">🔐 Simpan Password</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
+
+<script src="assets/simas-ui.js"></script>
+<script>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a><div class="nav-section">Admin</div><a class="nav-item active" href="user-management.html"><span class="nav-icon">👥</span>Kelola User</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+simasInit();
+
+const ROLE_C={Admin:'b-red',Pengelola:'b-blue',TU:'b-gray'};
+const ROLE_IC={Admin:'🔴',Pengelola:'🔵',TU:'⚪'};
+
+let users=[
+  {id:'usr-001',nama:'Administrator Sistem',email:'admin@simas.go.id',nip:'',jabatan:'Kepala Unit Kearsipan',unit:'Unit Kearsipan Daerah',role:'Admin',aktif:true,lastLogin:'2025-01-26 14:18'},
+  {id:'usr-002',nama:'Siti Rahayu',email:'siti.rahayu@simas.go.id',nip:'19850505 200901 2 002',jabatan:'Pengelola Arsip Ahli Muda',unit:'Sub Bagian Arsip',role:'Pengelola',aktif:true,lastLogin:'2025-01-26 11:05'},
+  {id:'usr-003',nama:'Budi Santoso',email:'budi.santoso@simas.go.id',nip:'19900101 201501 1 001',jabatan:'Staf Tata Usaha',unit:'Bagian Umum',role:'TU',aktif:true,lastLogin:'2025-01-26 09:30'},
+  {id:'usr-004',nama:'Dewi Sartika',email:'dewi.sartika@simas.go.id',nip:'19920303 201701 2 003',jabatan:'Pengadministrasi Umum',unit:'Bagian Umum',role:'TU',aktif:true,lastLogin:'2025-01-25 15:20'},
+  {id:'usr-005',nama:'Ahmad Fauzi',email:'ahmad.fauzi@simas.go.id',nip:'19880812 201201 1 004',jabatan:'Pengelola Arsip Ahli Pertama',unit:'Sub Bagian Arsip',role:'Pengelola',aktif:false,lastLogin:'2025-01-10 08:00'},
+];
+let editId=null, resetTargetId=null, filtered=[...users];
+
+function updateStats(){
+  document.getElementById('st-total').textContent=users.length;
+  document.getElementById('st-admin').textContent=users.filter(u=>u.role==='Admin').length;
+  document.getElementById('st-pengelola').textContent=users.filter(u=>u.role==='Pengelola').length;
+  document.getElementById('st-tu').textContent=users.filter(u=>u.role==='TU').length;
+}
+
+function renderCards(){
+  const grid=document.getElementById('user-grid'), em=document.getElementById('user-empty');
+  if(!filtered.length){grid.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  grid.innerHTML=filtered.map(u=>`
+    <div style="background:var(--surface);border:1px solid ${u.aktif?'var(--border)':'#F0BABA'};border-radius:var(--radius-lg);padding:18px;transition:.18s;opacity:${u.aktif?1:.7}">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:50%;background:var(--accentL);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0">${u.nama.slice(0,2).toUpperCase()}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.nama}</div>
+          <div style="font-size:11px;color:var(--text3)">${u.email}</div>
+        </div>
+        ${badgePlain(u.role,ROLE_C[u.role]||'b-gray')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text2);margin-bottom:14px">
+        ${u.jabatan?`<div>💼 ${u.jabatan}</div>`:''}
+        ${u.unit?`<div>🏢 ${u.unit}</div>`:''}
+        ${u.nip?`<div>🪪 ${u.nip}</div>`:''}
+        <div>🕐 Login: ${u.lastLogin||'Belum pernah'}</div>
+        <div>Status: ${u.aktif?'<span style="color:var(--green);font-weight:600">✅ Aktif</span>':'<span style="color:var(--red);font-weight:600">❌ Nonaktif</span>'}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick='editUser(${JSON.stringify(u)})'>✏️ Edit</button>
+        <button class="btn btn-secondary btn-sm" onclick="openResetPw('${u.id}','${u.nama}')">🔑 Reset PW</button>
+        <button class="btn ${u.aktif?'btn-danger':'btn-success'} btn-sm" onclick="toggleAktif('${u.id}')">${u.aktif?'🚫 Nonaktifkan':'✅ Aktifkan'}</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('row-count').textContent=`${filtered.length} pengguna`;
+  updateStats();
+}
+
+function applyFilter(){
+  const q=document.getElementById('g-search').value.toLowerCase();
+  const rl=document.getElementById('f-role').value;
+  const st=document.getElementById('f-status').value;
+  filtered=users.filter(u=>{
+    if(q&&!JSON.stringify(u).toLowerCase().includes(q))return false;
+    if(rl&&u.role!==rl)return false;
+    if(st!==''&&String(u.aktif)!==st)return false;
+    return true;
+  });
+  renderCards();
+}
+
+function openAdd(){
+  editId=null;document.getElementById('u-title').textContent='👤 Tambah Pengguna';
+  document.getElementById('pw-section').style.display='';
+  ['u-nama','u-email','u-nip','u-jabatan','u-unit','u-pw','u-pw2'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('u-role').value='TU';document.getElementById('u-aktif').value='true';
+  openModal('modal-user');
+}
+function editUser(u){
+  editId=u.id;document.getElementById('u-title').textContent='✏️ Edit Pengguna';
+  document.getElementById('pw-section').style.display='none';
+  document.getElementById('u-nama').value=u.nama;document.getElementById('u-email').value=u.email;
+  document.getElementById('u-nip').value=u.nip||'';document.getElementById('u-jabatan').value=u.jabatan||'';
+  document.getElementById('u-unit').value=u.unit||'';document.getElementById('u-role').value=u.role;
+  document.getElementById('u-aktif').value=String(u.aktif);
+  openModal('modal-user');
+}
+function saveUser(){
+  const nama=document.getElementById('u-nama').value.trim();
+  const email=document.getElementById('u-email').value.trim();
+  if(!nama||!email){showToast('Nama dan email wajib diisi','danger');return;}
+  if(!editId){
+    const pw=document.getElementById('u-pw').value;
+    const pw2=document.getElementById('u-pw2').value;
+    if(pw.length<8){showToast('Password minimal 8 karakter','danger');return;}
+    if(pw!==pw2){showToast('Konfirmasi password tidak cocok','danger');return;}
+  }
+  const obj={
+    id:editId||'usr-'+Date.now(),nama,email,
+    nip:document.getElementById('u-nip').value,jabatan:document.getElementById('u-jabatan').value,
+    unit:document.getElementById('u-unit').value,role:document.getElementById('u-role').value,
+    aktif:document.getElementById('u-aktif').value==='true',lastLogin:editId?(users.find(u=>u.id===editId)?.lastLogin||'—'):'—'
+  };
+  if(editId){const i=users.findIndex(u=>u.id===editId);if(i>=0)users[i]=obj;}
+  else users.unshift(obj);
+  editId=null;closeModal('modal-user');filtered=[...users];renderCards();
+  showToast('✅ Data pengguna disimpan','success');
+  pushNotif(`👤 User ${obj.nama} ${editId?'diperbarui':'ditambahkan'}`,'info');
+}
+function toggleAktif(id){
+  const u=users.find(x=>x.id===id);if(!u)return;
+  const act=!u.aktif;
+  if(!confirm(`${act?'Aktifkan':'Nonaktifkan'} akun ${u.nama}?`))return;
+  u.aktif=act;filtered=[...users];renderCards();
+  showToast(`${act?'✅ Akun diaktifkan':'🚫 Akun dinonaktifkan'}: ${u.nama}`,act?'success':'warn');
+}
+function openResetPw(id,nama){
+  resetTargetId=id;document.getElementById('reset-target-name').textContent=nama;
+  document.getElementById('reset-pw').value='';document.getElementById('reset-pw2').value='';
+  openModal('modal-reset');
+}
+function doResetPw(){
+  const pw=document.getElementById('reset-pw').value;
+  const pw2=document.getElementById('reset-pw2').value;
+  if(pw.length<8){showToast('Password minimal 8 karakter','danger');return;}
+  if(pw!==pw2){showToast('Konfirmasi password tidak cocok','danger');return;}
+  const u=users.find(x=>x.id===resetTargetId);
+  closeModal('modal-reset');
+  showToast(`✅ Password ${u?.nama||'user'} berhasil direset`,'success');
+  pushNotif(`🔑 Password user ${u?.nama} direset oleh Admin`,'warn');
+}
+
+renderCards();
+</script>
+</body>
+</html>
