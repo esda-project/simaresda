@@ -621,6 +621,190 @@ body.dark mark { background: #7B6000; color: #FFE082; }
 .empty-search-title { font-family: var(--font-d); font-size: 16px; color: var(--text2); margin-bottom: 6px; }
 .empty-search-sub { font-size: 13px; }
 </style>
+
+<script>
+// ============================================================
+// SIMARESDA — Security Module
+// Keamanan sesi, proteksi akses, dan deteksi ancaman
+// ============================================================
+
+const SIMARESDA_SEC = {
+
+  SESSION_KEY:    'simas-user',
+  SESSION_HOURS:  8,        // Sesi kadaluarsa 8 jam
+  IDLE_MINUTES:   30,       // Auto-logout setelah 30 menit tidak aktif
+  LOGIN_PAGE:     'login.html',
+
+  // ── CEK SESSION VALID ─────────────────────────────────────
+  checkSession() {
+    try {
+      const raw = sessionStorage.getItem(this.SESSION_KEY);
+      if (!raw) return this.redirectLogin('Sesi tidak ditemukan');
+
+      const user = JSON.parse(raw);
+      if (!user || !user.token || !user.expiresAt) return this.redirectLogin('Sesi tidak valid');
+
+      // Cek expiry
+      if (new Date(user.expiresAt) <= new Date()) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi kadaluarsa, silakan login kembali');
+      }
+
+      // Cek idle timeout
+      const lastActive = parseInt(sessionStorage.getItem('simas-last-active') || '0');
+      if (lastActive && Date.now() - lastActive > this.IDLE_MINUTES * 60 * 1000) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi berakhir karena tidak aktif');
+      }
+
+      // Update last active
+      sessionStorage.setItem('simas-last-active', Date.now());
+      return user;
+
+    } catch(e) {
+      return this.redirectLogin('Sesi error');
+    }
+  },
+
+  // ── REDIRECT KE LOGIN ─────────────────────────────────────
+  redirectLogin(reason) {
+    const msg = encodeURIComponent(reason || '');
+    window.location.replace(this.LOGIN_PAGE + (msg ? '?msg=' + msg : ''));
+    return null;
+  },
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  logout(confirmed = false) {
+    if (!confirmed) {
+      if (!confirm('Apakah Anda yakin ingin keluar dari sistem?')) return;
+    }
+    sessionStorage.removeItem(this.SESSION_KEY);
+    sessionStorage.removeItem('simas-last-active');
+    window.location.replace(this.LOGIN_PAGE);
+  },
+
+  // ── CEK PERMISSION ROLE ───────────────────────────────────
+  can(user, resource, action) {
+    const PERMS = {
+      Admin: {
+        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        arsip:         { read:true,  create:true,  update:true,  delete:true  },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true,  approve:true               },
+        regulasi:      { read:true,  create:true,  update:true,  delete:true  },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
+      },
+      Pengelola: {
+        surat_masuk:   { read:true,  create:true,  update:true               },
+        surat_keluar:  { read:true,  create:true,  update:true               },
+        arsip:         { read:true,  create:true,  update:true               },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true                              },
+        regulasi:      { read:true                                             },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true                                             },
+      },
+      TU: {
+        surat_masuk:   { read:true,  create:true                              },
+        surat_keluar:  { read:true,  create:true                              },
+        arsip:         { read:true                                             },
+        peminjaman:    { read:true,  create:true                              },
+        pemusnahan:    { read:true                                             },
+        regulasi:      { read:true                                             },
+        audit:         {                                                        },
+        user_mgmt:     {                                                        },
+      },
+    };
+    return !!(PERMS[user?.role]?.[resource]?.[action]);
+  },
+
+  // ── TERAPKAN GUARD KE DOM ─────────────────────────────────
+  applyGuards(user) {
+    if (!user) return;
+    // data-require-role="Admin" → sembunyikan jika bukan Admin
+    document.querySelectorAll('[data-require-role]').forEach(el => {
+      const roles = el.dataset.requireRole.split(',').map(r => r.trim());
+      if (!roles.includes(user.role)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+    // data-require-perm="arsip:delete" → sembunyikan jika tidak punya izin
+    document.querySelectorAll('[data-require-perm]').forEach(el => {
+      const [res, act] = el.dataset.requirePerm.split(':');
+      if (!this.can(user, res, act)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+  },
+
+  // ── PROTEKSI DASAR HALAMAN ────────────────────────────────
+  protectPage() {
+    // Blokir klik kanan
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    // Blokir F12 dan DevTools shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' ||
+         (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+         (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+        e.preventDefault();
+      }
+    });
+    // Cegah back button ke halaman terproteksi
+    window.history.pushState(null, '', window.location.href);
+    window.onpopstate = () => window.history.pushState(null, '', window.location.href);
+  },
+
+  // ── IDLE TRACKER ─────────────────────────────────────────
+  startIdleTracker() {
+    const events = ['mousedown','mousemove','keydown','scroll','touchstart','click'];
+    const reset  = () => sessionStorage.setItem('simas-last-active', Date.now());
+    events.forEach(ev => document.addEventListener(ev, reset, { passive: true }));
+    // Cek setiap 1 menit
+    setInterval(() => { this.checkSession(); }, 60 * 1000);
+  },
+
+  // ── DETEKSI REFERRER MENCURIGAKAN ─────────────────────────
+  checkReferrer() {
+    const ref = document.referrer;
+    if (!ref) return; // Direct access — OK
+    try {
+      const refHost = new URL(ref).hostname;
+      const ownHost = window.location.hostname;
+      // Jika referrer dari domain lain yang bukan localhost → catat
+      if (refHost !== ownHost && !['localhost','127.0.0.1'].includes(refHost)) {
+        console.warn('[SIMARESDA Security] Akses dari referrer eksternal:', refHost);
+        // Dalam produksi: log ke audit_trail via Supabase
+      }
+    } catch(e) {}
+  },
+
+  // ── INISIALISASI LENGKAP ──────────────────────────────────
+  init() {
+    const user = this.checkSession();
+    if (!user) return null; // Sudah redirect ke login
+
+    this.protectPage();
+    this.startIdleTracker();
+    this.checkReferrer();
+    this.applyGuards(user);
+
+    // Isi info user di DOM
+    document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user.nama || '—');
+    document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user.role + ' · Aktif');
+    document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user.nama||'?').slice(0,2).toUpperCase());
+
+    return user;
+  },
+};
+
+// Override fungsi logout global
+window.logout = () => SIMARESDA_SEC.logout();
+
+</script>
 </head>
 <body>
 <div class="overlay-bg" id="overlay-bg" onclick="closeSidebar()"></div>
@@ -984,20 +1168,10 @@ document.head.appendChild(style);
 // ── SIDEBAR ────────────────────────────────────────────────
 document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item active" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simasInit();
+SIMARESDA_SEC.init();
 
 // ── DATA ARSIP ─────────────────────────────────────────────
-const ARSIP_DATA = [
-  {kode:'ARK.001.2025.001',noUrut:'001',klasifikasi:'001',tahun:2025,perihal:'Laporan Kinerja Triwulan I 2025',kat:'Umum',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak A',laci:'Laci 1',folder:'Folder 01',fc:'',retAktif:5,retInaktif:10,nasib:'Musnah',keterangan:'Laporan kinerja Q1 seluruh unit',tgl:'2025-01-15',noSurat:'',asal:'Internal'},
-  {kode:'ARK.600.2025.002',noUrut:'002',klasifikasi:'600',tahun:2025,perihal:'Berkas Pengadaan Barang dan Jasa 2025',kat:'Keuangan',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak B',laci:'Laci 3',folder:'Folder 02',fc:'FC-01',retAktif:10,retInaktif:10,nasib:'Permanen',keterangan:'Dokumen pengadaan laptop dan printer',tgl:'2025-01-10',noSurat:'012/PBJ/I/2025',asal:'Panitia Pengadaan'},
-  {kode:'ARK.800.2024.012',noUrut:'012',klasifikasi:'800',tahun:2024,perihal:'Laporan Realisasi Anggaran Q3 2024',kat:'Keuangan',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak B',laci:'Laci 5',folder:'Folder 05',fc:'FC-02',retAktif:10,retInaktif:10,nasib:'Permanen',keterangan:'Laporan realisasi per September 2024',tgl:'2024-10-01',noSurat:'089/KEU/X/2024',asal:'Bagian Keuangan'},
-  {kode:'ARK.000.2023.089',noUrut:'089',klasifikasi:'000',tahun:2023,perihal:'Notulen Rapat Pimpinan 2023',kat:'Umum',jenis:'Arsip Inaktif',status:'Inaktif',rak:'Rak C',laci:'Laci 2',folder:'Folder 08',fc:'',retAktif:5,retInaktif:5,nasib:'Musnah',keterangan:'Notulen rapat bulanan seluruh pimpinan',tgl:'2023-12-31',noSurat:'',asal:'Sekretariat'},
-  {kode:'ARK.200.2022.034',noUrut:'034',klasifikasi:'200',tahun:2022,perihal:'SK Pengangkatan Jabatan Fungsional',kat:'Kepegawaian',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak D',laci:'Laci 1',folder:'Folder 01',fc:'FC-03',retAktif:0,retInaktif:0,nasib:'Permanen',keterangan:'SK Pengangkatan 15 pegawai jabatan fungsional',tgl:'2022-03-15',noSurat:'SK-045/SDM/III/2022',asal:'BKD'},
-  {kode:'ARK.800.2022.019',noUrut:'019',klasifikasi:'800',tahun:2022,perihal:'Laporan Audit BPK 2022',kat:'Keuangan',jenis:'Arsip Inaktif',status:'Inaktif',rak:'Rak C',laci:'Laci 5',folder:'Folder 12',fc:'FC-02',retAktif:10,retInaktif:10,nasib:'Permanen',keterangan:'Hasil audit BPK tahun 2022',tgl:'2022-07-01',noSurat:'LHP-012/BPK/VII/2022',asal:'BPK RI'},
-  {kode:'ARK.400.2025.003',noUrut:'003',klasifikasi:'400',tahun:2025,perihal:'Surat Keputusan Penetapan Anggaran 2025',kat:'Keuangan',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak A',laci:'Laci 2',folder:'Folder 03',fc:'FC-01',retAktif:10,retInaktif:5,nasib:'Musnah',keterangan:'SK penetapan DIPA 2025',tgl:'2025-01-05',noSurat:'SK-001/KEU/I/2025',asal:'Kementerian Keuangan'},
-  {kode:'ARK.200.2024.045',noUrut:'045',klasifikasi:'200',tahun:2024,perihal:'Daftar Nominatif Pegawai 2024',kat:'Kepegawaian',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak D',laci:'Laci 2',folder:'Folder 04',fc:'FC-03',retAktif:5,retInaktif:5,nasib:'Musnah',keterangan:'Data seluruh pegawai aktif 2024',tgl:'2024-01-10',noSurat:'',asal:'Bagian SDM'},
-  {kode:'ARK.300.2023.067',noUrut:'067',klasifikasi:'300',tahun:2023,perihal:'Laporan Program Kerja 2023',kat:'Umum',jenis:'Arsip Inaktif',status:'Inaktif',rak:'Rak C',laci:'Laci 3',folder:'Folder 06',fc:'',retAktif:5,retInaktif:5,nasib:'Musnah',keterangan:'Realisasi program kerja tahunan 2023',tgl:'2023-12-15',noSurat:'',asal:'Internal'},
-  {kode:'ARK.500.2025.004',noUrut:'004',klasifikasi:'500',tahun:2025,perihal:'Kontrak Pengadaan Sistem IT 2025',kat:'Teknis',jenis:'Arsip Aktif',status:'Aktif',rak:'Rak A',laci:'Laci 3',folder:'Folder 04',fc:'FC-01',retAktif:10,retInaktif:10,nasib:'Permanen',keterangan:'Kontrak pengadaan infrastruktur IT',tgl:'2025-02-01',noSurat:'KTR-003/IT/II/2025',asal:'Vendor PT Teknologi Maju'},
-];
+const ARSIP_DATA = [];
 
 // Klasifikasi map sesuai Perka ANRI
 const KLASIFIKASI = {
