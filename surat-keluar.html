@@ -368,7 +368,221 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
 .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px}
 .chart-wrap{position:relative;height:220px}
 
+
+/* ── MOBILE RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 0px; }
+  #sidebar { position:fixed;left:-280px;width:280px;height:100vh;z-index:500;transition:left .3s var(--ease);box-shadow:var(--shadow-lg); }
+  #sidebar.open { left:0; }
+  #main { width:100vw; }
+  .topbar { padding:0 12px; }
+  .content { padding:12px; }
+  .stats-grid { grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px; }
+  .stat-card { padding:10px; }
+  .stat-val  { font-size:18px; }
+  .form-row, .form-row3 { grid-template-columns:1fr; }
+  .charts-grid { grid-template-columns:1fr; }
+  .modal { width:95vw !important; margin:8px; }
+  .modal-body { padding:12px; }
+  .toolbar { flex-wrap:wrap;gap:6px; }
+  .toolbar select, .toolbar input[type=text] { flex:1;min-width:120px; }
+  table { font-size:11px; }
+  th,td { padding:7px 8px; }
+  .overlay-bg { display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:499; }
+  .overlay-bg.show { display:block; }
+  .hamburger { display:flex !important; }
+  .topbar-title { font-size:13px; }
+  .no-mobile { display:none !important; }
+}
+@media (min-width:769px) {
+  .hamburger { display:none !important; }
+  .overlay-bg { display:none !important; }
+}
 </style>
+
+<script>
+// ============================================================
+// SIMARESDA — Security Module
+// Keamanan sesi, proteksi akses, dan deteksi ancaman
+// ============================================================
+
+const SIMARESDA_SEC = {
+
+  SESSION_KEY:    'simas-user',
+  SESSION_HOURS:  8,        // Sesi kadaluarsa 8 jam
+  IDLE_MINUTES:   30,       // Auto-logout setelah 30 menit tidak aktif
+  LOGIN_PAGE:     'login.html',
+
+  // ── CEK SESSION VALID ─────────────────────────────────────
+  checkSession() {
+    try {
+      const raw = sessionStorage.getItem(this.SESSION_KEY);
+      if (!raw) return this.redirectLogin('Sesi tidak ditemukan');
+
+      const user = JSON.parse(raw);
+      if (!user || !user.token || !user.expiresAt) return this.redirectLogin('Sesi tidak valid');
+
+      // Cek expiry
+      if (new Date(user.expiresAt) <= new Date()) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi kadaluarsa, silakan login kembali');
+      }
+
+      // Cek idle timeout
+      const lastActive = parseInt(sessionStorage.getItem('simas-last-active') || '0');
+      if (lastActive && Date.now() - lastActive > this.IDLE_MINUTES * 60 * 1000) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi berakhir karena tidak aktif');
+      }
+
+      // Update last active
+      sessionStorage.setItem('simas-last-active', Date.now());
+      return user;
+
+    } catch(e) {
+      return this.redirectLogin('Sesi error');
+    }
+  },
+
+  // ── REDIRECT KE LOGIN ─────────────────────────────────────
+  redirectLogin(reason) {
+    const msg = encodeURIComponent(reason || '');
+    window.location.replace(this.LOGIN_PAGE + (msg ? '?msg=' + msg : ''));
+    return null;
+  },
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  logout(confirmed = false) {
+    if (!confirmed) {
+      if (!confirm('Apakah Anda yakin ingin keluar dari sistem?')) return;
+    }
+    sessionStorage.removeItem(this.SESSION_KEY);
+    sessionStorage.removeItem('simas-last-active');
+    window.location.replace(this.LOGIN_PAGE);
+  },
+
+  // ── CEK PERMISSION ROLE ───────────────────────────────────
+  can(user, resource, action) {
+    const PERMS = {
+      Admin: {
+        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        arsip:         { read:true,  create:true,  update:true,  delete:true  },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true,  approve:true               },
+        regulasi:      { read:true,  create:true,  update:true,  delete:true  },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
+      },
+      Pengelola: {
+        surat_masuk:   { read:true,  create:true,  update:true               },
+        surat_keluar:  { read:true,  create:true,  update:true               },
+        arsip:         { read:true,  create:true,  update:true               },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true                              },
+        regulasi:      { read:true                                             },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true                                             },
+      },
+      TU: {
+        surat_masuk:   { read:true,  create:true                              },
+        surat_keluar:  { read:true,  create:true                              },
+        arsip:         { read:true                                             },
+        peminjaman:    { read:true,  create:true                              },
+        pemusnahan:    { read:true                                             },
+        regulasi:      { read:true                                             },
+        audit:         {                                                        },
+        user_mgmt:     {                                                        },
+      },
+    };
+    return !!(PERMS[user?.role]?.[resource]?.[action]);
+  },
+
+  // ── TERAPKAN GUARD KE DOM ─────────────────────────────────
+  applyGuards(user) {
+    if (!user) return;
+    // data-require-role="Admin" → sembunyikan jika bukan Admin
+    document.querySelectorAll('[data-require-role]').forEach(el => {
+      const roles = el.dataset.requireRole.split(',').map(r => r.trim());
+      if (!roles.includes(user.role)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+    // data-require-perm="arsip:delete" → sembunyikan jika tidak punya izin
+    document.querySelectorAll('[data-require-perm]').forEach(el => {
+      const [res, act] = el.dataset.requirePerm.split(':');
+      if (!this.can(user, res, act)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+  },
+
+  // ── PROTEKSI DASAR HALAMAN ────────────────────────────────
+  protectPage() {
+    // Blokir klik kanan
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    // Blokir F12 dan DevTools shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' ||
+         (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+         (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+        e.preventDefault();
+      }
+    });
+    // Cegah back button ke halaman terproteksi
+    window.history.pushState(null, '', window.location.href);
+    window.onpopstate = () => window.history.pushState(null, '', window.location.href);
+  },
+
+  // ── IDLE TRACKER ─────────────────────────────────────────
+  startIdleTracker() {
+    const events = ['mousedown','mousemove','keydown','scroll','touchstart','click'];
+    const reset  = () => sessionStorage.setItem('simas-last-active', Date.now());
+    events.forEach(ev => document.addEventListener(ev, reset, { passive: true }));
+    // Cek setiap 1 menit
+    setInterval(() => { this.checkSession(); }, 60 * 1000);
+  },
+
+  // ── DETEKSI REFERRER MENCURIGAKAN ─────────────────────────
+  checkReferrer() {
+    const ref = document.referrer;
+    if (!ref) return; // Direct access — OK
+    try {
+      const refHost = new URL(ref).hostname;
+      const ownHost = window.location.hostname;
+      // Jika referrer dari domain lain yang bukan localhost → catat
+      if (refHost !== ownHost && !['localhost','127.0.0.1'].includes(refHost)) {
+        console.warn('[SIMARESDA Security] Akses dari referrer eksternal:', refHost);
+        // Dalam produksi: log ke audit_trail via Supabase
+      }
+    } catch(e) {}
+  },
+
+  // ── INISIALISASI LENGKAP ──────────────────────────────────
+  init() {
+    const user = this.checkSession();
+    if (!user) return null; // Sudah redirect ke login
+
+    this.protectPage();
+    this.startIdleTracker();
+    this.checkReferrer();
+    this.applyGuards(user);
+
+    // Isi info user di DOM
+    document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user.nama || '—');
+    document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user.role + ' · Aktif');
+    document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user.nama||'?').slice(0,2).toUpperCase());
+
+    return user;
+  },
+};
+
+// Override fungsi logout global
+window.logout = () => SIMARESDA_SEC.logout();
+
+</script>
 </head>
 <body>
 <div id="sidebar"></div>
@@ -670,12 +884,14 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item active" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item active" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simasInit();
+SIMARESDA_SEC.init();
 
 const ROM=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 let seq=4,editIdx=null,page=1;
-let data=[
+let data=[]t data=[
   {id:'SK-2025-001',no:'100/ORG/I/2025',tgl:'2025-01-06',tujuan:'Kementerian Kesehatan RI',perihal:'Konfirmasi Penerimaan Laporan Tahunan',kat:'Umum',sifat:'Biasa',ttd:'Kepala Biro',kode:'ORG',tembusan:'Sekretaris',ket:'',status:'Terkirim'},
   {id:'SK-2025-002',no:'101/ORG/I/2025',tgl:'2025-01-09',tujuan:'Kementerian PUPR',perihal:'Tanggapan Pelaksanaan Audit Internal',kat:'Teknis',sifat:'Penting',ttd:'Sekretaris',kode:'ORG',tembusan:'Kepala Biro',ket:'',status:'Terkirim'},
   {id:'SK-2025-003',no:'102/ORG/I/2025',tgl:'2025-01-15',tujuan:'Badan Kepegawaian Negara',perihal:'Daftar Nama Peserta Diklat Prajabatan 2025',kat:'Kepegawaian',sifat:'Biasa',ttd:'Kepala Bagian',kode:'ORG',tembusan:'',ket:'',status:'Draft'},
@@ -785,6 +1001,9 @@ function viewDetail(s){
   openModal('modal-detail');
 }
 renderTable();
+
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
 </script>
 </body>
 </html>
