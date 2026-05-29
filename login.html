@@ -14,13 +14,14 @@
   --red:#8B1C1C;--redL:#FAEBEB;
   --font:'Instrument Sans',system-ui,sans-serif;
   --font-d:'Fraunces',Georgia,serif;
-  --radius:8px;
+  --radius:8px;--shadow-md:0 4px 24px rgba(0,0,0,.10);
 }
 body{
   min-height:100vh;display:flex;align-items:center;justify-content:center;
   background:var(--bg);font-family:var(--font);color:var(--text);
   position:relative;overflow:hidden;
 }
+/* Geometric BG */
 body::before{
   content:'';position:absolute;inset:0;
   background:
@@ -33,6 +34,7 @@ body::before{
                    linear-gradient(90deg, var(--border) 1px, transparent 1px);
   background-size:40px 40px;opacity:.5;
 }
+/* Card */
 .card{
   position:relative;z-index:1;
   background:var(--surface);border:1px solid var(--border);
@@ -40,6 +42,7 @@ body::before{
   width:min(420px,95vw);
   box-shadow:0 8px 40px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06);
 }
+/* Logo */
 .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:28px}
 .logo-icon{
   width:46px;height:46px;border-radius:14px;
@@ -47,10 +50,12 @@ body::before{
   display:flex;align-items:center;justify-content:center;font-size:22px;
   box-shadow:0 4px 12px rgba(30,58,110,.3);
 }
+.logo-text{}
 .logo-title{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--accent);letter-spacing:-.3px}
 .logo-sub{font-size:11px;color:var(--text3);margin-top:2px;letter-spacing:.3px}
 h1{font-family:var(--font-d);font-size:22px;font-weight:600;color:var(--text);margin-bottom:6px}
 .subtitle{font-size:13px;color:var(--text2);margin-bottom:28px}
+/* Form */
 .form-group{margin-bottom:16px}
 label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
 input,select{
@@ -59,44 +64,44 @@ input,select{
   outline:none;transition:.18s;
 }
 input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,58,110,.1)}
-select[disabled]{background:var(--bg);color:var(--text2);cursor:default}
 .input-wrap{position:relative}
 .input-wrap input{padding-right:38px}
 .toggle-pw{
   position:absolute;right:10px;top:50%;transform:translateY(-50%);
   background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;
 }
-.role-display{
-  width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);
-  background:var(--bg);color:var(--text2);font-size:13px;font-family:var(--font);
-  display:flex;align-items:center;gap:8px;
-}
-.role-badge{
-  display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;
-}
-.badge-admin{background:var(--accentL);color:var(--accent)}
-.badge-pengelola{background:#E6F4EC;color:#1A5C3A}
-.badge-tu{background:#F0EDE6;color:#6B6558}
+/* Submit */
 .btn-login{
   width:100%;padding:11px;border-radius:var(--radius);border:none;
   background:var(--accent);color:#fff;font-size:14px;font-weight:700;
   font-family:var(--font);cursor:pointer;transition:.18s;margin-top:4px;
-  letter-spacing:.2px;display:flex;align-items:center;justify-content:center;gap:8px;
+  letter-spacing:.2px;
 }
 .btn-login:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 18px rgba(30,58,110,.3)}
 .btn-login:active{transform:translateY(0)}
-.btn-login:disabled{opacity:.7;cursor:not-allowed;transform:none}
+/* Error */
 .error-msg{
   background:var(--redL);color:var(--red);border:1px solid #F0BABA;
   border-radius:var(--radius);padding:10px 12px;font-size:12px;
   margin-bottom:16px;display:none;
 }
+/* Forgot */
 .forgot{text-align:right;margin-top:-10px;margin-bottom:16px}
 .forgot a{font-size:11px;color:var(--accent);cursor:pointer}
 .forgot a:hover{text-decoration:underline}
-.login-footer{margin-top:24px;text-align:center;font-size:11px;color:var(--text3)}
-.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none}
+/* Demo pill */
+.demo-info{
+  margin-top:20px;padding:10px 14px;background:var(--accentL);
+  border-radius:var(--radius);font-size:11px;color:var(--accent);
+  border:1px solid rgba(30,58,110,.15);
+}
+.demo-info strong{display:block;margin-bottom:4px}
+/* Footer */
+.login-footer{margin-top:20px;text-align:center;font-size:11px;color:var(--text3)}
+/* Spinner */
+.spinner{display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Reset modal */
 .reset-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;
   display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);
@@ -118,7 +123,7 @@ select[disabled]{background:var(--bg);color:var(--text2);cursor:default}
 <div class="card">
   <div class="logo-row">
     <div class="logo-icon">📁</div>
-    <div>
+    <div class="logo-text">
       <div class="logo-title">SIMARESDA</div>
       <div class="logo-sub">Sistem Manajemen Arsip Daerah · 2025–2030</div>
     </div>
@@ -131,26 +136,23 @@ select[disabled]{background:var(--bg);color:var(--text2);cursor:default}
 
   <form onsubmit="doLogin(event)">
     <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="admin / pengelola / tatausaha"
-             autocomplete="username" oninput="detectRole(this.value)" required>
+      <label for="email">Email / Username</label>
+      <input type="text" id="email" placeholder="nama@instansi.go.id" autocomplete="username" value="admin@simas.go.id" required>
     </div>
     <div class="form-group">
       <label for="password">Password</label>
       <div class="input-wrap">
-        <input type="password" id="password" placeholder="••••••••"
-               autocomplete="current-password" required>
+        <input type="password" id="password" placeholder="••••••••" autocomplete="current-password" value="admin123" required>
         <button type="button" class="toggle-pw" onclick="togglePw()">👁</button>
       </div>
     </div>
     <div class="form-group">
-      <label>Login Sebagai</label>
-      <div class="role-display" id="role-display">
-        <span id="role-badge" class="role-badge" style="display:none"></span>
-        <span id="role-text" style="color:var(--text3)">Otomatis terdeteksi dari username</span>
-      </div>
-      <!-- hidden input untuk menyimpan role -->
-      <input type="hidden" id="role" value="">
+      <label for="role">Login sebagai</label>
+      <select id="role">
+        <option value="Admin">Admin — Akses penuh</option>
+        <option value="Pengelola">Pengelola Arsip — CRUD & approve</option>
+        <option value="TU">Tata Usaha — Input surat & peminjaman</option>
+      </select>
     </div>
     <div class="forgot"><a onclick="openReset()">Lupa password?</a></div>
     <button type="submit" class="btn-login" id="btn-login">
@@ -159,6 +161,11 @@ select[disabled]{background:var(--bg);color:var(--text2);cursor:default}
     </button>
   </form>
 
+  <div class="demo-info">
+    <strong>🧪 Demo Mode</strong>
+    Isi bebas, pilih role di atas. Integrasi Supabase Auth aktif setelah konfigurasi URL & key di <code>assets/simas-ui.js</code>.
+  </div>
+
   <div class="login-footer">SIMARESDA v2.0 · Comply PP No. 28 Tahun 2012 · © 2025</div>
 </div>
 
@@ -166,10 +173,10 @@ select[disabled]{background:var(--bg);color:var(--text2);cursor:default}
 <div class="reset-overlay" id="reset-overlay" onclick="if(event.target===this)closeReset()">
   <div class="reset-card">
     <div class="reset-title">🔑 Reset Password</div>
-    <div class="reset-sub">Masukkan username Anda. Link reset akan dikirim ke email terdaftar.</div>
+    <div class="reset-sub">Masukkan email Anda. Link reset akan dikirim ke inbox.</div>
     <div class="form-group">
-      <label>Username</label>
-      <input type="text" id="reset-username" placeholder="admin / pengelola / tatausaha">
+      <label>Email Akun</label>
+      <input type="email" id="reset-email" placeholder="nama@instansi.go.id">
     </div>
     <div class="reset-actions">
       <button class="btn-sm-cancel" onclick="closeReset()">Batal</button>
@@ -179,94 +186,58 @@ select[disabled]{background:var(--bg);color:var(--text2);cursor:default}
 </div>
 
 <script>
-// Peta username → role
-const ROLE_MAP = {
-  'admin':      { role: 'Admin',     label: 'Admin — Akses Penuh',            badge: 'badge-admin',     jabatan: 'Administrator Sistem' },
-  'pengelola':  { role: 'Pengelola', label: 'Pengelola Arsip — CRUD & Approve', badge: 'badge-pengelola', jabatan: 'Pengelola Arsip' },
-  'tatausaha':  { role: 'TU',        label: 'Tata Usaha — Input & Peminjaman', badge: 'badge-tu',        jabatan: 'Staf Tata Usaha' },
-};
-
-function detectRole(val) {
-  const key    = val.trim().toLowerCase();
-  const found  = ROLE_MAP[key];
-  const badge  = document.getElementById('role-badge');
-  const text   = document.getElementById('role-text');
-  const hidden = document.getElementById('role');
-
-  if (found) {
-    badge.textContent   = found.role;
-    badge.className     = 'role-badge ' + found.badge;
-    badge.style.display = 'inline-block';
-    text.textContent    = found.label;
-    text.style.color    = 'var(--text)';
-    hidden.value        = found.role;
-  } else {
-    badge.style.display = 'none';
-    text.textContent    = key ? 'Username tidak dikenali' : 'Otomatis terdeteksi dari username';
-    text.style.color    = key ? 'var(--red)' : 'var(--text3)';
-    hidden.value        = '';
-  }
-}
-
 function togglePw() {
   const inp = document.getElementById('password');
   inp.type = inp.type === 'password' ? 'text' : 'password';
 }
-
-function openReset()  { document.getElementById('reset-overlay').style.display = 'flex'; }
-function closeReset() { document.getElementById('reset-overlay').style.display = 'none'; }
+function openReset()  { document.getElementById('reset-overlay').style.display='flex'; }
+function closeReset() { document.getElementById('reset-overlay').style.display='none'; }
 function sendReset() {
-  const uname = document.getElementById('reset-username').value.trim();
-  if (!uname) { alert('Masukkan username terlebih dahulu.'); return; }
+  const email = document.getElementById('reset-email').value;
+  if (!email) { alert('Masukkan email terlebih dahulu.'); return; }
   closeReset();
-  alert('✅ Link reset password telah dikirim ke email yang terdaftar untuk username: ' + uname);
+  alert('✅ Link reset password telah dikirim ke ' + email + '\n(Dalam produksi: via Supabase Auth email)');
 }
 
 function doLogin(e) {
   e.preventDefault();
-  const username = document.getElementById('username').value.trim().toLowerCase();
+  const email    = document.getElementById('email').value;
   const password = document.getElementById('password').value;
   const role     = document.getElementById('role').value;
   const errEl    = document.getElementById('error-msg');
   errEl.style.display = 'none';
 
-  // Validasi: username harus dikenali
-  const found = ROLE_MAP[username];
-  if (!found) {
-    errEl.textContent    = '❌ Username tidak dikenali. Gunakan: admin, pengelola, atau tatausaha.';
-    errEl.style.display  = 'block';
-    return;
-  }
-
-  // Validasi: password tidak boleh kosong
-  if (password.length < 4) {
-    errEl.textContent   = '❌ Password terlalu pendek.';
-    errEl.style.display = 'block';
-    return;
-  }
-
-  // Tampilkan spinner
+  // Show spinner
   document.getElementById('btn-text').style.display = 'none';
-  document.getElementById('spinner').style.display  = 'block';
-  document.getElementById('btn-login').disabled     = true;
+  document.getElementById('spinner').style.display   = 'block';
+  document.getElementById('btn-login').disabled      = true;
 
+  // Simulasi loading 800ms (ganti dengan Supabase signInWithPassword)
   setTimeout(() => {
-    const namaMap = { admin: 'Administrator', pengelola: 'Pengelola Arsip', tatausaha: 'Tata Usaha' };
+    // Demo: cek password minimal 4 karakter
+    if (password.length < 4) {
+      errEl.style.display = 'block';
+      document.getElementById('btn-text').style.display = 'block';
+      document.getElementById('spinner').style.display   = 'none';
+      document.getElementById('btn-login').disabled      = false;
+      return;
+    }
+    const nama = email.split('@')[0].replace(/\./g,' ').replace(/\b\w/g,c=>c.toUpperCase());
     const user = {
-      id:        'usr-' + Date.now(),
-      username,
-      nama:      namaMap[username],
-      role:      found.role,
-      jabatan:   found.jabatan,
-      unitKerja: 'Unit Kearsipan Daerah',
+      id:       'usr-' + Date.now(),
+      email,
+      nama,
+      role,
+      jabatan:  role === 'Admin' ? 'Administrator Sistem' : role === 'Pengelola' ? 'Pengelola Arsip' : 'Staf Tata Usaha',
+      unitKerja:'Unit Kearsipan Daerah',
     };
     sessionStorage.setItem('simas-user', JSON.stringify(user));
     window.location.href = 'index.html';
-  }, 700);
+  }, 800);
 }
 
-// Dark mode
-if (localStorage.getItem('simas-dark') === 'true') document.body.classList.add('dark');
+// Init dark mode pref
+if (localStorage.getItem('simas-dark') === 'true') document.documentElement.style.filter = 'invert(1) hue-rotate(180deg)';
 </script>
 </body>
 </html>
