@@ -2,11 +2,11 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Regulasi — SIMAS</title>
+<title>Regulasi — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   SIMAS — Global Stylesheet
+   SIMARESDA — Global Stylesheet
    Font: Instrument Sans + Fraunces (display)
    Theme: Refined Government — warm neutral + deep indigo
    ============================================================ */
@@ -433,11 +433,11 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
 
 <script>
 // ============================================================
-// SIMAS — Shared UI Utilities (simas-ui.js)
+// SIMARESDA — Shared UI Utilities (simas-ui.js)
 // ============================================================
 
 // ── SUPABASE CONFIG (ganti sebelum deploy) ────────────────
-window.SIMAS_CONFIG = {
+window.SIMARESDA_CONFIG = {
   SUPABASE_URL:      'https://YOUR_PROJECT_ID.supabase.co',
   SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
 };
@@ -575,10 +575,10 @@ function confirmDelete(msg, onConfirm) {
 }
 
 // ── USER SESSION (mock — ganti dengan Supabase Auth) ──────
-window.SIMAS_USER = JSON.parse(sessionStorage.getItem('simas-user') || 'null');
+window.SIMARESDA_USER = JSON.parse(sessionStorage.getItem('simas-user') || 'null');
 
 function setUser(user) {
-  window.SIMAS_USER = user;
+  window.SIMARESDA_USER = user;
   sessionStorage.setItem('simas-user', JSON.stringify(user));
   document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user?.nama || '—');
   document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user?.role || '—');
@@ -595,11 +595,11 @@ function applyRoleGuards(role) {
 }
 
 function requireLogin() {
-  if (!window.SIMAS_USER) {
+  if (!window.SIMARESDA_USER) {
     window.location.href = 'login.html';
     return false;
   }
-  setUser(window.SIMAS_USER);
+  setUser(window.SIMARESDA_USER);
   return true;
 }
 
@@ -662,7 +662,7 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMAS</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item active" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item active" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simasInit();
 
 const BADGE_COLOR={UU:'b-red',PP:'b-blue',ANRI:'b-green',SE:'b-yellow',PERDA:'b-purple'};
@@ -698,7 +698,7 @@ function renderReg(){
   const em=document.getElementById('reg-empty');
   if(!list.length){el.innerHTML='';em.style.display='block';return;}
   em.style.display='none';
-  const isAdmin=window.SIMAS_USER?.role==='Admin';
+  const isAdmin=window.SIMARESDA_USER?.role==='Admin';
   el.innerHTML=list.map(r=>`
     <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);transition:.18s;cursor:default" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
       <div style="flex-shrink:0;text-align:center;min-width:54px">
