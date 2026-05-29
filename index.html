@@ -401,6 +401,190 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script>
+// ============================================================
+// SIMARESDA — Security Module
+// Keamanan sesi, proteksi akses, dan deteksi ancaman
+// ============================================================
+
+const SIMARESDA_SEC = {
+
+  SESSION_KEY:    'simas-user',
+  SESSION_HOURS:  8,        // Sesi kadaluarsa 8 jam
+  IDLE_MINUTES:   30,       // Auto-logout setelah 30 menit tidak aktif
+  LOGIN_PAGE:     'login.html',
+
+  // ── CEK SESSION VALID ─────────────────────────────────────
+  checkSession() {
+    try {
+      const raw = sessionStorage.getItem(this.SESSION_KEY);
+      if (!raw) return this.redirectLogin('Sesi tidak ditemukan');
+
+      const user = JSON.parse(raw);
+      if (!user || !user.token || !user.expiresAt) return this.redirectLogin('Sesi tidak valid');
+
+      // Cek expiry
+      if (new Date(user.expiresAt) <= new Date()) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi kadaluarsa, silakan login kembali');
+      }
+
+      // Cek idle timeout
+      const lastActive = parseInt(sessionStorage.getItem('simas-last-active') || '0');
+      if (lastActive && Date.now() - lastActive > this.IDLE_MINUTES * 60 * 1000) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi berakhir karena tidak aktif');
+      }
+
+      // Update last active
+      sessionStorage.setItem('simas-last-active', Date.now());
+      return user;
+
+    } catch(e) {
+      return this.redirectLogin('Sesi error');
+    }
+  },
+
+  // ── REDIRECT KE LOGIN ─────────────────────────────────────
+  redirectLogin(reason) {
+    const msg = encodeURIComponent(reason || '');
+    window.location.replace(this.LOGIN_PAGE + (msg ? '?msg=' + msg : ''));
+    return null;
+  },
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  logout(confirmed = false) {
+    if (!confirmed) {
+      if (!confirm('Apakah Anda yakin ingin keluar dari sistem?')) return;
+    }
+    sessionStorage.removeItem(this.SESSION_KEY);
+    sessionStorage.removeItem('simas-last-active');
+    window.location.replace(this.LOGIN_PAGE);
+  },
+
+  // ── CEK PERMISSION ROLE ───────────────────────────────────
+  can(user, resource, action) {
+    const PERMS = {
+      Admin: {
+        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        arsip:         { read:true,  create:true,  update:true,  delete:true  },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true,  approve:true               },
+        regulasi:      { read:true,  create:true,  update:true,  delete:true  },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
+      },
+      Pengelola: {
+        surat_masuk:   { read:true,  create:true,  update:true               },
+        surat_keluar:  { read:true,  create:true,  update:true               },
+        arsip:         { read:true,  create:true,  update:true               },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true                              },
+        regulasi:      { read:true                                             },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true                                             },
+      },
+      TU: {
+        surat_masuk:   { read:true,  create:true                              },
+        surat_keluar:  { read:true,  create:true                              },
+        arsip:         { read:true                                             },
+        peminjaman:    { read:true,  create:true                              },
+        pemusnahan:    { read:true                                             },
+        regulasi:      { read:true                                             },
+        audit:         {                                                        },
+        user_mgmt:     {                                                        },
+      },
+    };
+    return !!(PERMS[user?.role]?.[resource]?.[action]);
+  },
+
+  // ── TERAPKAN GUARD KE DOM ─────────────────────────────────
+  applyGuards(user) {
+    if (!user) return;
+    // data-require-role="Admin" → sembunyikan jika bukan Admin
+    document.querySelectorAll('[data-require-role]').forEach(el => {
+      const roles = el.dataset.requireRole.split(',').map(r => r.trim());
+      if (!roles.includes(user.role)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+    // data-require-perm="arsip:delete" → sembunyikan jika tidak punya izin
+    document.querySelectorAll('[data-require-perm]').forEach(el => {
+      const [res, act] = el.dataset.requirePerm.split(':');
+      if (!this.can(user, res, act)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+  },
+
+  // ── PROTEKSI DASAR HALAMAN ────────────────────────────────
+  protectPage() {
+    // Blokir klik kanan
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    // Blokir F12 dan DevTools shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' ||
+         (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+         (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+        e.preventDefault();
+      }
+    });
+    // Cegah back button ke halaman terproteksi
+    window.history.pushState(null, '', window.location.href);
+    window.onpopstate = () => window.history.pushState(null, '', window.location.href);
+  },
+
+  // ── IDLE TRACKER ─────────────────────────────────────────
+  startIdleTracker() {
+    const events = ['mousedown','mousemove','keydown','scroll','touchstart','click'];
+    const reset  = () => sessionStorage.setItem('simas-last-active', Date.now());
+    events.forEach(ev => document.addEventListener(ev, reset, { passive: true }));
+    // Cek setiap 1 menit
+    setInterval(() => { this.checkSession(); }, 60 * 1000);
+  },
+
+  // ── DETEKSI REFERRER MENCURIGAKAN ─────────────────────────
+  checkReferrer() {
+    const ref = document.referrer;
+    if (!ref) return; // Direct access — OK
+    try {
+      const refHost = new URL(ref).hostname;
+      const ownHost = window.location.hostname;
+      // Jika referrer dari domain lain yang bukan localhost → catat
+      if (refHost !== ownHost && !['localhost','127.0.0.1'].includes(refHost)) {
+        console.warn('[SIMARESDA Security] Akses dari referrer eksternal:', refHost);
+        // Dalam produksi: log ke audit_trail via Supabase
+      }
+    } catch(e) {}
+  },
+
+  // ── INISIALISASI LENGKAP ──────────────────────────────────
+  init() {
+    const user = this.checkSession();
+    if (!user) return null; // Sudah redirect ke login
+
+    this.protectPage();
+    this.startIdleTracker();
+    this.checkReferrer();
+    this.applyGuards(user);
+
+    // Isi info user di DOM
+    document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user.nama || '—');
+    document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user.role + ' · Aktif');
+    document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user.nama||'?').slice(0,2).toUpperCase());
+
+    return user;
+  },
+};
+
+// Override fungsi logout global
+window.logout = () => SIMARESDA_SEC.logout();
+
+</script>
 </head>
 <body>
 
@@ -427,19 +611,19 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
         <div class="stat-ico" style="background:var(--accentL)">📥</div>
         <div class="stat-label">Surat Masuk</div>
         <div class="stat-val">247</div>
-        <div class="stat-sub" style="color:var(--green)">↑ 12 bulan ini</div>
+        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
       <div class="stat-card" onclick="location.href='surat-keluar.html'">
         <div class="stat-ico" style="background:var(--greenL)">📤</div>
         <div class="stat-label">Surat Keluar</div>
         <div class="stat-val">189</div>
-        <div class="stat-sub" style="color:var(--green)">↑ 8 bulan ini</div>
+        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
       <div class="stat-card" onclick="location.href='penyimpanan.html'">
         <div class="stat-ico" style="background:var(--yellowL)">🗄️</div>
         <div class="stat-label">Total Arsip</div>
         <div class="stat-val">1,284</div>
-        <div class="stat-sub">1.089 aktif · 195 inaktif</div>
+        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
       <div class="stat-card" onclick="location.href='peminjaman.html'">
         <div class="stat-ico" style="background:var(--purpleL)">🔖</div>
@@ -451,7 +635,7 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
         <div class="stat-ico" style="background:var(--redL)">🗑️</div>
         <div class="stat-label">Dimusnahkan</div>
         <div class="stat-val">67</div>
-        <div class="stat-sub">↑ 3 bulan ini</div>
+        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
     </div>
 
@@ -769,15 +953,10 @@ document.getElementById('sidebar').innerHTML = `
   </div>`;
 
 simasInit();
+SIMARESDA_SEC.init();
 
 // ── DATA ──────────────────────────────────────────────────
-const timelineData = [
-  {icon:'📥',bg:'var(--accentL)',title:'Surat masuk baru diterima',sub:'SM-2025-089 dari Kemenkes RI',time:'10 mnt lalu'},
-  {icon:'✅',bg:'var(--greenL)',title:'Surat keluar terkirim',sub:'SK-2025-042 ke Kemendagri',time:'1 jam lalu'},
-  {icon:'🔖',bg:'var(--purpleL)',title:'Arsip dipinjam',sub:'ARK-2024-012 oleh Budi Santoso',time:'2 jam lalu'},
-  {icon:'⚠️',bg:'var(--yellowL)',title:'Peminjaman terlambat',sub:'FP-2025-002 — Siti Rahayu',time:'Kemarin'},
-  {icon:'🗑️',bg:'var(--redL)',title:'Pemusnahan disetujui',sub:'ARK-2010-001 — BA-2024-001',time:'2 hari lalu'},
-];
+const timelineData = [];
 document.getElementById('timeline').innerHTML = timelineData.map(t=>`
   <div class="tl-item">
     <div class="tl-dot" style="background:${t.bg}">${t.icon}</div>
@@ -788,12 +967,7 @@ document.getElementById('timeline').innerHTML = timelineData.map(t=>`
     </div>
   </div>`).join('');
 
-const recentMasuk = [
-  {id:'SM-2025-089',asal:'Kemenkes RI',perihal:'Laporan Program Kesehatan 2025',status:'Disposisi'},
-  {id:'SM-2025-088',asal:'BPKP',perihal:'Undangan Rapat Koordinasi',status:'Diproses'},
-  {id:'SM-2025-087',asal:'BKN',perihal:'Surat Pengantar Peserta Diklat',status:'Selesai'},
-  {id:'SM-2025-086',asal:'Kemendagri',perihal:'Edaran Tata Kelola Kepegawaian',status:'Arsip'},
-];
+const recentMasuk = [];
 document.getElementById('tbl-recent-masuk').innerHTML = recentMasuk.map(s=>`
   <tr onclick="location.href='surat-masuk.html'" style="cursor:pointer">
     <td class="td-mono">${s.id}</td>
@@ -802,11 +976,7 @@ document.getElementById('tbl-recent-masuk').innerHTML = recentMasuk.map(s=>`
     <td>${badge(s.status)}</td>
   </tr>`).join('');
 
-const overdueData = [
-  {nama:'Siti Rahayu',kode:'ARK-2023-089',due:'15 Jan 2025',hari:7},
-  {nama:'Andi Wijaya',kode:'ARK-2022-034',due:'18 Jan 2025',hari:4},
-  {nama:'Dewi Sartika',kode:'ARK-2024-012',due:'20 Jan 2025',hari:2},
-];
+const overdueData = [];
 document.getElementById('overdue-list').innerHTML = overdueData.map(o=>`
   <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--redL);border-radius:6px;border:1px solid #F0BABA">
     <div>
@@ -816,11 +986,7 @@ document.getElementById('overdue-list').innerHTML = overdueData.map(o=>`
     <span class="badge b-red">+${o.hari}h</span>
   </div>`).join('');
 
-const taData = [
-  {tahun:'2025',masuk:247,keluar:189,pct:48},
-  {tahun:'2026',masuk:0,keluar:0,pct:0},
-  {tahun:'2027',masuk:0,keluar:0,pct:0},
-];
+const taData = [];
 document.getElementById('ta-list').innerHTML = taData.map(t=>`
   <div style="padding:10px;border:1px solid var(--border);border-radius:6px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
