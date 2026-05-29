@@ -399,6 +399,190 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
   .overlay-bg { display:none !important; }
 }
 </style>
+
+<script>
+// ============================================================
+// SIMARESDA — Security Module
+// Keamanan sesi, proteksi akses, dan deteksi ancaman
+// ============================================================
+
+const SIMARESDA_SEC = {
+
+  SESSION_KEY:    'simas-user',
+  SESSION_HOURS:  8,        // Sesi kadaluarsa 8 jam
+  IDLE_MINUTES:   30,       // Auto-logout setelah 30 menit tidak aktif
+  LOGIN_PAGE:     'login.html',
+
+  // ── CEK SESSION VALID ─────────────────────────────────────
+  checkSession() {
+    try {
+      const raw = sessionStorage.getItem(this.SESSION_KEY);
+      if (!raw) return this.redirectLogin('Sesi tidak ditemukan');
+
+      const user = JSON.parse(raw);
+      if (!user || !user.token || !user.expiresAt) return this.redirectLogin('Sesi tidak valid');
+
+      // Cek expiry
+      if (new Date(user.expiresAt) <= new Date()) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi kadaluarsa, silakan login kembali');
+      }
+
+      // Cek idle timeout
+      const lastActive = parseInt(sessionStorage.getItem('simas-last-active') || '0');
+      if (lastActive && Date.now() - lastActive > this.IDLE_MINUTES * 60 * 1000) {
+        sessionStorage.removeItem(this.SESSION_KEY);
+        return this.redirectLogin('Sesi berakhir karena tidak aktif');
+      }
+
+      // Update last active
+      sessionStorage.setItem('simas-last-active', Date.now());
+      return user;
+
+    } catch(e) {
+      return this.redirectLogin('Sesi error');
+    }
+  },
+
+  // ── REDIRECT KE LOGIN ─────────────────────────────────────
+  redirectLogin(reason) {
+    const msg = encodeURIComponent(reason || '');
+    window.location.replace(this.LOGIN_PAGE + (msg ? '?msg=' + msg : ''));
+    return null;
+  },
+
+  // ── LOGOUT ────────────────────────────────────────────────
+  logout(confirmed = false) {
+    if (!confirmed) {
+      if (!confirm('Apakah Anda yakin ingin keluar dari sistem?')) return;
+    }
+    sessionStorage.removeItem(this.SESSION_KEY);
+    sessionStorage.removeItem('simas-last-active');
+    window.location.replace(this.LOGIN_PAGE);
+  },
+
+  // ── CEK PERMISSION ROLE ───────────────────────────────────
+  can(user, resource, action) {
+    const PERMS = {
+      Admin: {
+        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        arsip:         { read:true,  create:true,  update:true,  delete:true  },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true,  approve:true               },
+        regulasi:      { read:true,  create:true,  update:true,  delete:true  },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
+      },
+      Pengelola: {
+        surat_masuk:   { read:true,  create:true,  update:true               },
+        surat_keluar:  { read:true,  create:true,  update:true               },
+        arsip:         { read:true,  create:true,  update:true               },
+        peminjaman:    { read:true,  create:true,  update:true,  approve:true },
+        pemusnahan:    { read:true,  create:true                              },
+        regulasi:      { read:true                                             },
+        audit:         { read:true                                             },
+        user_mgmt:     { read:true                                             },
+      },
+      TU: {
+        surat_masuk:   { read:true,  create:true                              },
+        surat_keluar:  { read:true,  create:true                              },
+        arsip:         { read:true                                             },
+        peminjaman:    { read:true,  create:true                              },
+        pemusnahan:    { read:true                                             },
+        regulasi:      { read:true                                             },
+        audit:         {                                                        },
+        user_mgmt:     {                                                        },
+      },
+    };
+    return !!(PERMS[user?.role]?.[resource]?.[action]);
+  },
+
+  // ── TERAPKAN GUARD KE DOM ─────────────────────────────────
+  applyGuards(user) {
+    if (!user) return;
+    // data-require-role="Admin" → sembunyikan jika bukan Admin
+    document.querySelectorAll('[data-require-role]').forEach(el => {
+      const roles = el.dataset.requireRole.split(',').map(r => r.trim());
+      if (!roles.includes(user.role)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+    // data-require-perm="arsip:delete" → sembunyikan jika tidak punya izin
+    document.querySelectorAll('[data-require-perm]').forEach(el => {
+      const [res, act] = el.dataset.requirePerm.split(':');
+      if (!this.can(user, res, act)) {
+        el.style.display = 'none';
+        el.setAttribute('aria-hidden', 'true');
+      }
+    });
+  },
+
+  // ── PROTEKSI DASAR HALAMAN ────────────────────────────────
+  protectPage() {
+    // Blokir klik kanan
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    // Blokir F12 dan DevTools shortcuts
+    document.addEventListener('keydown', e => {
+      if (e.key === 'F12' ||
+         (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) ||
+         (e.ctrlKey && e.key.toUpperCase() === 'U')) {
+        e.preventDefault();
+      }
+    });
+    // Cegah back button ke halaman terproteksi
+    window.history.pushState(null, '', window.location.href);
+    window.onpopstate = () => window.history.pushState(null, '', window.location.href);
+  },
+
+  // ── IDLE TRACKER ─────────────────────────────────────────
+  startIdleTracker() {
+    const events = ['mousedown','mousemove','keydown','scroll','touchstart','click'];
+    const reset  = () => sessionStorage.setItem('simas-last-active', Date.now());
+    events.forEach(ev => document.addEventListener(ev, reset, { passive: true }));
+    // Cek setiap 1 menit
+    setInterval(() => { this.checkSession(); }, 60 * 1000);
+  },
+
+  // ── DETEKSI REFERRER MENCURIGAKAN ─────────────────────────
+  checkReferrer() {
+    const ref = document.referrer;
+    if (!ref) return; // Direct access — OK
+    try {
+      const refHost = new URL(ref).hostname;
+      const ownHost = window.location.hostname;
+      // Jika referrer dari domain lain yang bukan localhost → catat
+      if (refHost !== ownHost && !['localhost','127.0.0.1'].includes(refHost)) {
+        console.warn('[SIMARESDA Security] Akses dari referrer eksternal:', refHost);
+        // Dalam produksi: log ke audit_trail via Supabase
+      }
+    } catch(e) {}
+  },
+
+  // ── INISIALISASI LENGKAP ──────────────────────────────────
+  init() {
+    const user = this.checkSession();
+    if (!user) return null; // Sudah redirect ke login
+
+    this.protectPage();
+    this.startIdleTracker();
+    this.checkReferrer();
+    this.applyGuards(user);
+
+    // Isi info user di DOM
+    document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user.nama || '—');
+    document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user.role + ' · Aktif');
+    document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user.nama||'?').slice(0,2).toUpperCase());
+
+    return user;
+  },
+};
+
+// Override fungsi logout global
+window.logout = () => SIMARESDA_SEC.logout();
+
+</script>
 </head>
 <body>
 <div id="sidebar"></div>
@@ -695,6 +879,7 @@ document.head.appendChild(style);
 document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item active" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simasInit();
+SIMARESDA_SEC.init();
 
 const BADGE_COLOR={UU:'b-red',PP:'b-blue',ANRI:'b-green',SE:'b-yellow',PERDA:'b-purple'};
 
