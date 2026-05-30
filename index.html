@@ -2,10 +2,12 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard — SIMARESDA Arsip</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Dashboard — SIMARESDA</title>
+<meta name="robots" content="noindex,nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
+
 /* ============================================================
    SIMARESDA — Global Stylesheet
    Font: Instrument Sans + Fraunces (display)
@@ -399,10 +401,82 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
   .hamburger { display:none !important; }
   .overlay-bg { display:none !important; }
 }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
+/* ── MOBILE ──────────────────────────────────────────────── */
+@media(max-width:768px){
+  :root{--sidebar-w:0px}
+  #sidebar{position:fixed;left:-280px;width:280px;height:100vh;z-index:500;transition:left .3s;box-shadow:var(--shadow-lg)}
+  #sidebar.open{left:0}
+  #main{width:100vw}
+  .topbar{padding:0 12px}
+  .content{padding:12px}
+  .stats-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .stat-val{font-size:18px}
+  .stat-card{padding:10px}
+  .charts-grid{grid-template-columns:1fr!important}
+  .bidang-grid{grid-template-columns:1fr!important}
+  .bottom-grid{grid-template-columns:1fr!important}
+  .overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:499}
+  .overlay-bg.show{display:block}
+  .hamburger{display:flex!important}
+  .topbar-title{font-size:13px}
+}
+@media(min-width:769px){
+  .hamburger{display:none!important}
+  .overlay-bg{display:none!important}
+}
+
+/* ── BIDANG KLASIFIKASI ──────────────────────────────────── */
+.bidang-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+  margin-bottom:18px;
+}
+.bidang-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  cursor:pointer;transition:var(--t) var(--ease);
+}
+.bidang-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.bidang-header{
+  padding:14px 16px 10px;
+  display:flex;align-items:center;gap:10px;
+}
+.bidang-icon{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.bidang-name{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text)}
+.bidang-desc{font-size:11px;color:var(--text3);margin-top:1px}
+.bidang-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--border);
+}
+.bidang-stat{
+  padding:10px 12px;text-align:center;
+  border-right:1px solid var(--border);
+}
+.bidang-stat:last-child{border-right:none}
+.bidang-stat-val{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--text)}
+.bidang-stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
+
+/* ── BOTTOM GRID ─────────────────────────────────────────── */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.timeline{display:flex;flex-direction:column;gap:10px}
+.tl-item{display:flex;gap:10px}
+.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
+.tl-body{flex:1}
+.tl-title{font-size:12px;font-weight:600;color:var(--text)}
+.tl-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.tl-time{font-size:10px;color:var(--text3);margin-top:3px}
+.empty-timeline{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+</style>
+</head>
+<body>
 <script>
+
 // ============================================================
 // SIMARESDA — Security Module
 // Keamanan sesi, proteksi akses, dan deteksi ancaman
@@ -584,113 +658,100 @@ const SIMARESDA_SEC = {
 // Override fungsi logout global
 window.logout = () => SIMARESDA_SEC.logout();
 
-</script>
-</head>
-<body>
 
+</script>
+
+<div class="overlay-bg" id="overlay-bg" onclick="closeSidebar()"></div>
 <div id="sidebar"></div>
 <div id="main">
-  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">🔔 Sistem siap — Notifikasi real-time aktif</span></div>
+  <div class="notif-bar" id="notif-bar"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
   <div class="topbar">
+    <button class="hamburger icon-btn" onclick="openSidebar()" style="display:none;flex-shrink:0">☰</button>
     <div class="topbar-title">Dashboard</div>
-    <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" placeholder="Cari arsip, nomor surat..."></div>
     <div class="topbar-actions no-print">
-      <button class="icon-btn" id="btn-theme" onclick="toggleDark()" title="Tema">🌙</button>
+      <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
       <button class="icon-btn" onclick="window.print()">🖨️</button>
-      <div style="position:relative">
-        <button class="icon-btn" onclick="openNotifModal()">🔔</button>
-        <span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span>
-      </div>
     </div>
   </div>
 
   <div class="content">
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card" onclick="location.href='surat-masuk.html'">
-        <div class="stat-ico" style="background:var(--accentL)">📥</div>
+    <!-- STATS GLOBAL -->
+    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">
+      <div class="stat-card" onclick="location.href='surat-masuk.html'" style="padding:14px;cursor:pointer">
+        <div class="stat-ico" style="background:var(--accentL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">📥</div>
         <div class="stat-label">Surat Masuk</div>
-        <div class="stat-val">247</div>
-        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
+        <div class="stat-val" id="s-masuk">0</div>
+        <div class="stat-sub" id="s-masuk-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
-      <div class="stat-card" onclick="location.href='surat-keluar.html'">
-        <div class="stat-ico" style="background:var(--greenL)">📤</div>
+      <div class="stat-card" onclick="location.href='surat-keluar.html'" style="padding:14px;cursor:pointer">
+        <div class="stat-ico" style="background:var(--greenL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">📤</div>
         <div class="stat-label">Surat Keluar</div>
-        <div class="stat-val">189</div>
-        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
+        <div class="stat-val" id="s-keluar">0</div>
+        <div class="stat-sub" id="s-keluar-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
-      <div class="stat-card" onclick="location.href='penyimpanan.html'">
-        <div class="stat-ico" style="background:var(--yellowL)">🗄️</div>
+      <div class="stat-card" onclick="location.href='penyimpanan.html'" style="padding:14px;cursor:pointer">
+        <div class="stat-ico" style="background:var(--yellowL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">🗄️</div>
         <div class="stat-label">Total Arsip</div>
-        <div class="stat-val">1,284</div>
+        <div class="stat-val" id="s-arsip">0</div>
         <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
-      <div class="stat-card" onclick="location.href='peminjaman.html'">
-        <div class="stat-ico" style="background:var(--purpleL)">🔖</div>
+      <div class="stat-card" onclick="location.href='peminjaman.html'" style="padding:14px;cursor:pointer">
+        <div class="stat-ico" style="background:var(--purpleL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">🔖</div>
         <div class="stat-label">Dipinjam</div>
-        <div class="stat-val">23</div>
-        <div class="stat-sub" style="color:var(--red)">5 terlambat</div>
+        <div class="stat-val" id="s-pinjam">0</div>
+        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
-      <div class="stat-card" onclick="location.href='pemusnahan.html'">
-        <div class="stat-ico" style="background:var(--redL)">🗑️</div>
+      <div class="stat-card" onclick="location.href='pemusnahan.html'" style="padding:14px;cursor:pointer">
+        <div class="stat-ico" style="background:var(--redL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">🗑️</div>
         <div class="stat-label">Dimusnahkan</div>
-        <div class="stat-val">67</div>
+        <div class="stat-val" id="s-musna">0</div>
         <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
     </div>
+
+    <!-- 4 BIDANG KLASIFIKASI -->
+    <div class="card-title" style="font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:12px">
+      📂 Database Pengelompokan Arsip per Bidang
+    </div>
+    <div class="bidang-grid" id="bidang-grid"></div>
 
     <!-- CHARTS -->
-    <div class="charts-grid">
+    <div class="charts-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
       <div class="card">
-        <div class="card-title">Tren Surat Masuk & Keluar (2025) <small>Per bulan</small></div>
-        <div class="chart-wrap"><canvas id="chartTren"></canvas></div>
+        <div class="card-title">Tren Surat Masuk & Keluar (per Bulan)</div>
+        <div style="position:relative;height:200px"><canvas id="chartTren"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">Kategori Arsip</div>
-        <div class="chart-wrap"><canvas id="chartKat"></canvas></div>
+        <div class="card-title">Arsip per Bidang</div>
+        <div style="position:relative;height:200px"><canvas id="chartBidang"></canvas></div>
       </div>
     </div>
 
-    <!-- BOTTOM GRID -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <!-- Timeline -->
+    <!-- BOTTOM -->
+    <div class="bottom-grid">
       <div class="card">
-        <div class="card-title">Aktivitas Terkini <small id="live-dot" style="color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite"></span>Live</small></div>
-        <div class="timeline" id="timeline"></div>
+        <div class="card-title">📋 Aktivitas Terkini</div>
+        <div id="timeline-wrap">
+          <div class="empty-timeline">📭<br>Belum ada aktivitas tercatat</div>
+        </div>
       </div>
-
-      <!-- Surat Masuk Terbaru -->
       <div class="card">
-        <div class="card-title">Surat Masuk Terbaru <a href="surat-masuk.html" style="font-family:var(--font);font-size:11px;color:var(--accent)">Lihat semua →</a></div>
+        <div class="card-title">📥 Surat Masuk Terbaru</div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>No. Agenda</th><th>Asal</th><th>Perihal</th><th>Status</th></tr></thead>
-            <tbody id="tbl-recent-masuk"></tbody>
+            <tbody id="tbl-recent-masuk">
+              <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text3)">Belum ada data</td></tr>
+            </tbody>
           </table>
         </div>
-      </div>
-    </div>
-
-    <!-- Overdue + Stats row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px">
-      <div class="card">
-        <div class="card-title">⚠️ Peminjaman Terlambat</div>
-        <div id="overdue-list" style="display:flex;flex-direction:column;gap:8px"></div>
-      </div>
-      <div class="card">
-        <div class="card-title">📊 Status Surat Masuk</div>
-        <div class="chart-wrap" style="height:160px"><canvas id="chartStatus"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">🗓 Tahun Anggaran</div>
-        <div style="display:flex;flex-direction:column;gap:8px" id="ta-list"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Sidebar injection -->
 <script>
+
 // ============================================================
 // SIMARESDA — Shared UI Utilities (simas-ui.js)
 // ============================================================
@@ -903,15 +964,7 @@ function simasInit() {
   initDarkMode();
   if (!requireLogin()) return;
   // Demo: simulate realtime ping every 15s
-  setInterval(() => {
-    const msgs = [
-      '📥 Surat masuk baru diterima dari Kemenkes',
-      '✏️ Status peminjaman ARK-2025-003 diperbarui',
-      '✅ Surat keluar SK-2025-008 berhasil dikirim',
-      '⚠️ Peminjaman FP-2025-002 melewati batas kembali',
-    ];
-    pushNotif(msgs[Math.floor(Math.random() * msgs.length)], ['info','success','warn','danger'][Math.floor(Math.random()*4)]);
-  }, 15000);
+
 }
 
 // CSS animation for toast
@@ -919,140 +972,126 @@ const style = document.createElement('style');
 style.textContent = '@keyframes slideInRight{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
 document.head.appendChild(style);
 
+
 </script>
 <script>
-// Inject sidebar
-document.getElementById('sidebar').innerHTML = `
-  <div class="logo-wrap">
-    <div class="logo-icon">📁</div>
-    <div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div>
-  </div>
-  <nav class="nav-scroll">
-    <div class="nav-section">Menu Utama</div>
-    <a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a>
-    <a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge">12</span></a>
-    <a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a>
-    <div class="nav-section">Arsip</div>
-    <a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
-    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a>
-    <a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a>
-    <a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a>
-    <div class="nav-section">Referensi</div>
-    <a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a>
-    <a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="user-pill">
-      <div class="avatar" data-user-avatar>AD</div>
-      <div class="user-info">
-        <div class="user-name" data-user-name>Administrator</div>
-        <div class="user-role" data-user-role>Admin · Aktif</div>
-      </div>
-    </div>
-    <button class="logout-btn" onclick="logout()">↩ Keluar</button>
-  </div>`;
-
+// ── SIDEBAR ──────────────────────────────────────────────────
+document.getElementById('sidebar').innerHTML=``<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge" id="nav-badge">0</span></a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simasInit();
 SIMARESDA_SEC.init();
 
-// ── DATA ──────────────────────────────────────────────────
-const timelineData = [];
-document.getElementById('timeline').innerHTML = timelineData.map(t=>`
-  <div class="tl-item">
-    <div class="tl-dot" style="background:${t.bg}">${t.icon}</div>
-    <div class="tl-body">
-      <div class="tl-title">${t.title}</div>
-      <div class="tl-sub">${t.sub}</div>
-      <div class="tl-time">${t.time}</div>
-    </div>
-  </div>`).join('');
+// ── 4 BIDANG KLASIFIKASI ──────────────────────────────────────
+const BIDANG = [
+  {
+    id:'sekretariat',
+    icon:'🏛️',
+    name:'Sekretariat / Umum',
+    desc:'Tata usaha, surat-menyurat, kepegawaian umum',
+    color:'var(--accentL)',
+    iconBg:'var(--accent)',
+    masuk:0, keluar:0, arsip:0,
+  },
+  {
+    id:'bumd',
+    icon:'🏢',
+    name:'BUMD & BLUD',
+    desc:'Badan Usaha Milik Daerah dan Layanan Umum Daerah',
+    color:'var(--greenL)',
+    iconBg:'var(--green)',
+    masuk:0, keluar:0, arsip:0,
+  },
+  {
+    id:'tpakd',
+    icon:'📊',
+    name:'TPAKD – EKRAF',
+    desc:'Tim Percepatan Akses Keuangan Daerah & Ekonomi Kreatif',
+    color:'var(--yellowL)',
+    iconBg:'var(--yellow)',
+    masuk:0, keluar:0, arsip:0,
+  },
+  {
+    id:'sda',
+    icon:'🌿',
+    name:'SDA & DBH CHT',
+    desc:'Sumber Daya Alam dan Dana Bagi Hasil Cukai',
+    color:'var(--purpleL)',
+    iconBg:'var(--purple)',
+    masuk:0, keluar:0, arsip:0,
+  },
+];
 
-const recentMasuk = [];
-document.getElementById('tbl-recent-masuk').innerHTML = recentMasuk.map(s=>`
-  <tr onclick="location.href='surat-masuk.html'" style="cursor:pointer">
-    <td class="td-mono">${s.id}</td>
-    <td><strong>${s.asal}</strong></td>
-    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.perihal}</td>
-    <td>${badge(s.status)}</td>
-  </tr>`).join('');
-
-const overdueData = [];
-document.getElementById('overdue-list').innerHTML = overdueData.map(o=>`
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--redL);border-radius:6px;border:1px solid #F0BABA">
-    <div>
-      <div style="font-size:12px;font-weight:600;color:var(--red)">${o.nama}</div>
-      <div style="font-size:11px;color:var(--text3)">${o.kode} · Due: ${o.due}</div>
-    </div>
-    <span class="badge b-red">+${o.hari}h</span>
-  </div>`).join('');
-
-const taData = [];
-document.getElementById('ta-list').innerHTML = taData.map(t=>`
-  <div style="padding:10px;border:1px solid var(--border);border-radius:6px">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <span style="font-size:12px;font-weight:700">TA ${t.tahun}</span>
-      <span class="badge b-accent">${t.pct}%</span>
-    </div>
-    <div style="background:var(--surface2);border-radius:99px;height:5px;overflow:hidden">
-      <div style="background:var(--accent);height:100%;width:${t.pct}%;border-radius:99px;transition:.4s"></div>
-    </div>
-    <div style="font-size:10px;color:var(--text3);margin-top:5px">Masuk: ${t.masuk} · Keluar: ${t.keluar}</div>
-  </div>`).join('');
-
-// ── CHARTS ────────────────────────────────────────────────
-function getChartColors() {
-  const dark = document.body.classList.contains('dark');
-  return { text: dark?'#9B9488':'#6B6558', grid: dark?'#2E2C28':'#E3DFD5' };
+function renderBidang(){
+  document.getElementById('bidang-grid').innerHTML = BIDANG.map(b=>`
+    <div class="bidang-card" onclick="location.href='cari-arsip.html?bidang=${b.id}'">
+      <div class="bidang-header" style="background:${b.color}">
+        <div class="bidang-icon" style="background:${b.iconBg};color:#fff">${b.icon}</div>
+        <div>
+          <div class="bidang-name">${b.name}</div>
+          <div class="bidang-desc">${b.desc}</div>
+        </div>
+      </div>
+      <div class="bidang-stats">
+        <div class="bidang-stat">
+          <div class="bidang-stat-val">${b.masuk}</div>
+          <div class="bidang-stat-lbl">Masuk</div>
+        </div>
+        <div class="bidang-stat">
+          <div class="bidang-stat-val">${b.keluar}</div>
+          <div class="bidang-stat-lbl">Keluar</div>
+        </div>
+        <div class="bidang-stat">
+          <div class="bidang-stat-val">${b.arsip}</div>
+          <div class="bidang-stat-lbl">Arsip</div>
+        </div>
+      </div>
+    </div>`).join('');
 }
-function initCharts() {
-  const {text,grid} = getChartColors();
-  if(window._c1){window._c1.destroy();window._c2.destroy();window._c3.destroy()}
-  window._c1 = new Chart(document.getElementById('chartTren'),{
+
+// ── CHARTS ────────────────────────────────────────────────────
+function getCC(){
+  return document.body.classList.contains('dark')
+    ? {text:'#9B9488',grid:'#2E2C28'}
+    : {text:'#6B6558',grid:'#E3DFD5'};
+}
+let c1,c2;
+function initCharts(){
+  const {text,grid}=getCC();
+  if(c1)c1.destroy(); if(c2)c2.destroy();
+  c1=new Chart(document.getElementById('chartTren'),{
     type:'bar',
     data:{
       labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
       datasets:[
-        {label:'Surat Masuk',data:[20,28,22,31,25,19,24,30,26,28,21,23],backgroundColor:'rgba(30,58,110,0.75)',borderRadius:4},
-        {label:'Surat Keluar',data:[15,22,18,26,20,16,19,24,20,22,17,18],backgroundColor:'rgba(26,92,58,0.65)',borderRadius:4},
+        {label:'Surat Masuk',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(30,58,110,.7)',borderRadius:4},
+        {label:'Surat Keluar',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(26,92,58,.6)',borderRadius:4},
       ]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:text,font:{size:11}}}},scales:{x:{ticks:{color:text},grid:{color:grid}},y:{ticks:{color:text},grid:{color:grid}}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:text,font:{size:11}}}},
+      scales:{x:{ticks:{color:text},grid:{color:grid}},y:{ticks:{color:text},grid:{color:grid},beginAtZero:true}}}
   });
-  window._c2 = new Chart(document.getElementById('chartKat'),{
+  c2=new Chart(document.getElementById('chartBidang'),{
     type:'doughnut',
     data:{
-      labels:['Umum','Keuangan','Kepegawaian','Teknis','Rahasia'],
-      datasets:[{data:[35,25,20,15,5],backgroundColor:['#1E3A6E','#1A5C3A','#7A5200','#164F6B','#8B1C1C'],borderWidth:0,hoverOffset:6}]
+      labels:['Sekretariat/Umum','BUMD & BLUD','TPAKD-EKRAF','SDA & DBH CHT'],
+      datasets:[{data:[0,0,0,0],
+        backgroundColor:['#1E3A6E','#1A5C3A','#7A5200','#4A2270'],borderWidth:0}]
     },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,font:{size:11},padding:10}}}}
-  });
-  window._c3 = new Chart(document.getElementById('chartStatus'),{
-    type:'pie',
-    data:{
-      labels:['Disposisi','Diproses','Selesai','Arsip'],
-      datasets:[{data:[45,30,60,112],backgroundColor:['#FEF6E0','#E3F3FA','#E6F4EC','#F0EDE6'],borderColor:['#7A5200','#164F6B','#1A5C3A','#A09890'],borderWidth:1.5}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,font:{size:10},padding:8}}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{color:text,font:{size:10},padding:8}}}}
   });
 }
+
+// Toggle dark mode & re-init charts
+const _origToggle=window.toggleDark;
+window.toggleDark=function(){_origToggle();setTimeout(initCharts,120)};
+
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay-bg').classList.add('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('show');}
+
+renderBidang();
 initCharts();
-
-// Re-init charts on dark mode toggle
-const origToggle = window.toggleDark;
-window.toggleDark = function(){origToggle();setTimeout(initCharts,120)};
-
-function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
-function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
 </script>
-
-<!-- Notif Modal -->
-<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')">
-  <div class="modal" style="width:min(420px,95vw)">
-    <div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div>
-    <div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto">
-      <div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">Belum ada notifikasi</div></div>
-    </div>
-  </div>
-</div>
 </body>
 </html>
