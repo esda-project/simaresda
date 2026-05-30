@@ -10,10 +10,10 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F6F4EF;--surface:#FFFFFF;--border:#E3DFD5;
-  --text:#1C1A16;--text2:#6B6558;--text3:#A09890;
-  --accent:#1E3A6E;--accent2:#2B52A0;--accentL:#EBF0FA;
-  --green:#1A5C3A;--greenL:#E6F4EC;
+  --bg:#0F172A;--surface:rgba(255,255,255,.95);--border:rgba(255,255,255,.12);
+  --text:#F8FAFC;--text2:#1D4ED8;--text3:#94A3B8;
+  --accent:#2563EB;--accent2:#2B52A0;--accentL:#DBEAFE;
+  --gold:#FBBF24;--green:#22C55E;
   --red:#8B1C1C;--redL:#FAEBEB;
   --font:'Instrument Sans',system-ui,sans-serif;
   --font-d:'Fraunces',Georgia,serif;
@@ -21,7 +21,9 @@
 }
 body{
   min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:var(--bg);font-family:var(--font);color:var(--text);
+  radial-gradient(circle at 20% 20%, rgba(37,99,235,.25), transparent 40%),
+  radial-gradient(circle at 80% 80%, rgba(251,191,36,.15), transparent 40%),
+  linear-gradient(135deg,#020617,#0F172A,#1E293B);font-family:var(--font);color:var(--text);
   position:relative;overflow:hidden;
 }
 body::before{
@@ -32,9 +34,9 @@ body::before{
 }
 .grid-bg{
   position:absolute;inset:0;
-  background-image:linear-gradient(var(--border) 1px,transparent 1px),
-                   linear-gradient(90deg,var(--border) 1px,transparent 1px);
-  background-size:40px 40px;opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:50px 50px;opacity:.5;
 }
 .card{
   position:relative;z-index:1;
