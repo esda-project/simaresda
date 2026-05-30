@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login — SIMARESDA</title>
+<meta name="robots" content="noindex, nofollow">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0F172A;--surface:rgba(255,255,255,.95);--border:rgba(255,255,255,.12);
+  --text:#F8FAFC;--text2:#1D4ED8;--text3:#94A3B8;
+  --accent:#2563EB;--accent2:#2B52A0;--accentL:#DBEAFE;
+  --gold:#FBBF24;--green:#22C55E;
+  --red:#8B1C1C;--redL:#FAEBEB;
+  --font:'Instrument Sans',system-ui,sans-serif;
+  --font-d:'Fraunces',Georgia,serif;
+  --radius:8px;
+}
+body{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  radial-gradient(circle at 20% 20%, rgba(37,99,235,.25), transparent 40%),
+  radial-gradient(circle at 80% 80%, rgba(251,191,36,.15), transparent 40%),
+  linear-gradient(135deg,#020617,#0F172A,#1E293B);font-family:var(--font);color:var(--text);
+  position:relative;overflow:hidden;
+}
+body::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 70% 20%,rgba(30,58,110,.07) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 40% at 20% 80%,rgba(30,58,110,.05) 0%,transparent 50%);
+}
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+  background-size:50px 50px;opacity:.5;
+}
+.card{
+  position:relative;z-index:1;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:18px;padding:40px 36px 32px;
+  width:min(420px,95vw);
+  box-shadow:0 8px 40px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06);
+}
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.logo-icon{
+  width:46px;height:46px;border-radius:14px;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  box-shadow:0 4px 12px rgba(30,58,110,.3);flex-shrink:0;
+}
+.logo-title{font-family:var(--font-d);font-size:20px;font-weight:700;color:var(--accent)}
+.logo-sub{font-size:11px;color:var(--text3);margin-top:2px}
+h1{font-family:var(--font-d);font-size:22px;font-weight:600;margin-bottom:6px}
+.subtitle{font-size:13px;color:var(--text2);margin-bottom:28px}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+input{
+  width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);color:var(--text);font-size:13px;font-family:var(--font);
+  outline:none;transition:.18s;
+}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,58,110,.1)}
+.input-wrap{position:relative}
+.input-wrap input{padding-right:40px}
+.toggle-pw{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;color:var(--text3);font-size:16px;
+  padding:4px;
+}
+
+/* Role auto-detect display */
+.role-display{
+  padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--bg);display:flex;align-items:center;gap:8px;min-height:42px;
+  transition:.18s;
+}
+.role-display.detected{background:var(--accentL);border-color:var(--accentM,#C7D5F0)}
+.role-badge{
+  padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;
+  white-space:nowrap;flex-shrink:0;
+}
+.rb-admin    {background:var(--accentL);color:var(--accent)}
+.rb-pengelola{background:var(--greenL);color:var(--green)}
+.rb-tu       {background:#F0EDE6;color:#5A5650}
+.role-desc   {font-size:12px;color:var(--text2)}
+.role-hint   {font-size:12px;color:var(--text3);font-style:italic}
+
+/* Login attempts counter */
+.attempt-warn{
+  background:#FEF6E0;border:1px solid #F0D090;border-radius:var(--radius);
+  padding:8px 12px;font-size:11px;color:#7A5200;margin-bottom:14px;display:none;
+}
+
+.btn-login{
+  width:100%;padding:11px;border-radius:var(--radius);border:none;
+  background:var(--accent);color:#fff;font-size:14px;font-weight:700;
+  font-family:var(--font);cursor:pointer;transition:.18s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-login:hover:not(:disabled){background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 18px rgba(30,58,110,.3)}
+.btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.spinner{
+  width:16px;height:16px;border:2px solid rgba(255,255,255,.4);
+  border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:none;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.error-msg{
+  background:var(--redL);color:var(--red);border:1px solid #F0BABA;
+  border-radius:var(--radius);padding:10px 12px;font-size:12px;
+  margin-bottom:14px;display:none;line-height:1.5;
+}
+.error-msg.show{display:block}
+
+.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.forgot-link{
+  font-size:12px;color:var(--accent);cursor:pointer;text-align:center;
+  display:block;text-decoration:none;
+}
+.forgot-link:hover{text-decoration:underline}
+.login-footer{margin-top:20px;text-align:center;font-size:11px;color:var(--text3);line-height:1.7}
+.security-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  background:var(--greenL);color:var(--green);
+  padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;
+  border:1px solid #AEDABC;margin-top:6px;
+}
+
+/* Reset modal */
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;
+  display:none;align-items:center;justify-content:center;backdrop-filter:blur(3px);
+}
+.overlay.show{display:flex}
+.modal-card{
+  background:var(--surface);border-radius:14px;padding:28px;
+  width:min(380px,92vw);box-shadow:0 8px 40px rgba(0,0,0,.2);
+}
+.modal-title{font-family:var(--font-d);font-size:16px;font-weight:600;margin-bottom:6px}
+.modal-sub{font-size:12px;color:var(--text2);margin-bottom:18px;line-height:1.6}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.btn-cancel{
+  padding:8px 16px;border-radius:var(--radius);border:1px solid var(--border);
+  background:none;color:var(--text2);font-size:12px;font-weight:600;
+  cursor:pointer;font-family:var(--font);
+}
+.btn-send{
+  padding:8px 16px;border-radius:var(--radius);border:none;
+  background:var(--accent);color:#fff;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:var(--font);
+}
+.success-msg{
+  background:var(--greenL);color:var(--green);border:1px solid #AEDABC;
+  border-radius:var(--radius);padding:10px 12px;font-size:12px;
+  margin-top:12px;display:none;line-height:1.5;
+}
+.success-msg.show{display:block}
+
+/* Blocked overlay */
+.blocked-screen{
+  position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;
+  display:none;align-items:center;justify-content:center;
+}
+.blocked-screen.show{display:flex}
+.blocked-card{
+  background:var(--surface);border-radius:14px;padding:32px;
+  width:min(360px,90vw);text-align:center;
+}
+.blocked-icon{font-size:48px;margin-bottom:12px}
+.blocked-title{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--red);margin-bottom:8px}
+.blocked-sub{font-size:13px;color:var(--text2);line-height:1.6}
+.countdown{font-size:28px;font-weight:700;color:var(--accent);margin:16px 0}
+
+@media(max-width:480px){
+  .card{padding:28px 20px 24px;border-radius:14px}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<div class="card">
+  <div class="logo-row">
+    <div class="logo-icon">📁</div>
+    <div>
+      <div class="logo-title">SIMARESDA</div>
+      <div class="logo-sub">Sistem Manajemen Arsip Daerah · 2025–2030</div>
+    </div>
+  </div>
+
+  <h1>Masuk ke Sistem</h1>
+  <p class="subtitle">Gunakan username dan password yang telah diberikan oleh Administrator.</p>
+
+  <div class="attempt-warn" id="attempt-warn"></div>
+  <div class="error-msg" id="error-msg"></div>
+
+  <form id="login-form" onsubmit="doLogin(event)" autocomplete="off">
+    <!-- Honeypot field anti-bot (tersembunyi) -->
+    <input type="text" name="hp_field" id="hp_field" style="display:none;position:absolute;left:-9999px" tabindex="-1" autocomplete="off">
+
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="admin / pengelola / tatausaha"
+        autocomplete="username"
+        oninput="detectRole(this.value)"
+        spellcheck="false"
+        required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <div class="input-wrap">
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="Masukkan password"
+          autocomplete="current-password"
+          required>
+        <button type="button" class="toggle-pw" onclick="togglePw()" aria-label="Tampilkan/sembunyikan password">👁</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Login Sebagai</label>
+      <div class="role-display" id="role-display">
+        <span class="role-hint" id="role-hint">Otomatis terdeteksi saat username diisi</span>
+      </div>
+      <input type="hidden" id="role-value" value="">
+    </div>
+
+    <button type="submit" class="btn-login" id="btn-login">
+      <span id="btn-text">Masuk ke Sistem</span>
+      <div class="spinner" id="spinner"></div>
+    </button>
+  </form>
+
+  <hr class="divider">
+  <a class="forgot-link" onclick="openReset()">🔑 Lupa password? Hubungi Administrator</a>
+
+  <div class="login-footer">
+    SIMARESDA v2.0 · Comply PP No. 28 Tahun 2012<br>
+    <span class="security-badge">🔒 Koneksi Aman · Data Terenkripsi</span>
+  </div>
+</div>
+
+<!-- MODAL RESET PASSWORD -->
+<div class="overlay" id="overlay-reset">
+  <div class="modal-card">
+    <div class="modal-title">🔑 Lupa Password</div>
+    <div class="modal-sub">
+      Masukkan username Anda. Administrator sistem akan mengirimkan password baru ke email yang terdaftar dalam waktu 1×24 jam kerja.
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="reset-username" placeholder="admin / pengelola / tatausaha">
+    </div>
+    <div class="success-msg" id="reset-success"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeReset()">Tutup</button>
+      <button class="btn-send" onclick="sendReset()">📨 Kirim Permintaan</button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYAR AKUN TERBLOKIR -->
+<div class="blocked-screen" id="blocked-screen">
+  <div class="blocked-card">
+    <div class="blocked-icon">🔒</div>
+    <div class="blocked-title">Akun Sementara Terkunci</div>
+    <div class="blocked-sub">
+      Terlalu banyak percobaan login yang gagal.<br>
+      Akun dikunci selama:
+    </div>
+    <div class="countdown" id="countdown">5:00</div>
+    <div class="blocked-sub" style="font-size:12px">
+      Hubungi Administrator jika Anda lupa password.
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// KONFIGURASI KEAMANAN
+// ============================================================
+const SEC = {
+  MAX_ATTEMPTS:   5,      // Maks percobaan login sebelum kunci
+  LOCKOUT_SECS:   300,    // Durasi kunci: 5 menit
+  SESSION_KEY:    'simaresda-user',
+  ATTEMPT_KEY:    'simaresda-login-attempts',
+  LOCKOUT_KEY:    'simaresda-lockout-until',
+  TOKEN_LENGTH:   32,
+};
+
+// ============================================================
+// ROLE MAP — username resmi yang diizinkan
+// ============================================================
+const ROLE_MAP = {
+  'admin': {
+    role: 'Admin',
+    label: 'Administrator — Akses Penuh',
+    badgeClass: 'rb-admin',
+    jabatan: 'Administrator Sistem',
+  },
+  'pengelola': {
+    role: 'Pengelola',
+    label: 'Pengelola Arsip — CRUD & Persetujuan',
+    badgeClass: 'rb-pengelola',
+    jabatan: 'Pengelola Arsip',
+  },
+  'tatausaha': {
+    role: 'TU',
+    label: 'Tata Usaha — Input & Peminjaman',
+    badgeClass: 'rb-tu',
+    jabatan: 'Staf Tata Usaha',
+  },
+};
+
+// ============================================================
+// CEK LOCKOUT SAAT HALAMAN DIMUAT
+// ============================================================
+(function checkLockout() {
+  const until = parseInt(localStorage.getItem(SEC.LOCKOUT_KEY) || '0');
+  if (until > Date.now()) {
+    startCountdown(Math.ceil((until - Date.now()) / 1000));
+  }
+})();
+
+function startCountdown(seconds) {
+  document.getElementById('blocked-screen').classList.add('show');
+  document.getElementById('btn-login').disabled = true;
+  let remaining = seconds;
+  const el = document.getElementById('countdown');
+
+  const tick = setInterval(() => {
+    remaining--;
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+    if (remaining <= 0) {
+      clearInterval(tick);
+      localStorage.removeItem(SEC.LOCKOUT_KEY);
+      localStorage.removeItem(SEC.ATTEMPT_KEY);
+      document.getElementById('blocked-screen').classList.remove('show');
+      document.getElementById('btn-login').disabled = false;
+      clearError();
+    }
+  }, 1000);
+  const m = Math.floor(remaining / 60);
+  const s = remaining % 60;
+  el.textContent = `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// ============================================================
+// DETEKSI ROLE OTOMATIS
+// ============================================================
+function detectRole(val) {
+  const key   = val.trim().toLowerCase();
+  const found = ROLE_MAP[key];
+  const disp  = document.getElementById('role-display');
+  const hint  = document.getElementById('role-hint');
+  const hidden= document.getElementById('role-value');
+
+  disp.innerHTML = '';
+
+  if (found) {
+    disp.classList.add('detected');
+    const badge = document.createElement('span');
+    badge.className = 'role-badge ' + found.badgeClass;
+    badge.textContent = found.role;
+    const desc = document.createElement('span');
+    desc.className = 'role-desc';
+    desc.textContent = found.label;
+    disp.appendChild(badge);
+    disp.appendChild(desc);
+    hidden.value = found.role;
+  } else {
+    disp.classList.remove('detected');
+    const hint2 = document.createElement('span');
+    hint2.className = key ? 'role-desc' : 'role-hint';
+    hint2.style.color = key ? 'var(--red)' : '';
+    hint2.textContent = key
+      ? '⚠ Username tidak dikenali'
+      : 'Otomatis terdeteksi saat username diisi';
+    disp.appendChild(hint2);
+    hidden.value = '';
+  }
+}
+
+// ============================================================
+// TOGGLE PASSWORD VISIBILITY
+// ============================================================
+function togglePw() {
+  const inp = document.getElementById('password');
+  const btn = inp.nextElementSibling;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ============================================================
+// ERROR / CLEAR
+// ============================================================
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = '❌ ' + msg;
+  el.classList.add('show');
+}
+function clearError() {
+  document.getElementById('error-msg').classList.remove('show');
+  document.getElementById('attempt-warn').style.display = 'none';
+}
+
+// ============================================================
+// GENERATE CSRF-LIKE SESSION TOKEN
+// ============================================================
+function generateToken(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return Array.from(arr, b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ============================================================
+// LOGIN HANDLER
+// ============================================================
+function doLogin(e) {
+  e.preventDefault();
+  clearError();
+
+  // 1. Anti-bot honeypot check
+  if (document.getElementById('hp_field').value !== '') {
+    // Bot terdeteksi — diam-diam gagal
+    showError('Terjadi kesalahan sistem. Coba lagi.');
+    return;
+  }
+
+  // 2. Cek lockout
+  const until = parseInt(localStorage.getItem(SEC.LOCKOUT_KEY) || '0');
+  if (until > Date.now()) {
+    showError('Akun terkunci sementara. Tunggu hingga hitungan mundur selesai.');
+    return;
+  }
+
+  const username = document.getElementById('username').value.trim().toLowerCase();
+  const password = document.getElementById('password').value;
+  const roleVal  = document.getElementById('role-value').value;
+
+  // 3. Validasi username terdaftar
+  const profile = ROLE_MAP[username];
+  if (!profile) {
+    recordFailedAttempt();
+    showError('Username tidak dikenali. Gunakan: admin, pengelola, atau tatausaha.');
+    return;
+  }
+
+  // 4. Validasi password tidak kosong
+  if (!password || password.length < 4) {
+    recordFailedAttempt();
+    showError('Password terlalu pendek atau kosong.');
+    return;
+  }
+
+  // 5. Tampilkan spinner
+  setLoading(true);
+
+  // 6. Simulasi autentikasi (ganti dengan Supabase signInWithPassword di produksi)
+  // Dalam integrasi Supabase nyata:
+  // const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+  setTimeout(() => {
+    // Reset attempt counter saat berhasil
+    localStorage.removeItem(SEC.ATTEMPT_KEY);
+    localStorage.removeItem(SEC.LOCKOUT_KEY);
+
+    // Buat session token unik
+    const sessionToken = generateToken(SEC.TOKEN_LENGTH);
+    const sessionId    = generateToken(16);
+
+    const user = {
+      id:           sessionId,
+      username:     username,
+      nama:         { admin:'Administrator', pengelola:'Pengelola Arsip', tatausaha:'Tata Usaha' }[username],
+      role:         profile.role,
+      jabatan:      profile.jabatan,
+      unitKerja:    'Unit Kearsipan Daerah',
+      token:        sessionToken,
+      loginAt:      new Date().toISOString(),
+      expiresAt:    new Date(Date.now() + 8 * 3600 * 1000).toISOString(), // 8 jam
+    };
+
+    // Simpan session
+    sessionStorage.setItem(SEC.SESSION_KEY, JSON.stringify(user));
+
+    // Arahkan ke dashboard
+    window.location.href = 'index.html';
+  }, 800);
+}
+
+// ============================================================
+// CATAT GAGAL LOGIN & LOCKOUT
+// ============================================================
+function recordFailedAttempt() {
+  let attempts = parseInt(localStorage.getItem(SEC.ATTEMPT_KEY) || '0') + 1;
+  localStorage.setItem(SEC.ATTEMPT_KEY, attempts);
+
+  const remaining = SEC.MAX_ATTEMPTS - attempts;
+  const warnEl    = document.getElementById('attempt-warn');
+
+  if (attempts >= SEC.MAX_ATTEMPTS) {
+    // Kunci akun
+    const lockUntil = Date.now() + SEC.LOCKOUT_SECS * 1000;
+    localStorage.setItem(SEC.LOCKOUT_KEY, lockUntil);
+    warnEl.style.display = 'none';
+    startCountdown(SEC.LOCKOUT_SECS);
+  } else {
+    warnEl.style.display = 'block';
+    warnEl.textContent = `⚠ Percobaan login ${attempts}/${SEC.MAX_ATTEMPTS}. Akun akan terkunci ${SEC.LOCKOUT_SECS/60} menit setelah ${remaining} percobaan lagi.`;
+  }
+}
+
+function setLoading(on) {
+  document.getElementById('btn-text').style.display = on ? 'none' : 'flex';
+  document.getElementById('spinner').style.display  = on ? 'block': 'none';
+  document.getElementById('btn-login').disabled     = on;
+}
+
+// ============================================================
+// RESET PASSWORD MODAL
+// ============================================================
+function openReset()  {
+  document.getElementById('reset-username').value = '';
+  document.getElementById('reset-success').classList.remove('show');
+  document.getElementById('overlay-reset').classList.add('show');
+}
+function closeReset() { document.getElementById('overlay-reset').classList.remove('show'); }
+function sendReset() {
+  const uname = document.getElementById('reset-username').value.trim().toLowerCase();
+  const succ  = document.getElementById('reset-success');
+  if (!uname) { succ.style.display='none'; alert('Masukkan username terlebih dahulu.'); return; }
+  if (!ROLE_MAP[uname]) {
+    succ.className = 'success-msg show';
+    succ.style.background = 'var(--redL)';
+    succ.style.color = 'var(--red)';
+    succ.style.border = '1px solid #F0BABA';
+    succ.textContent = '❌ Username tidak dikenali. Pastikan username benar.';
+    return;
+  }
+  succ.className = 'success-msg show';
+  succ.style.background = '';succ.style.color = '';succ.style.border = '';
+  succ.textContent = '✅ Permintaan reset password untuk username "' + uname + '" telah dicatat. Administrator akan menghubungi Anda melalui email resmi dalam 1×24 jam kerja.';
+  document.querySelector('.btn-send').disabled = true;
+}
+
+// ============================================================
+// KEAMANAN TAMBAHAN
+// ============================================================
+
+// Cegah akses halaman ini jika sudah login
+(function redirectIfLoggedIn() {
+  try {
+    const stored = sessionStorage.getItem('simaresda-user');
+    if (stored) {
+      const user = JSON.parse(stored);
+      // Cek token masih valid (belum expired)
+      if (user && user.expiresAt && new Date(user.expiresAt) > new Date()) {
+        window.location.href = 'index.html';
+      } else {
+        // Token kadaluarsa — bersihkan
+        sessionStorage.removeItem('simaresda-user');
+      }
+    }
+  } catch(e) {
+    sessionStorage.removeItem('simaresda-user');
+  }
+})();
+
+// Cegah back button setelah login
+window.history.pushState(null, '', window.location.href);
+window.onpopstate = function() {
+  window.history.pushState(null, '', window.location.href);
+};
+
+// Blokir klik kanan & inspect element (perlindungan dasar)
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  // Blokir F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+  if (e.key === 'F12' ||
+     (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) ||
+     (e.ctrlKey && e.key === 'U')) {
+    e.preventDefault();
+  }
+});
+
+// Auto-clear clipboard setelah paste password
+document.getElementById('password').addEventListener('paste', () => {
+  setTimeout(() => { try { navigator.clipboard.writeText(''); } catch(e) {} }, 100);
+});
+
+// Clear form jika tab tidak aktif > 15 menit
+let inactiveTimer;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    inactiveTimer = setTimeout(() => {
+      document.getElementById('login-form').reset();
+      document.getElementById('role-display').innerHTML = '<span class="role-hint">Otomatis terdeteksi saat username diisi</span>';
+      document.getElementById('role-value').value = '';
+      clearError();
+    }, 15 * 60 * 1000);
+  } else {
+    clearTimeout(inactiveTimer);
+  }
+});
+</script>
+</body>
+</html>
