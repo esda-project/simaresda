@@ -698,6 +698,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 <div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
 
 <script>
+
 // ============================================================
 // SIMARESDA — Shared UI Utilities (simas-ui.js)
 // ============================================================
@@ -910,21 +911,14 @@ function simasInit() {
   initDarkMode();
   if (!requireLogin()) return;
   // Demo: simulate realtime ping every 15s
-  setInterval(() => {
-    const msgs = [
-      '📥 Surat masuk baru diterima dari Kemenkes',
-      '✏️ Status peminjaman ARK-2025-003 diperbarui',
-      '✅ Surat keluar SK-2025-008 berhasil dikirim',
-      '⚠️ Peminjaman FP-2025-002 melewati batas kembali',
-    ];
-    pushNotif(msgs[Math.floor(Math.random() * msgs.length)], ['info','success','warn','danger'][Math.floor(Math.random()*4)]);
-  }, 15000);
+
 }
 
 // CSS animation for toast
 const style = document.createElement('style');
 style.textContent = '@keyframes slideInRight{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
 document.head.appendChild(style);
+
 
 </script>
 <script>
