@@ -1,5 +1,5 @@
 // ============================================================
-// SIMARESDA — Shared UI Utilities (simas-ui.js)
+// SIMARESDA — Shared UI Utilities (simaresda-ui.js)
 // ============================================================
 
 // ── SUPABASE CONFIG (ganti sebelum deploy) ────────────────
@@ -10,15 +10,15 @@ window.SIMARESDA_CONFIG = {
 
 // ── DARK MODE ─────────────────────────────────────────────
 function initDarkMode() {
-  const saved = localStorage.getItem('simas-dark');
+  const saved = localStorage.getItem('simaresda-dark');
   if (saved === 'true') document.body.classList.add('dark');
   updateThemeBtn();
 }
 function toggleDark() {
   document.body.classList.toggle('dark');
-  localStorage.setItem('simas-dark', document.body.classList.contains('dark'));
+  localStorage.setItem('simaresda-dark', document.body.classList.contains('dark'));
   updateThemeBtn();
-  if (window.simasCharts) window.simasCharts.forEach(c => c && c.update());
+  if (window.simaresdaCharts) window.simaresdaCharts.forEach(c => c && c.update());
 }
 function updateThemeBtn() {
   const btn = document.getElementById('btn-theme');
@@ -141,11 +141,11 @@ function confirmDelete(msg, onConfirm) {
 }
 
 // ── USER SESSION (mock — ganti dengan Supabase Auth) ──────
-window.SIMARESDA_USER = JSON.parse(sessionStorage.getItem('simas-user') || 'null');
+window.SIMARESDA_USER = JSON.parse(sessionStorage.getItem('simaresda-user') || 'null');
 
 function setUser(user) {
   window.SIMARESDA_USER = user;
-  sessionStorage.setItem('simas-user', JSON.stringify(user));
+  sessionStorage.setItem('simaresda-user', JSON.stringify(user));
   document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user?.nama || '—');
   document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user?.role || '—');
   document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user?.nama||'?').slice(0,2).toUpperCase());
@@ -170,7 +170,7 @@ function requireLogin() {
 }
 
 function logout() {
-  sessionStorage.removeItem('simas-user');
+  sessionStorage.removeItem('simaresda-user');
   window.location.href = 'login.html';
 }
 
@@ -206,7 +206,7 @@ function openNotifModal() {
 }
 
 // ── INIT (call on every page) ─────────────────────────────
-function simasInit() {
+function simaresdaInit() {
   initDarkMode();
   if (!requireLogin()) return;
   // Demo: simulate realtime ping every 15s
