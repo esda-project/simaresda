@@ -472,8 +472,8 @@ const SIMARESDA_SEC = {
       if (!raw) return this.redirectLogin('Sesi tidak ditemukan');
 
       const user = JSON.parse(raw);
-      if (!user) return this.redirectLogin('Sesi tidak valid');
-
+      if (!user) 
+	  return this.redirectLogin('Sesi tidak valid');
       // Cek expiry
       if (user.expiresAt && new Date(user.expiresAt) <= new Date()) {
         sessionStorage.removeItem(this.SESSION_KEY);
@@ -1002,6 +1002,10 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
+// ── OPEN / CLOSE SIDEBAR (mobile) ────────────────────────
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
+
 // ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
@@ -1087,7 +1091,371 @@ function simaresdaInit() {
   initDarkMode();
 }
 
-// CSS animation for toast
+// ── PENYIMPANAN ARSIP — DATA & FUNGSI UTAMA ──────────────
+
+// Data arsip (LocalStorage-based)
+function getArsipData() {
+  try { return JSON.parse(localStorage.getItem('simaresda-arsip') || '[]'); } catch(e) { return []; }
+}
+function setArsipData(data) {
+  localStorage.setItem('simaresda-arsip', JSON.stringify(data));
+}
+
+// State edit
+let editKode = null;
+
+// ── LOKASI GRID ───────────────────────────────────────────
+const LOKASI_LIST = [
+  { name:'Rak A', icon:'🗄️', desc:'Rak Utama A' },
+  { name:'Rak B', icon:'🗄️', desc:'Rak Utama B' },
+  { name:'Rak C', icon:'🗄️', desc:'Rak Utama C' },
+  { name:'Rak D', icon:'🗄️', desc:'Rak Utama D' },
+  { name:'FC-01', icon:'🗂️', desc:'Filing Cabinet 1' },
+  { name:'FC-02', icon:'🗂️', desc:'Filing Cabinet 2' },
+  { name:'FC-03', icon:'🗂️', desc:'Filing Cabinet 3' },
+];
+
+function renderLokasiGrid(selected) {
+  const grid = document.getElementById('lokasi-grid');
+  if (!grid) return;
+  grid.innerHTML = LOKASI_LIST.map(l => `
+    <div class="lokasi-box${selected===l.name?' selected':''}" onclick="selectLokasi('${l.name}')">
+      <div class="lokasi-box-icon">${l.icon}</div>
+      <div class="lokasi-box-name">${l.name}</div>
+      <div class="lokasi-box-desc">${l.desc}</div>
+    </div>`).join('');
+}
+
+function selectLokasi(name) {
+  document.getElementById('m-rak').value = name;
+  renderLokasiGrid(name);
+}
+
+function updateLokasiSelect() {
+  renderLokasiGrid(document.getElementById('m-rak').value);
+}
+
+// ── BUILD KODE ARSIP ──────────────────────────────────────
+function buildKode() {
+  const klas   = document.getElementById('m-klas')?.value   || 'XXX';
+  const tahun  = document.getElementById('m-tahun')?.value  || 'XXXX';
+  const nourut = document.getElementById('m-nourut')?.value || 'XXX';
+  const k = klas   ? klas.padStart(3,'0')  : 'XXX';
+  const t = tahun  ? tahun                 : 'XXXX';
+  const n = nourut ? String(nourut).padStart(3,'0') : 'XXX';
+  const preview = document.getElementById('kode-preview');
+  if (preview) preview.textContent = `ARK.${k}.${t}.${n}`;
+}
+
+// ── RESET FORM ────────────────────────────────────────────
+function resetForm() {
+  ['m-klas','m-kat','m-jenis','m-nasib','m-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.selectedIndex = 0;
+  });
+  ['m-tahun','m-nourut','m-perihal','m-nosurat','m-tgl','m-rak','m-laci','m-folder','m-ret-aktif','m-ret-inaktif','m-ket'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  buildKode();
+  renderLokasiGrid('');
+}
+
+// ── OPEN FORM TAMBAH ──────────────────────────────────────
+function openAdd() {
+  editKode = null;
+  document.getElementById('m-title').textContent = '🗄️ Tambah Arsip';
+  resetForm();
+  // Isi tahun default
+  const tahunEl = document.getElementById('m-tahun');
+  if (tahunEl) tahunEl.value = new Date().getFullYear();
+  buildKode();
+  openModal('modal-simpan');
+}
+
+// ── OPEN FORM EDIT ────────────────────────────────────────
+function openEdit(kode) {
+  const data = getArsipData();
+  const item = data.find(d => d.kode === kode);
+  if (!item) return;
+  editKode = kode;
+  document.getElementById('m-title').textContent = '✏️ Edit Arsip';
+
+  // Isi bagian kode
+  const parts = kode.split('.');
+  if (document.getElementById('m-klas'))    document.getElementById('m-klas').value    = parts[1] || '';
+  if (document.getElementById('m-tahun'))   document.getElementById('m-tahun').value   = parts[2] || '';
+  if (document.getElementById('m-nourut'))  document.getElementById('m-nourut').value  = parseInt(parts[3]) || '';
+
+  // Isi field lainnya
+  const fields = {
+    'm-perihal': item.perihal, 'm-kat': item.kategori, 'm-jenis': item.jenis,
+    'm-nosurat': item.nosurat, 'm-tgl': item.tgl, 'm-rak': item.rak,
+    'm-laci': item.laci, 'm-folder': item.folder,
+    'm-ret-aktif': item.retAktif, 'm-ret-inaktif': item.retInaktif,
+    'm-nasib': item.nasib, 'm-status': item.status, 'm-ket': item.ket
+  };
+  Object.entries(fields).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el && val !== undefined) el.value = val;
+  });
+
+  buildKode();
+  renderLokasiGrid(item.rak);
+  openModal('modal-simpan');
+}
+
+// ── SIMPAN ARSIP ──────────────────────────────────────────
+function saveArsip() {
+  const klas   = document.getElementById('m-klas')?.value;
+  const tahun  = document.getElementById('m-tahun')?.value;
+  const nourut = document.getElementById('m-nourut')?.value;
+  const perihal = document.getElementById('m-perihal')?.value.trim();
+  const rak    = document.getElementById('m-rak')?.value.trim();
+
+  if (!klas)    { showToast('Pilih kode klasifikasi terlebih dahulu', 'danger'); return; }
+  if (!tahun)   { showToast('Isi tahun arsip terlebih dahulu', 'danger'); return; }
+  if (!nourut)  { showToast('Isi nomor urut terlebih dahulu', 'danger'); return; }
+  if (!perihal) { showToast('Isi perihal/deskripsi arsip', 'danger'); return; }
+  if (!rak)     { showToast('Pilih atau isi lokasi penyimpanan (Rak/Almari)', 'danger'); return; }
+
+  const kode = `ARK.${klas.padStart(3,'0')}.${tahun}.${String(nourut).padStart(3,'0')}`;
+  const data = getArsipData();
+
+  // Cek duplikat kode (kecuali saat edit)
+  if (!editKode && data.find(d => d.kode === kode)) {
+    showToast(`Kode arsip ${kode} sudah ada, gunakan No. Urut berbeda`, 'danger');
+    return;
+  }
+
+  const item = {
+    kode,
+    klasifikasi: klas,
+    perihal,
+    tahun,
+    kategori:   document.getElementById('m-kat')?.value    || 'Umum',
+    jenis:      document.getElementById('m-jenis')?.value  || 'Arsip Aktif',
+    nosurat:    document.getElementById('m-nosurat')?.value || '',
+    tgl:        document.getElementById('m-tgl')?.value    || '',
+    rak,
+    laci:       document.getElementById('m-laci')?.value   || '',
+    folder:     document.getElementById('m-folder')?.value || '',
+    retAktif:   document.getElementById('m-ret-aktif')?.value   || '',
+    retInaktif: document.getElementById('m-ret-inaktif')?.value || '',
+    nasib:      document.getElementById('m-nasib')?.value  || 'Musnah',
+    status:     document.getElementById('m-status')?.value || 'Aktif',
+    ket:        document.getElementById('m-ket')?.value    || '',
+    createdAt:  editKode ? (data.find(d=>d.kode===editKode)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+    updatedAt:  new Date().toISOString(),
+  };
+
+  if (editKode) {
+    const idx = data.findIndex(d => d.kode === editKode);
+    if (idx > -1) data[idx] = item;
+  } else {
+    data.unshift(item);
+  }
+
+  setArsipData(data);
+  closeModal('modal-simpan');
+  renderTable();
+  updateStats();
+  showToast(editKode ? `Arsip ${kode} berhasil diperbarui` : `Arsip ${kode} berhasil disimpan`, 'success');
+  editKode = null;
+}
+
+// ── HAPUS ARSIP ───────────────────────────────────────────
+function hapusArsip(kode) {
+  confirmDelete(`Hapus arsip ${kode}?`, () => {
+    let data = getArsipData();
+    data = data.filter(d => d.kode !== kode);
+    setArsipData(data);
+    renderTable();
+    updateStats();
+    showToast(`Arsip ${kode} dihapus`, 'warn');
+  });
+}
+
+// ── DETAIL ARSIP ──────────────────────────────────────────
+function openDetail(kode) {
+  const data = getArsipData();
+  const item = data.find(d => d.kode === kode);
+  if (!item) return;
+  const body = document.getElementById('detail-body');
+  if (!body) return;
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div class="kode-preview" style="margin:0 0 8px">
+        <div class="kode-preview-label">Kode Arsip</div>
+        <div class="kode-preview-code">${item.kode}</div>
+      </div>
+      ${row('Perihal', item.perihal)}
+      ${row('Klasifikasi', item.klasifikasi)}
+      ${row('Tahun', item.tahun)}
+      ${row('Kategori', item.kategori)}
+      ${row('Jenis', item.jenis)}
+      ${row('No. Surat', item.nosurat || '—')}
+      ${row('Tanggal', item.tgl ? formatTanggal(item.tgl) : '—')}
+      ${row('Lokasi', [item.rak, item.laci, item.folder].filter(Boolean).join(' › ') || '—')}
+      ${row('Retensi Aktif', item.retAktif ? item.retAktif + ' tahun' : '—')}
+      ${row('Retensi Inaktif', item.retInaktif ? item.retInaktif + ' tahun' : '—')}
+      ${row('Nasib Akhir', item.nasib || '—')}
+      ${row('Status', badge(item.status))}
+      ${item.ket ? row('Keterangan', item.ket) : ''}
+      <div style="font-size:10px;color:var(--text3);margin-top:4px">Dibuat: ${formatTanggal(item.createdAt)} · Diperbarui: ${formatTanggal(item.updatedAt)}</div>
+    </div>`;
+  openModal('modal-detail');
+}
+
+function row(label, val) {
+  return `<div style="display:flex;gap:10px;font-size:12px;border-bottom:1px solid var(--border);padding-bottom:7px">
+    <span style="width:130px;flex-shrink:0;font-weight:600;color:var(--text2)">${label}</span>
+    <span style="color:var(--text);flex:1">${val}</span>
+  </div>`;
+}
+
+// ── RENDER TABEL ──────────────────────────────────────────
+let currentPage = 1;
+const PAGE_SIZE  = 15;
+
+function renderTable() {
+  const data    = getFilteredData();
+  const tbody   = document.getElementById('body-simpan');
+  const rowCount = document.getElementById('row-count');
+  if (!tbody) return;
+
+  if (rowCount) rowCount.textContent = `${data.length} arsip`;
+
+  // Pagination
+  const totalPages = Math.ceil(data.length / PAGE_SIZE) || 1;
+  if (currentPage > totalPages) currentPage = 1;
+  const start  = (currentPage - 1) * PAGE_SIZE;
+  const paged  = data.slice(start, start + PAGE_SIZE);
+
+  if (paged.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px"><div class="empty"><div class="empty-ico">🗄️</div><div class="empty-txt">Belum ada data arsip. Klik "+ Tambah Arsip" untuk menambahkan.</div></div></td></tr>`;
+  } else {
+    const lokasiStr = d => [d.rak, d.laci, d.folder].filter(Boolean).join(' / ');
+    const retensiStr = d => {
+      const a = d.retAktif   ? d.retAktif   + 'A' : '';
+      const i = d.retInaktif ? d.retInaktif + 'I' : '';
+      return [a, i].filter(Boolean).join(' + ') || '—';
+    };
+    tbody.innerHTML = paged.map(d => `
+      <tr>
+        <td class="td-mono">${d.kode}</td>
+        <td><span class="klas-badge">${d.klasifikasi}</span></td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${d.perihal}">${d.perihal}</td>
+        <td>${d.tahun}</td>
+        <td>${d.kategori}</td>
+        <td class="no-mobile">${d.jenis}</td>
+        <td>${lokasiStr(d)}</td>
+        <td class="no-mobile">${retensiStr(d)}</td>
+        <td>${badge(d.status)}</td>
+        <td class="no-print">
+          <div style="display:flex;gap:4px">
+            <button class="btn btn-secondary btn-xs" onclick="openDetail('${d.kode}')">👁</button>
+            <button class="btn btn-secondary btn-xs" onclick="openEdit('${d.kode}')" data-require-perm="arsip:update">✏️</button>
+            <button class="btn btn-danger btn-xs" onclick="hapusArsip('${d.kode}')" data-require-perm="arsip:delete">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  renderPagination(totalPages);
+
+  // Terapkan role guard ke baris baru
+  if (window.SIMARESDA_SEC && currentUser) {
+    SIMARESDA_SEC.applyGuards(currentUser);
+  }
+}
+
+function renderPagination(total) {
+  const pg = document.getElementById('pagination');
+  if (!pg || total <= 1) { if (pg) pg.innerHTML = ''; return; }
+  let html = '';
+  html += `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹</button>`;
+  for (let i = 1; i <= total; i++) {
+    html += `<button class="page-btn${i===currentPage?' active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>›</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(p) {
+  const data = getFilteredData();
+  const total = Math.ceil(data.length / PAGE_SIZE) || 1;
+  currentPage = Math.max(1, Math.min(p, total));
+  renderTable();
+}
+
+// ── FILTER ────────────────────────────────────────────────
+function getFilteredData() {
+  const q      = (document.getElementById('g-search')?.value  || '').toLowerCase();
+  const status = document.getElementById('f-status')?.value   || '';
+  const kat    = document.getElementById('f-kat')?.value      || '';
+  const klas   = document.getElementById('f-klas')?.value     || '';
+  const rak    = document.getElementById('f-rak')?.value      || '';
+  const tahun  = document.getElementById('f-tahun')?.value    || '';
+
+  return getArsipData().filter(d => {
+    if (status && d.status     !== status)              return false;
+    if (kat    && d.kategori   !== kat)                 return false;
+    if (klas   && d.klasifikasi!== klas)                return false;
+    if (rak    && d.rak        !== rak)                 return false;
+    if (tahun  && String(d.tahun) !== tahun)            return false;
+    if (q && ![d.kode,d.perihal,d.rak,d.nosurat,d.kategori,d.status].join(' ').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+function applyFilter() { currentPage = 1; renderTable(); }
+
+function resetFilter() {
+  ['f-status','f-kat','f-klas','f-rak','f-tahun'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.selectedIndex = 0;
+  });
+  const gs = document.getElementById('g-search');
+  if (gs) gs.value = '';
+  applyFilter();
+}
+
+// ── UPDATE STATS ──────────────────────────────────────────
+function updateStats() {
+  const data  = getArsipData();
+  const now   = new Date();
+  let habis   = 0;
+  data.forEach(d => {
+    if (d.retAktif && d.tahun) {
+      const expYear = parseInt(d.tahun) + parseInt(d.retAktif || 0) + parseInt(d.retInaktif || 0);
+      if (expYear <= now.getFullYear()) habis++;
+    }
+  });
+  const total   = data.length;
+  const aktif   = data.filter(d => d.status === 'Aktif').length;
+  const inaktif = data.filter(d => d.status === 'Inaktif').length;
+
+  const el = id => document.getElementById(id);
+  if (el('st-total'))   el('st-total').textContent   = total;
+  if (el('st-aktif'))   el('st-aktif').textContent   = aktif;
+  if (el('st-inaktif')) el('st-inaktif').textContent = inaktif;
+  if (el('st-habis'))   el('st-habis').textContent   = habis;
+}
+
+// ── INIT HALAMAN ──────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  updateStats();
+  renderTable();
+  // Set tahun default form
+  const tahunEl = document.getElementById('m-tahun');
+  if (tahunEl) tahunEl.value = new Date().getFullYear();
+  buildKode();
+  renderLokasiGrid('');
+});
+
+
+
 const style = document.createElement('style');
 style.textContent = '@keyframes slideInRight{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
 document.head.appendChild(style);
