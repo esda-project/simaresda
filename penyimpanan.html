@@ -472,12 +472,10 @@ const SIMARESDA_SEC = {
       if (!raw) return this.redirectLogin('Sesi tidak ditemukan');
 
       const user = JSON.parse(raw);
-      if (!user) 
-	  return this.redirectLogin('Sesi tidak valid');
-      if (!user.expiresAt &&
-          new Date(user,expiresAt) <= new Date()) {
+      if (!user) return this.redirectLogin('Sesi tidak valid');
+
       // Cek expiry
-      if (new Date(user.expiresAt) <= new Date()) {
+      if (user.expiresAt && new Date(user.expiresAt) <= new Date()) {
         sessionStorage.removeItem(this.SESSION_KEY);
         return this.redirectLogin('Sesi kadaluarsa, silakan login kembali');
       }
