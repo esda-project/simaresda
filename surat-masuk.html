@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Surat Masuk — SIMARESDA Arsip</title>
+<title>Arsip Masuk — SIMARESDA Arsip</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -465,8 +465,8 @@ const SIMARESDA_SEC = {
   can(user, resource, action) {
     const PERMS = {
       Admin: {
-        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
-        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        Arsip_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        Arsip_keluar:  { read:true,  create:true,  update:true,  delete:true  },
         arsip:         { read:true,  create:true,  update:true,  delete:true  },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true,  approve:true               },
@@ -475,8 +475,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
       },
       Pengelola: {
-        surat_masuk:   { read:true,  create:true,  update:true               },
-        surat_keluar:  { read:true,  create:true,  update:true               },
+        Arsip_masuk:   { read:true,  create:true,  update:true               },
+        Arsip_keluar:  { read:true,  create:true,  update:true               },
         arsip:         { read:true,  create:true,  update:true               },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true                              },
@@ -485,8 +485,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true                                             },
       },
       TU: {
-        surat_masuk:   { read:true,  create:true                              },
-        surat_keluar:  { read:true,  create:true                              },
+        Arsip_masuk:   { read:true,  create:true                              },
+        Arsip_keluar:  { read:true,  create:true                              },
         arsip:         { read:true                                             },
         peminjaman:    { read:true,  create:true                              },
         pemusnahan:    { read:true                                             },
@@ -589,7 +589,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 <div id="main">
   <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
   <div class="topbar">
-    <div class="topbar-title">Surat Masuk</div>
+    <div class="topbar-title">Arsip Masuk</div>
     <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" id="g-search" placeholder="Cari nomor, asal, perihal..." oninput="applyFilter()"></div>
     <div class="topbar-actions no-print">
       <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
@@ -599,18 +599,18 @@ window.logout = () => SIMARESDA_SEC.logout();
   </div>
   <div class="content">
     <div class="toolbar no-print">
-      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Surat Masuk</button>
+      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Arsip Masuk</button>
       <select id="filter-status" onchange="applyFilter()" style="width:148px"><option value="">Semua Status</option><option>Disposisi</option><option>Diproses</option><option>Selesai</option><option>Arsip</option></select>
       <select id="filter-kat" onchange="applyFilter()" style="width:148px"><option value="">Semua Kategori</option><option>Umum</option><option>Keuangan</option><option>Kepegawaian</option><option>Teknis</option><option>Rahasia</option></select>
       <input type="date" id="f-dari" onchange="applyFilter()" title="Dari tanggal" style="width:138px">
       <input type="date" id="f-sampai" onchange="applyFilter()" title="Sampai tanggal" style="width:138px">
-      <button class="btn btn-secondary" onclick="exportCSV('tbl-masuk','surat-masuk')">⬇ CSV</button>
+      <button class="btn btn-secondary" onclick="exportCSV('tbl-masuk','Arsip-masuk')">⬇ CSV</button>
       <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
       <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
     </div>
     <div class="table-wrap">
       <table id="tbl-masuk">
-        <thead><tr><th>No. Agenda</th><th>No. Surat</th><th>Tgl Surat</th><th>Tgl Terima</th><th>Asal Surat</th><th>Perihal</th><th>Kategori</th><th>Sifat</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
+        <thead><tr><th>No. Agenda</th><th>No. Arsip</th><th>Tgl Arsip</th><th>Tgl Terima</th><th>Asal Arsip</th><th>Perihal</th><th>Kategori</th><th>Sifat</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
         <tbody id="body-masuk"></tbody>
       </table>
     </div>
@@ -621,17 +621,17 @@ window.logout = () => SIMARESDA_SEC.logout();
 <!-- MODAL FORM -->
 <div class="modal-overlay" id="modal-masuk" style="display:none" onclick="if(event.target===this)closeModal('modal-masuk')">
   <div class="modal modal-lg">
-    <div class="modal-header"><div class="modal-title" id="m-title">✉️ Tambah Surat Masuk</div><button class="icon-btn" onclick="closeModal('modal-masuk')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="m-title">✉️ Tambah Arsip Masuk</div><button class="icon-btn" onclick="closeModal('modal-masuk')">✕</button></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Nomor Surat <span class="req">*</span></label><input class="form-control" id="m-nosurat" placeholder="001/B/Kemenkes/I/2025"></div>
-        <div class="form-group"><label class="form-label">Tanggal Surat <span class="req">*</span></label><input class="form-control" type="date" id="m-tglsurat"></div>
+        <div class="form-group"><label class="form-label">Nomor Arsip <span class="req">*</span></label><input class="form-control" id="m-noArsip" placeholder="001/B/Kemenkes/I/2025"></div>
+        <div class="form-group"><label class="form-label">Tanggal Arsip <span class="req">*</span></label><input class="form-control" type="date" id="m-tglArsip"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Tanggal Terima <span class="req">*</span></label><input class="form-control" type="date" id="m-tglt"></div>
-        <div class="form-group"><label class="form-label">Asal Surat <span class="req">*</span></label><input class="form-control" id="m-asal" placeholder="Instansi pengirim"></div>
+        <div class="form-group"><label class="form-label">Asal Arsip <span class="req">*</span></label><input class="form-control" id="m-asal" placeholder="Instansi pengirim"></div>
       </div>
-      <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal surat masuk"></div>
+      <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal Arsip masuk"></div>
       <div class="form-row3">
         <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="m-kat"><option>Umum</option><option>Keuangan</option><option>Kepegawaian</option><option>Teknis</option><option>Rahasia</option></select></div>
         <div class="form-group"><label class="form-label">Sifat</label><select class="form-control" id="m-sifat"><option>Biasa</option><option>Penting</option><option>Segera</option><option>Rahasia</option></select></div>
@@ -641,13 +641,13 @@ window.logout = () => SIMARESDA_SEC.logout();
       <div class="form-group"><label class="form-label">Keterangan</label><textarea class="form-control" id="m-ket" placeholder="Catatan tambahan..."></textarea></div>
       <div class="form-group"><label class="form-label">Lampiran</label><input class="form-control" type="file" id="m-file" accept=".pdf,.doc,.docx,.jpg,.png"><div class="form-hint">PDF, DOC, JPG · Max 10MB (upload ke Supabase Storage saat produksi)</div></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-masuk')">Batal</button><button class="btn btn-primary" onclick="saveSuratMasuk()">💾 Simpan</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-masuk')">Batal</button><button class="btn btn-primary" onclick="saveArsipMasuk()">💾 Simpan</button></div>
   </div>
 </div>
 
 <!-- MODAL DETAIL -->
 <div class="modal-overlay" id="modal-detail" style="display:none" onclick="if(event.target===this)closeModal('modal-detail')">
-  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Surat Masuk</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
+  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Arsip Masuk</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
 </div>
 
 <!-- NOTIF MODAL -->
@@ -780,7 +780,7 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
-// ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
+// ── NOMOR ROMAWI (untuk nomor Arsip keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
 
@@ -877,7 +877,7 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item active" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item active" href="Arsip-masuk.html"><span class="nav-icon">📥</span>Arsip Masuk</a><a class="nav-item" href="Arsip-keluar.html"><span class="nav-icon">📤</span>Arsip Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
@@ -894,7 +894,7 @@ function renderTable(){
     <tr>
       <td class="td-mono">${s.id}</td>
       <td class="td-mono" style="font-size:11px">${s.no}</td>
-      <td>${s.tglSurat}</td><td>${s.tglTerima}</td>
+      <td>${s.tglArsip}</td><td>${s.tglTerima}</td>
       <td><strong>${s.asal}</strong></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.perihal}">${s.perihal}</td>
       <td>${badgePlain(s.kat,'b-gray')}</td>
@@ -906,7 +906,7 @@ function renderTable(){
         <button class="btn btn-danger btn-xs" onclick="deleteRow('${s.id}')" data-require-role="Admin">🗑</button>
       </td>
     </tr>`).join(''):`<tr><td colspan="10"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tidak ada data</div></div></td></tr>`;
-  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} surat`:'';
+  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} Arsip`:'';
   renderPagination();
   document.getElementById('nav-badge').textContent=data.filter(s=>s.status==='Disposisi').length;
   applyRoleGuards(window.SIMARESDA_USER?.role);
@@ -942,14 +942,14 @@ function applyFilter(){
 function resetFilter(){['g-search','f-dari','f-sampai'].forEach(id=>document.getElementById(id).value='');document.getElementById('filter-status').value='';document.getElementById('filter-kat').value='';filtered=[...data];page=1;renderTable();}
 
 function openAdd(){
-  editIdx=null;document.getElementById('m-title').textContent='✉️ Tambah Surat Masuk';
-  ['m-nosurat','m-tglsurat','m-tglt','m-asal','m-perihal','m-disposisi','m-ket'].forEach(id=>document.getElementById(id).value='');
+  editIdx=null;document.getElementById('m-title').textContent='✉️ Tambah Arsip Masuk';
+  ['m-noArsip','m-tglArsip','m-tglt','m-asal','m-perihal','m-disposisi','m-ket'].forEach(id=>document.getElementById(id).value='');
   openModal('modal-masuk');
 }
 function editRow(s){
-  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Surat Masuk';
-  document.getElementById('m-nosurat').value=s.no;
-  document.getElementById('m-tglsurat').value=s.tglSurat;
+  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Arsip Masuk';
+  document.getElementById('m-noArsip').value=s.no;
+  document.getElementById('m-tglArsip').value=s.tglArsip;
   document.getElementById('m-tglt').value=s.tglTerima;
   document.getElementById('m-asal').value=s.asal;
   document.getElementById('m-perihal').value=s.perihal;
@@ -960,16 +960,16 @@ function editRow(s){
   document.getElementById('m-ket').value=s.ket||'';
   openModal('modal-masuk');
 }
-function saveSuratMasuk(){
-  const no=document.getElementById('m-nosurat').value.trim();
-  const tgl=document.getElementById('m-tglsurat').value;
+function saveArsipMasuk(){
+  const no=document.getElementById('m-noArsip').value.trim();
+  const tgl=document.getElementById('m-tglArsip').value;
   const tgt=document.getElementById('m-tglt').value;
   const asl=document.getElementById('m-asal').value.trim();
   const per=document.getElementById('m-perihal').value.trim();
   if(!no||!tgl||!tgt||!asl||!per){showToast('Harap isi semua field wajib (*)','danger');return;}
   const obj={
     id:editIdx||`SM-2025-${String(seq++).padStart(3,'0')}`,
-    no,tglSurat:tgl,tglTerima:tgt,asal:asl,perihal:per,
+    no,tglArsip:tgl,tglTerima:tgt,asal:asl,perihal:per,
     kat:document.getElementById('m-kat').value,
     sifat:document.getElementById('m-sifat').value,
     status:document.getElementById('m-status').value,
@@ -980,18 +980,18 @@ function saveSuratMasuk(){
   else data.unshift(obj);
   editIdx=null;closeModal('modal-masuk');
   filtered=[...data];renderTable();
-  showToast('✅ Data surat masuk disimpan','success');
-  pushNotif(`📥 Surat masuk ${obj.id} ${editIdx?'diperbarui':'ditambahkan'}`,'info');
+  showToast('✅ Data Arsip masuk disimpan','success');
+  pushNotif(`📥 Arsip masuk ${obj.id} ${editIdx?'diperbarui':'ditambahkan'}`,'info');
 }
 function deleteRow(id){
-  if(!confirm(`Hapus surat masuk ${id}?`))return;
+  if(!confirm(`Hapus Arsip masuk ${id}?`))return;
   data=data.filter(d=>d.id!==id);filtered=[...data];renderTable();
   showToast(`🗑️ ${id} dihapus`,'warn');
 }
 function viewDetail(s){
   document.getElementById('detail-body').innerHTML=`
   <table style="width:100%;border-collapse:collapse;font-size:13px">
-    ${[['No. Agenda',s.id],['No. Surat',`<span class="td-mono">${s.no}</span>`],['Tanggal Surat',s.tglSurat],['Tanggal Terima',s.tglTerima],['Asal Surat',`<strong>${s.asal}</strong>`],['Perihal',s.perihal],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Disposisi',s.disposisi||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
+    ${[['No. Agenda',s.id],['No. Arsip',`<span class="td-mono">${s.no}</span>`],['Tanggal Arsip',s.tglArsip],['Tanggal Terima',s.tglTerima],['Asal Arsip',`<strong>${s.asal}</strong>`],['Perihal',s.perihal],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Disposisi',s.disposisi||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
   </table>`;
   openModal('modal-detail');
 }
