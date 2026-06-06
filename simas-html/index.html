@@ -791,9 +791,9 @@ const BIDANG = [
     masuk:0, keluar:0, arsip:0,
   },
   {
-    id:'tpakd',
+    id:'perekonomian',
     icon:'📊',
-    name:'TPAKD – EKRAF',
+    name:'perekonomian – EKRAF',
     desc:'Tim Percepatan Akses Keuangan Daerah & Ekonomi Kreatif',
     color:'var(--yellowL)',
     iconBg:'var(--yellow)',
@@ -863,7 +863,7 @@ function initCharts(){
   c2=new Chart(document.getElementById('chartBidang'),{
     type:'doughnut',
     data:{
-      labels:['Sekretariat/Umum','BUMD & BLUD','TPAKD-EKRAF','SDA & DBH CHT'],
+      labels:['Sekretariat/Umum','BUMD & BLUD','perekonomian','SDA & DBH CHT'],
       datasets:[{data:[0,0,0,0],
         backgroundColor:['#1E3A6E','#1A5C3A','#7A5200','#4A2270'],borderWidth:0}]
     },
