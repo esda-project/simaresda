@@ -541,8 +541,8 @@ const SIMARESDA_SEC = {
   can(user, resource, action) {
     const PERMS = {
       Admin: {
-        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
-        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        Arsip_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        Arsip_keluar:  { read:true,  create:true,  update:true,  delete:true  },
         arsip:         { read:true,  create:true,  update:true,  delete:true  },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true,  approve:true               },
@@ -551,8 +551,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
       },
       Pengelola: {
-        surat_masuk:   { read:true,  create:true,  update:true               },
-        surat_keluar:  { read:true,  create:true,  update:true               },
+        Arsip_masuk:   { read:true,  create:true,  update:true               },
+        Arsip_keluar:  { read:true,  create:true,  update:true               },
         arsip:         { read:true,  create:true,  update:true               },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true                              },
@@ -561,8 +561,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true                                             },
       },
       TU: {
-        surat_masuk:   { read:true,  create:true                              },
-        surat_keluar:  { read:true,  create:true                              },
+        Arsip_masuk:   { read:true,  create:true                              },
+        Arsip_keluar:  { read:true,  create:true                              },
         arsip:         { read:true                                             },
         peminjaman:    { read:true,  create:true                              },
         pemusnahan:    { read:true                                             },
@@ -677,15 +677,15 @@ window.logout = () => SIMARESDA_SEC.logout();
   <div class="content">
     <!-- STATS GLOBAL -->
     <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">
-      <div class="stat-card" onclick="location.href='surat-masuk.html'" style="padding:14px;cursor:pointer">
+      <div class="stat-card" onclick="location.href='Arsip-masuk.html'" style="padding:14px;cursor:pointer">
         <div class="stat-ico" style="background:var(--accentL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">📥</div>
-        <div class="stat-label">Surat Masuk</div>
+        <div class="stat-label">Arsip Masuk</div>
         <div class="stat-val" id="s-masuk">0</div>
         <div class="stat-sub" id="s-masuk-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
-      <div class="stat-card" onclick="location.href='surat-keluar.html'" style="padding:14px;cursor:pointer">
+      <div class="stat-card" onclick="location.href='Arsip-keluar.html'" style="padding:14px;cursor:pointer">
         <div class="stat-ico" style="background:var(--greenL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">📤</div>
-        <div class="stat-label">Surat Keluar</div>
+        <div class="stat-label">Arsip Keluar</div>
         <div class="stat-val" id="s-keluar">0</div>
         <div class="stat-sub" id="s-keluar-sub" style="color:var(--text3)">Belum ada data</div>
       </div>
@@ -718,7 +718,7 @@ window.logout = () => SIMARESDA_SEC.logout();
     <!-- CHARTS -->
     <div class="charts-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
       <div class="card">
-        <div class="card-title">Tren Surat Masuk & Keluar (per Bulan)</div>
+        <div class="card-title">Tren Arsip Masuk & Keluar (per Bulan)</div>
         <div style="position:relative;height:200px"><canvas id="chartTren"></canvas></div>
       </div>
       <div class="card">
@@ -736,7 +736,7 @@ window.logout = () => SIMARESDA_SEC.logout();
         </div>
       </div>
       <div class="card">
-        <div class="card-title">📥 Surat Masuk Terbaru</div>
+        <div class="card-title">📥 Arsip Masuk Terbaru</div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>No. Agenda</th><th>Asal</th><th>Perihal</th><th>Status</th></tr></thead>
@@ -877,7 +877,7 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
-// ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
+// ── NOMOR ROMAWI (untuk nomor Arsip keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
 
@@ -975,7 +975,7 @@ document.head.appendChild(style);
 </script>
 <script>
 // ── SIDEBAR ──────────────────────────────────────────────────
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge" id="nav-badge">0</span></a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="Arsip-masuk.html"><span class="nav-icon">📥</span>Arsip Masuk<span class="nav-badge" id="nav-badge">0</span></a><a class="nav-item" href="Arsip-keluar.html"><span class="nav-icon">📤</span>Arsip Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
@@ -986,7 +986,7 @@ const BIDANG = [
     id:'sekretariat',
     icon:'🏛️',
     name:'Sekretariat / Umum',
-    desc:'Tata usaha, surat-menyurat, kepegawaian umum',
+    desc:'Tata usaha, Arsip-menyurat, kepegawaian umum',
     color:'var(--accentL)',
     iconBg:'var(--accent)',
     masuk:0, keluar:0, arsip:0,
@@ -1062,8 +1062,8 @@ function initCharts(){
     data:{
       labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
       datasets:[
-        {label:'Surat Masuk',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(30,58,110,.7)',borderRadius:4},
-        {label:'Surat Keluar',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(26,92,58,.6)',borderRadius:4},
+        {label:'Arsip Masuk',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(30,58,110,.7)',borderRadius:4},
+        {label:'Arsip Keluar',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(26,92,58,.6)',borderRadius:4},
       ]
     },
     options:{responsive:true,maintainAspectRatio:false,
