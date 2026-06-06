@@ -1,26 +1,16 @@
 {
-  "version": 2,
-  "cleanUrls": false,
-  "trailingSlash": false,
-  "routes": [
+  "rewrites": [
+    { "source": "/", "destination": "/login.html" }
+  ],
+  "headers": [
     {
-      "src": "/assets/(.+\\.css)",
-      "headers": { "Content-Type": "text/css; charset=utf-8" },
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/assets/(.+\\.js)",
-      "headers": { "Content-Type": "application/javascript; charset=utf-8" },
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(.+\\.html)",
-      "headers": { "Content-Type": "text/html; charset=utf-8" },
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
     }
   ]
 }
