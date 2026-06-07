@@ -168,13 +168,18 @@ function confirmDelete(msg, onConfirm) {
 window.SIMARESDA_USER = JSON.parse(sessionStorage.getItem('simaresda-user') || 'null');
 
 function setUser(user) {
+  if (!user) return;
+  // Normalisasi nama — handle format lama & baru
+  if (!user.nama_lengkap) user.nama_lengkap = user.nama || user.username || 'Pengguna';
+  if (!user.id)           user.id = user.username || 'local-user';
   window.SIMARESDA_USER = user;
-  if (user) sessionStorage.setItem('simaresda-user', JSON.stringify(user));
-  document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = user?.nama_lengkap || '—');
-  document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user?.role || '—');
-  document.querySelectorAll('[data-user-bidang]').forEach(el => el.textContent = bidangLabel(user?.bidang) || '—');
-  document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = (user?.nama_lengkap||'?').slice(0,2).toUpperCase());
-  applyRoleGuards(user?.role);
+  sessionStorage.setItem('simaresda-user', JSON.stringify(user));
+  const nama = user.nama_lengkap || '—';
+  document.querySelectorAll('[data-user-name]').forEach(el => el.textContent = nama);
+  document.querySelectorAll('[data-user-role]').forEach(el => el.textContent = user.role || '—');
+  document.querySelectorAll('[data-user-bidang]').forEach(el => el.textContent = bidangLabel(user.bidang) || '—');
+  document.querySelectorAll('[data-user-avatar]').forEach(el => el.textContent = nama.slice(0,2).toUpperCase());
+  applyRoleGuards(user.role);
 }
 
 function applyRoleGuards(role) {
@@ -191,21 +196,30 @@ function applyRoleGuards(role) {
 }
 
 async function requireLogin() {
-  const supa = getSupabase();
-  if (!supa) {
-    // Fallback ke session lokal jika Supabase belum siap
-    if (!window.SIMARESDA_USER) { window.location.href = 'login.html'; return false; }
-    setUser(window.SIMARESDA_USER);
-    return true;
+  // Cek session lokal dulu (format lama & baru)
+  let raw = sessionStorage.getItem('simaresda-user');
+  if (raw) {
+    try {
+      let u = JSON.parse(raw);
+      // Normalisasi field — handle format lama (nama/username) & baru (nama_lengkap/id)
+      if (!u.nama_lengkap) u.nama_lengkap = u.nama || u.username || 'Pengguna';
+      if (!u.id)           u.id = u.username || 'local-user';
+      // Cek expire (format lama pakai expiresAt)
+      if (u.expiresAt && new Date(u.expiresAt) < new Date()) {
+        sessionStorage.removeItem('simaresda-user');
+        window.location.href = 'login.html?msg=Sesi+telah+berakhir';
+        return false;
+      }
+      window.SIMARESDA_USER = u;
+      setUser(u);
+      return true;
+    } catch(e) {
+      sessionStorage.removeItem('simaresda-user');
+    }
   }
-  let user = await getSessionUser();
-  if (!user) {
-    // Coba fallback session lokal (sementara)
-    user = window.SIMARESDA_USER;
-    if (!user) { window.location.href = 'login.html?msg=Sesi+tidak+ditemukan'; return false; }
-  }
-  setUser(user);
-  return true;
+  // Tidak ada session → ke login
+  window.location.href = 'login.html?msg=Sesi+tidak+ditemukan';
+  return false;
 }
 
 async function logout() {

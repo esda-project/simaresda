@@ -408,26 +408,41 @@ html, body {
 
       <div class="lp-tag">Selamat Datang</div>
       <h2 class="lp-title">Masuk ke Sistem</h2>
-      <p class="lp-sub">Masukkan email dan kata sandi Anda.</p>
+      <p class="lp-sub">Pilih peran, masukkan username dan kata sandi.</p>
 
-      <!-- Info: peran ditentukan oleh sistem -->
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;
-        border-radius:10px;background:rgba(43,82,160,.10);border:1px solid rgba(43,82,160,.25);
-        margin-bottom:20px;font-size:12px;color:rgba(255,255,255,.55);">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-        </svg>
-        Peran Anda ditentukan otomatis oleh sistem setelah login.
+      <!-- Pilihan peran -->
+      <label class="lp-role-lbl">Pilih Peran</label>
+      <div class="lp-role-grid" id="roleGrid">
+        <button type="button" class="lp-role-btn active" data-role="Admin">
+          <div class="lp-role-ico">🛡️</div>
+          <div class="lp-role-nm">Admin</div>
+          <div class="lp-role-bd">Penuh</div>
+        </button>
+        <button type="button" class="lp-role-btn" data-role="Pengelola">
+          <div class="lp-role-ico">📋</div>
+          <div class="lp-role-nm">Pengelola</div>
+          <div class="lp-role-bd">Terbatas</div>
+        </button>
+        <button type="button" class="lp-role-btn" data-role="TU">
+          <div class="lp-role-ico">🖥️</div>
+          <div class="lp-role-nm">Tata Usaha</div>
+          <div class="lp-role-bd">Dasar</div>
+        </button>
+        <button type="button" class="lp-role-btn" data-role="Unit Kearsipan">
+          <div class="lp-role-ico">📦</div>
+          <div class="lp-role-nm">Unit Kearsipan</div>
+          <div class="lp-role-bd">Arsip</div>
+        </button>
       </div>
 
       <form id="loginForm" novalidate>
 
         <!-- Username -->
         <div class="lp-field">
-          <label class="lp-field-lbl" for="username">Email</label>
+          <label class="lp-field-lbl" for="username">Username</label>
           <div class="lp-wrap">
             <input type="text" id="username" class="lp-input"
-              placeholder="Masukkan alamat email" autocomplete="email">
+              placeholder="Masukkan username" autocomplete="username">
             <svg class="lp-ico" width="15" height="15" viewBox="0 0 24 24"
               fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -509,15 +524,35 @@ html, body {
 
 </div><!-- /lp-page -->
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="assets/simaresda-ui.js"></script>
 <script>
 /* ================================================================
-   SIMARESDA — Login Controller v4.0
-   Auth: Supabase Auth (email + password)
-   Role dibaca dari tabel profiles.role setelah login berhasil
-   Redirect: index.html
+   SIMARESDA — Login Controller
+   Session key : 'simaresda-user'
+   Session obj : { username, nama, role, token, expiresAt, loginAt }
+   Roles       : 'Admin' | 'Pengelola' | 'TU'
+   Redirect    : index.html  (langsung tanpa overlay)
 ================================================================ */
+
+const USERS = {
+  admin: {
+    password: 'bpsda#2026', role: 'Admin',
+    nama: 'Administrator',        bidang: null,
+  },
+  pengelola: {
+    password: 'bpsda#2026', role: 'Pengelola',
+    nama: 'Pengelola Arsip',      bidang: 'UMUM',
+  },
+  tatausaha: {
+    password: 'bpsda#2026', role: 'TU',
+    nama: 'Tata Usaha',           bidang: null,
+  },
+  kearsipan: {
+    password: 'bpsda#2026', role: 'Unit Kearsipan',
+    nama: 'Unit Kearsipan',       bidang: null,
+  },
+};
+USERS['tu'] = USERS['tatausaha'];
+USERS['ka'] = USERS['kearsipan'];
 
 /* ── DOM ── */
 const form     = document.getElementById('loginForm');
@@ -530,6 +565,7 @@ const userErrT = document.getElementById('userErrTxt');
 const passErrT = document.getElementById('passErrTxt');
 const eyeBtn   = document.getElementById('eyeBtn');
 const eyeIco   = document.getElementById('eyeIco');
+const roleGrid = document.getElementById('roleGrid');
 
 /* Tampilkan pesan sesi jika ada ?msg= */
 (function() {
@@ -540,17 +576,19 @@ const eyeIco   = document.getElementById('eyeIco');
   el.classList.remove('hidden');
 })();
 
-/* Cek jika sudah login — langsung redirect */
-(async function() {
-  const supa = getSupabase();
-  if (!supa) return;
-  const { data: { session } } = await supa.auth.getSession();
-  if (session) window.location.replace('dashboard.html');
-})();
+/* Role selector */
+let selectedRole = 'Admin';
+roleGrid.querySelectorAll('.lp-role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    roleGrid.querySelectorAll('.lp-role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedRole = btn.dataset.role;
+  });
+});
 
 /* Eye toggle */
-const EYE_OPEN   = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
-const EYE_CLOSED = '<line x1="17.94" y1="17.94" x2="6.06" y2="6.06"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>';
+const EYE_OPEN   = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+const EYE_CLOSED = `<line x1="17.94" y1="17.94" x2="6.06" y2="6.06"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>`;
 let showPass = false;
 eyeBtn.addEventListener('click', () => {
   showPass = !showPass;
@@ -567,71 +605,79 @@ pInput.addEventListener('input', () => { pInput.classList.remove('err'); passErr
 form.addEventListener('submit', async e => {
   e.preventDefault();
 
-  const email   = uInput.value.trim();
+  const rawUser = uInput.value.trim().toLowerCase();
   const rawPass = pInput.value;
   let ok = true;
 
-  if (!email) {
-    uInput.classList.add('err'); userErrT.textContent = 'Email tidak boleh kosong';
+  if (!rawUser) {
+    uInput.classList.add('err');
+    userErrT.textContent = 'Username tidak boleh kosong';
     userErr.classList.add('show'); ok = false;
   }
   if (!rawPass) {
-    pInput.classList.add('err'); passErrT.textContent = 'Kata sandi tidak boleh kosong';
+    pInput.classList.add('err');
+    passErrT.textContent = 'Kata sandi tidak boleh kosong';
     passErr.classList.add('show'); ok = false;
   }
   if (!ok) return;
 
-  loginBtn.classList.add('loading'); loginBtn.disabled = true;
+  /* Loading spinner */
+  loginBtn.classList.add('loading');
+  loginBtn.disabled = true;
+  await new Promise(r => setTimeout(r, 700));
 
-  try {
-    const supa = getSupabase();
-    if (!supa) throw new Error('Koneksi ke server gagal. Coba lagi.');
+  const matched = USERS[rawUser];
 
-    /* 1. Login ke Supabase Auth */
-    const { data, error } = await supa.auth.signInWithPassword({ email, password: rawPass });
-    if (error) throw error;
-
-    /* 2. Ambil profile dari DB */
-    const { data: profile, error: profErr } = await supa.from('profiles')
-      .select('id, nama_lengkap, role, bidang, is_active')
-      .eq('id', data.user.id)
-      .single();
-
-    if (profErr || !profile) throw new Error('Profil pengguna tidak ditemukan.');
-    if (!profile.is_active)  throw new Error('Akun Anda tidak aktif. Hubungi Administrator.');
-
-    /* 3. Simpan session lokal */
-    sessionStorage.setItem('simaresda-user', JSON.stringify({
-      id:          profile.id,
-      nama_lengkap:profile.nama_lengkap,
-      role:        profile.role,
-      bidang:      profile.bidang,
-      email:       email,
-      loginAt:     new Date().toISOString(),
-    }));
-
-    if (document.getElementById('remember').checked) {
-      localStorage.setItem('simaresda-remember', email);
-    } else {
-      localStorage.removeItem('simaresda-remember');
-    }
-
-    window.location.replace('dashboard.html');
-
-  } catch (err) {
+  /* Cek username */
+  if (!matched) {
     loginBtn.classList.remove('loading'); loginBtn.disabled = false;
-    const msg = err.message || 'Login gagal';
-    if (msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials') || msg.toLowerCase().includes('password')) {
-      pInput.classList.add('err'); passErrT.textContent = 'Email atau kata sandi salah';
-      passErr.classList.add('show');
-    } else {
-      uInput.classList.add('err'); userErrT.textContent = msg;
-      userErr.classList.add('show');
-    }
+    uInput.classList.add('err');
+    userErrT.textContent = 'Username tidak ditemukan';
+    userErr.classList.add('show');
+    return;
   }
+
+  /* Cek peran — opsional, role dibaca dari data user */
+  /* (tidak divalidasi agar login tetap fleksibel) */
+
+  /* Cek password */
+  if (matched.password !== rawPass) {
+    loginBtn.classList.remove('loading'); loginBtn.disabled = false;
+    pInput.classList.add('err');
+    passErrT.textContent = 'Kata sandi salah';
+    passErr.classList.add('show');
+    return;
+  }
+
+  /* ── BUAT SESSION (format sesuai SIMARESDA_SEC.checkSession) ── */
+  const now       = new Date();
+  const expiresAt = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+
+  sessionStorage.setItem('simaresda-user', JSON.stringify({
+    id        : 'local-' + rawUser,
+    username  : rawUser,
+    nama_lengkap: matched.nama,
+    nama      : matched.nama,
+    role      : matched.role,
+    bidang    : matched.bidang || null,
+    token     : 'local-' + Math.random().toString(36).slice(2) + Date.now(),
+    expiresAt : expiresAt.toISOString(),
+    loginAt   : now.toISOString(),
+  }));
+  sessionStorage.setItem('simaresda-last-active', String(Date.now()));
+
+  /* Ingat username */
+  if (document.getElementById('remember').checked) {
+    localStorage.setItem('simaresda-remember', rawUser);
+  } else {
+    localStorage.removeItem('simaresda-remember');
+  }
+
+  /* ── LANGSUNG MASUK KE DASHBOARD ── tidak ada overlay, tidak ada delay */
+  window.location.replace('dashboard.html');
 });
 
-/* Pulihkan email tersimpan */
+/* Pulihkan username tersimpan */
 (function() {
   const saved = localStorage.getItem('simaresda-remember');
   if (saved) { uInput.value = saved; document.getElementById('remember').checked = true; }
