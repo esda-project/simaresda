@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIMARESDA — Memuat...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Instrument Sans', system-ui, sans-serif;
+      background: #080B13;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .logo { font-size: 48px; animation: pulse 1.5s ease-in-out infinite; }
+    .title { font-size: 22px; font-weight: 700; letter-spacing: .05em; color: #C9A84C; }
+    .sub { font-size: 13px; color: rgba(255,255,255,.45); }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(201,168,76,.2);
+      border-top-color: #C9A84C;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:.6; } }
+  </style>
+</head>
+<body>
+  <div class="logo">📁</div>
+  <div class="title">SIMARESDA</div>
+  <div class="sub">Sistem Informasi Manajemen Arsip Daerah</div>
+  <div class="spinner"></div>
+  <script>
+    // Cek session — jika sudah login langsung ke dashboard,
+    // jika belum ke halaman login
+    (function() {
+      try {
+        const u = sessionStorage.getItem('simaresda-user');
+        if (u) {
+          const user = JSON.parse(u);
+          if (user && user.id) {
+            window.location.replace('dashboard.html');
+            return;
+          }
+        }
+      } catch(e) {}
+      window.location.replace('login.html');
+    })();
+  </script>
+</body>
+</html>
