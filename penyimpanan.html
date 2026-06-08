@@ -684,7 +684,7 @@ window.logout = () => SIMARESDA_SEC.logout();
         <option value="">Semua Lokasi</option>
         <option>Rak A</option><option>Rak B</option><option>Rak C</option><option>Rak D</option><option>FC-01</option><option>FC-02</option><option>FC-03</option>
       </select>
-      <select id="f-tahun" onchange="applyFilter()" style="width:110px"><option value="">Semua Tahun</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option></select>
+      <select id="f-tahun" onchange="applyFilter()" style="width:110px"><option value="">Semua Tahun</option><option>2021</option><option>2024</option><option>2023</option><option>2022</option></select>
       <button class="btn btn-secondary" onclick="exportCSV('tbl-simpan','penyimpanan-arsip')">⬇ CSV</button>
       <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
       <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
@@ -743,7 +743,7 @@ window.logout = () => SIMARESDA_SEC.logout();
           </div>
           <div class="form-group" style="margin-bottom:8px">
             <label class="form-label">Tahun Arsip <span class="req">*</span></label>
-            <input class="form-control" id="m-tahun" type="number" min="2000" max="2030" placeholder="2025" oninput="buildKode()">
+            <input class="form-control" id="m-tahun" type="number" min="2000" max="2030" placeholder="2021" oninput="buildKode()">
           </div>
           <div class="form-group" style="margin-bottom:8px">
             <label class="form-label">No. Urut <span class="req">*</span></label>
@@ -782,7 +782,7 @@ window.logout = () => SIMARESDA_SEC.logout();
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">No. Surat / Referensi</label>
-          <input class="form-control" id="m-nosurat" placeholder="Cth: 001/KEU/I/2025">
+          <input class="form-control" id="m-nosurat" placeholder="Cth: 001/KEU/I/2021">
         </div>
         <div class="form-group">
           <label class="form-label">Tanggal Arsip</label>
@@ -865,7 +865,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 
 <script>
 // ── SIDEBAR ──────────────────────────────────────────────
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge" id="nav-badge">0</span></a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2021–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk<span class="nav-badge" id="nav-badge">0</span></a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item active" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 const currentUser = SIMARESDA_SEC.init();
