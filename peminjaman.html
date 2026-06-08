@@ -606,6 +606,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 <div id="main">
   <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
   <div class="topbar">
+    <button class="icon-btn hamburger" style="display:none" onclick="openSidebar()">☰</button>
     <div class="topbar-title">Peminjaman Arsip</div>
     <div class="topbar-actions no-print">
       <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
@@ -695,6 +696,8 @@ window.logout = () => SIMARESDA_SEC.logout();
     </div>
   </div>
 </div>
+
+<div class="overlay-bg" id="overlay-bg" onclick="closeSidebar()"></div>
 
 <div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
 
@@ -987,9 +990,11 @@ window._supaSubmitPinjam = async function(){
   if(!nama||!tgl||!kembali){return;}
   if(!window._supa){if(_origSubmitPinjam)_origSubmitPinjam();return;}
   const yr=new Date().getFullYear();
-  const{count}=await window._supa.from('peminjaman_arsip').select('*',{count:'exact',head:true}).gte('tanggal_pinjam',);
+  const{count}=await window._supa.from('peminjaman_arsip').select('*',{count:'exact',head:true}).gte('tanggal_pinjam',`${yr}-01-01`).then(r=>({count:r.count||0})).catch(()=>({count:0}));
+  const nomorUrut=String((count||0)+1).padStart(3,'0');
+  const nomorFormulir=`FP-${yr}-${nomorUrut}`;
   const{error}=await window._supa.from('peminjaman_arsip').insert({
-    nomor_formulir:,
+    nomor_formulir:nomorFormulir,
     nama_peminjam:nama,
     jabatan_peminjam:document.getElementById('p-jabatan')?.value||null,
     nip_peminjam:document.getElementById('p-nip')?.value||null,
