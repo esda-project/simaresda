@@ -634,7 +634,7 @@ window.logout = () => SIMARESDA_SEC.logout();
             <div class="form-group"><label class="form-label">NIP / NIK</label><input class="form-control" id="p-nip" placeholder="Nomor identitas"></div>
             <div class="form-group"><label class="form-label">Jenis Arsip</label><select class="form-control" id="p-jenis"><option>Arsip Aktif</option><option>Arsip Inaktif</option></select></div>
           </div>
-          <div class="form-group"><label class="form-label">Kode / Nomor Arsip <span class="req">*</span></label><input class="form-control" id="p-kode" placeholder="Cth: ARK-2025-001"></div>
+          <div class="form-group"><label class="form-label">Kode / Nomor Arsip <span class="req">*</span></label><input class="form-control" id="p-kode" placeholder="Cth: ARK-2021-001"></div>
           <div class="form-group"><label class="form-label">Perihal / Deskripsi Arsip <span class="req">*</span></label><textarea class="form-control" id="p-perihal" placeholder="Deskripsi arsip yang dipinjam"></textarea></div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Tanggal Pinjam <span class="req">*</span></label><input class="form-control" type="date" id="p-tgl"></div>
@@ -670,7 +670,7 @@ window.logout = () => SIMARESDA_SEC.logout();
           <div class="print-title">
             <h2>FORMULIR PEMINJAMAN ARSIP</h2>
             <p>Berdasarkan Peraturan Pemerintah Nomor 28 Tahun 2012 tentang Pelaksanaan Undang-Undang Kearsipan</p>
-            <p>No. Formulir: <strong id="pr-no">FP-2025-001</strong></p>
+            <p>No. Formulir: <strong id="pr-no">FP-2021-001</strong></p>
           </div>
           <table style="width:100%;border-collapse:collapse;font-size:13px">
             <tr><td style="padding:9px 12px;border:1px solid var(--border2);width:36%;font-weight:600;background:var(--surface2)">Nama Peminjam</td><td id="pr-nama" style="padding:9px 12px;border:1px solid var(--border2)">—</td></tr>
@@ -925,7 +925,7 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a><a class="nav-item active" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2021–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a><a class="nav-item active" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
 
@@ -1048,7 +1048,7 @@ function submitPinjam(){
   if(kembali<=tgl){showToast('Tanggal kembali harus setelah tanggal pinjam','danger');return;}
   seq++;
   const obj={
-    id:`FP-2025-${String(seq).padStart(3,'0')}`,nama,
+    id:`FP-2021-${String(seq).padStart(3,'0')}`,nama,
     jabatan:document.getElementById('p-jabatan').value||'—',
     nip:document.getElementById('p-nip').value||'—',
     jenis:document.getElementById('p-jenis').value,
