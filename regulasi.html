@@ -4,9 +4,6 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Regulasi — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="assets/simaresda-ui.js"></script>
-<script src="assets/layout.js"></script>
 <style>
 /* ============================================================
    SIMARESDA — Global Stylesheet
@@ -586,6 +583,7 @@ const SIMARESDA_SEC = {
 window.logout = () => SIMARESDA_SEC.logout();
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="sidebar"></div>
@@ -872,153 +870,142 @@ document.head.appendChild(style);
 
 </script>
 <script>
-const supa=getSupabase(),user=window.SIMARESDA_USER;
-const JENIS_LIST=['UU','PP','Peraturan ANRI','Permendagri','Perda','Perwali','Surat Edaran'];
-const JENIS_ICO={UU:'⚖️',PP:'📜','Peraturan ANRI':'🏛️',Permendagri:'🏢',Perda:'📋',Perwali:'📄','Surat Edaran':'✉️'};
-let data=[],filtered=[],editId=null,page=1,filterJenis='';const RPP=15;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item active" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+simaresdaInit();
+SIMARESDA_SEC.init();
 
-async function loadData(){
-  if(!supa){renderTable();return;}
-  const{data:rows,error}=await supa.from('regulasi')
-    .select('id,kode,judul,nomor,tahun,instansi,jenis,tentang,ringkasan,file_url,link_url,is_active')
-    .eq('is_active',true)
-    .order('tahun',{ascending:false});
-  if(error){showToast('Gagal memuat: '+error.message,'danger');return;}
-  data=rows||[]; applyFilter();
+const BADGE_COLOR={UU:'b-red',PP:'b-blue',ANRI:'b-green',SE:'b-yellow',PERDA:'b-purple'};
+
+let regData=[
+  {id:1,jenis:'UU',nomor:'43',tahun:2009,instansi:'DPR RI',judul:'Undang-Undang tentang Kearsipan',ringkasan:'Mengatur penyelenggaraan kearsipan yang komprehensif dan terpadu, meliputi pengelolaan arsip dinamis dan arsip statis, pembinaan kearsipan, serta sanksi pelanggaran.',link:'https://jdih.anri.go.id',aktif:true},
+  {id:2,jenis:'PP',nomor:'28',tahun:2012,instansi:'Presiden RI',judul:'Pelaksanaan Undang-Undang Nomor 43 Tahun 2009 tentang Kearsipan',ringkasan:'Peraturan pelaksana UU Kearsipan yang mengatur secara rinci pengelolaan arsip dinamis, arsip statis, akreditasi kearsipan, dan pembinaan SDM kearsipan.',link:'https://jdih.anri.go.id',aktif:true},
+  {id:3,jenis:'ANRI',nomor:'37',tahun:2016,instansi:'ANRI',judul:'Pedoman Penyusutan Arsip',ringkasan:'Pedoman teknis penyusutan arsip meliputi pemindahan arsip inaktif, pemusnahan arsip yang tidak bernilai guna, dan penyerahan arsip statis ke lembaga kearsipan.',link:'https://jdih.anri.go.id',aktif:true},
+  {id:4,jenis:'ANRI',nomor:'9',tahun:2018,instansi:'ANRI',judul:'Pedoman Pembuatan dan Penggunaan Arsip dalam Pelaksanaan Kegiatan',ringkasan:'Mengatur standar pembuatan naskah dinas, tata cara penggunaan arsip, dan pengelolaan arsip aktif pada unit pengolah.',link:'https://jdih.anri.go.id',aktif:true},
+  {id:5,jenis:'ANRI',nomor:'19',tahun:2012,instansi:'ANRI',judul:'Pedoman Pengelolaan Arsip Aktif di Lingkungan Pemerintahan',ringkasan:'Panduan teknis pengelolaan arsip aktif di unit pengolah, meliputi pemberkasan, penataan, penemuan kembali, dan pemeliharaan arsip aktif.',link:'https://jdih.anri.go.id',aktif:true},
+  {id:6,jenis:'SE',nomor:'6',tahun:2020,instansi:'KemenPANRB',judul:'Surat Edaran tentang Digitalisasi Arsip dan Dokumen Pemerintah',ringkasan:'Mendorong instansi pemerintah untuk melakukan digitalisasi arsip dan dokumen dalam rangka mendukung transformasi digital pemerintahan.',link:'#',aktif:true},
+  {id:7,jenis:'PP',nomor:'45',tahun:2017,instansi:'Presiden RI',judul:'Partisipasi Masyarakat dalam Penyelenggaraan Pemerintahan Daerah',ringkasan:'Mengatur bentuk partisipasi masyarakat termasuk akses terhadap arsip dan dokumen publik di lingkungan pemerintah daerah.',link:'#',aktif:true},
+  {id:8,jenis:'ANRI',nomor:'5',tahun:2021,instansi:'ANRI',judul:'Pedoman Alih Media Arsip',ringkasan:'Ketentuan teknis pelaksanaan alih media arsip dari media kertas ke media elektronik, termasuk standar kualitas, autentikasi, dan penyimpanan arsip digital.',link:'#',aktif:true},
+];
+let activeKat='', editId=null;
+
+function setKat(kat, btn){
+  activeKat=kat;
+  document.querySelectorAll('.tabs .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderReg();
 }
 
-function setJenis(jenis,btn){
-  filterJenis=jenis;
-  document.querySelectorAll('.reg-tab').forEach(b=>{b.style.background='var(--surface)';b.style.color='var(--text)';});
-  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';}
-  applyFilter();
-}
+// ── Supabase init ──────────────────────────────
+(function(){
+  if(window._supaReady)return;
+  if(!window.supabase)return;
+  window._supa=window.supabase.createClient('https://zazjmmpuqtejxynuvzfj.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphemptbXB1cXRlanh5bnV2emZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTE5NTEsImV4cCI6MjA5NTUyNzk1MX0.MAyppwvI-G2gEpG4-bE5gMH1wV-Nb4jR5kgnQkQVjto');
+  window._supaReady=true;
+  try{const u=JSON.parse(sessionStorage.getItem('simaresda-user')||'null');
+    if(u){if(!u.nama_lengkap)u.nama_lengkap=u.nama||u.username||'';window._user=u;}
+  }catch(e){}
+})();
 
-function renderTable(){
-  const start=(page-1)*RPP,rows=filtered.slice(start,start+RPP);
-  const tbody=document.getElementById('body-reg');if(!tbody)return;
-  const isAdmin=user?.role==='Admin';
-  tbody.innerHTML=rows.length?rows.map(r=>`<tr>
-    <td>${badgePlain(`${JENIS_ICO[r.jenis]||''} ${r.jenis||'—'}`,'b-blue')}</td>
-    <td>
-      <strong>${r.judul||'—'}</strong><br>
-      <span style="font-size:11px;color:var(--text3)">${r.nomor||''}</span>
-    </td>
-    <td>${r.tahun||'—'}</td>
-    <td>${r.instansi||'—'}</td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-        title="${(r.tentang||r.ringkasan||'').replace(/"/g,'&quot;')}">${r.tentang||r.ringkasan||'—'}</td>
-    <td class="no-print" style="white-space:nowrap">
-      ${r.file_url?`<a class="btn btn-secondary btn-xs" href="${r.file_url}" target="_blank">📄 Unduh</a> `:''}
-      ${r.link_url?`<a class="btn btn-secondary btn-xs" href="${r.link_url}" target="_blank">🔗 Link</a> `:''}
-      ${isAdmin?`<button class="btn btn-secondary btn-xs" onclick='editRow(${JSON.stringify(r).replace(/'/g,"&#39;")})'>✏️</button>
-        <button class="btn btn-danger btn-xs" onclick="deleteRow('${r.id}')">🗑</button>`:''}
-    </td>
-  </tr>`).join(''):`<tr><td colspan="6"><div class="empty"><div class="empty-ico">📋</div>
-    <div class="empty-txt">Tidak ada regulasi${filterJenis?' — '+filterJenis:''}</div></div></td></tr>`;
-  const rc=document.getElementById('row-count');
-  if(rc)rc.textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} regulasi`:'';
-  renderPagination();
+async function loadRegulasiFromDB(){
+  if(!window._supa)return;
+  try{
+    const{data:rows,error}=await window._supa.from('regulasi')
+      .select('id,kode,judul,nomor,tahun,instansi,jenis,tentang,ringkasan,file_url,link_url,is_active')
+      .eq('is_active',true).order('tahun',{ascending:false});
+    if(error){console.error('regulasi:',error);return;}
+    const JENIS_MAP={'UU':'UU','PP':'PP','Peraturan ANRI':'ANRI','Permendagri':'SE','Perda':'PERDA','Perwali':'PERWALI','Surat Edaran':'SE'};
+    const fromDB=(rows||[]).map((r,i)=>({
+      id:1000+i,
+      _uuid:r.id,
+      jenis:JENIS_MAP[r.jenis]||r.jenis||'UU',
+      jenisLabel:r.jenis||'UU',
+      nomor:r.nomor||'',
+      tahun:r.tahun||'',
+      instansi:r.instansi||'—',
+      judul:r.judul||'—',
+      ringkasan:r.tentang||r.ringkasan||'',
+      link:r.file_url||r.link_url||'#',
+      aktif:true,
+    }));
+    if(fromDB.length>0){
+      regData=fromDB;
+      if(typeof renderReg==='function') renderReg();
+      console.log('[SIMARESDA] Regulasi from DB:',fromDB.length);
+    }
+  }catch(e){console.error(e);}
 }
-function renderPagination(){const total=Math.ceil(filtered.length/RPP),el=document.getElementById('pagination');if(!el||total<=1){if(el)el.innerHTML='';return;}let h=`<button class="page-btn" onclick="gp(${page-1})" ${page===1?'disabled':''}>‹</button>`;for(let i=1;i<=total;i++)h+=`<button class="page-btn ${i===page?'active':''}" onclick="gp(${i})">${i}</button>`;h+=`<button class="page-btn" onclick="gp(${page+1})" ${page===total?'disabled':''}>›</button>`;el.innerHTML=h;}
-function gp(p){const t=Math.ceil(filtered.length/RPP);if(p<1||p>t)return;page=p;renderTable();}
-function applyFilter(){
-  const q=(document.getElementById('g-search')?.value||'').toLowerCase();
-  filtered=data.filter(r=>{
-    if(filterJenis&&r.jenis!==filterJenis)return false;
+setTimeout(loadRegulasiFromDB, 300);
+
+function renderReg(){
+  const q=document.getElementById('g-search').value.toLowerCase();
+  const list=regData.filter(r=>{
+    if(!r.aktif)return false;
+    if(activeKat&&r.jenis!==activeKat)return false;
     if(q&&!JSON.stringify(r).toLowerCase().includes(q))return false;
     return true;
-  });page=1;renderTable();
+  });
+  const el=document.getElementById('reg-list');
+  const em=document.getElementById('reg-empty');
+  if(!list.length){el.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  const isAdmin=window.SIMARESDA_USER?.role==='Admin';
+  el.innerHTML=list.map(r=>`
+    <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);transition:.18s;cursor:default" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-1px)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='';this.style.boxShadow=''">
+      <div style="flex-shrink:0;text-align:center;min-width:54px">
+        <span class="badge ${BADGE_COLOR[r.jenis]||'b-gray'}" style="font-size:12px;padding:4px 10px">${r.jenis}</span>
+        <div style="font-size:10px;color:var(--text3);margin-top:4px">No.${r.nomor}/${r.tahun}</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;color:var(--text);margin-bottom:4px">${r.judul}</div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px">📌 ${r.instansi} · Tahun ${r.tahun}</div>
+        ${r.ringkasan?`<div style="font-size:12px;color:var(--text2);line-height:1.6">${r.ringkasan}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+        ${r.link&&r.link!=='#'?`<a href="${r.link}" target="_blank" class="btn btn-secondary btn-sm">📄 Lihat</a>`:'<button class="btn btn-secondary btn-sm" disabled>📄 Lihat</button>'}
+        ${isAdmin?`<button class="btn btn-secondary btn-sm" onclick='editReg(${JSON.stringify(r)})'>✏️ Edit</button><button class="btn btn-danger btn-sm" onclick="delReg(${r.id})">🗑</button>`:''}
+      </div>
+    </div>`).join('');
 }
-function resetFilter(){const e=document.getElementById('g-search');if(e)e.value='';filterJenis='';document.querySelectorAll('.reg-tab').forEach((b,i)=>{b.style.background=i===0?'var(--accent)':'var(--surface)';b.style.color=i===0?'#fff':'var(--text)';});filtered=[...data];page=1;renderTable();}
-function openAdd(){
-  editId=null;document.getElementById('m-title').textContent='📋 Tambah Regulasi';
-  ['m-kode','m-judul','m-nomor','m-tahun','m-instansi','m-tentang','m-ringkasan','m-link'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  const mj=document.getElementById('m-jenis');if(mj)mj.value='UU';
-  openModal('modal-reg');
-}
-function editRow(r){
-  editId=r.id;document.getElementById('m-title').textContent='✏️ Edit Regulasi';
-  document.getElementById('m-kode').value=r.kode||'';
-  document.getElementById('m-judul').value=r.judul||'';
-  document.getElementById('m-nomor').value=r.nomor||'';
-  const mt=document.getElementById('m-tahun');if(mt)mt.value=r.tahun||'';
-  const mi=document.getElementById('m-instansi');if(mi)mi.value=r.instansi||'';
-  const mj=document.getElementById('m-jenis');if(mj)mj.value=r.jenis||'UU';
-  const mtt=document.getElementById('m-tentang');if(mtt)mtt.value=r.tentang||'';
-  const mr=document.getElementById('m-ringkasan');if(mr)mr.value=r.ringkasan||'';
-  const ml=document.getElementById('m-link');if(ml)ml.value=r.link_url||'';
-  openModal('modal-reg');
-}
-async function saveRegulasi(){
-  const judul=document.getElementById('m-judul')?.value.trim();
-  const jenis=document.getElementById('m-jenis')?.value;
-  if(!judul||!jenis){showToast('Judul dan jenis wajib diisi','danger');return;}
-  if(!supa)return;
-  const payload={
-    kode:document.getElementById('m-kode')?.value.trim()||null,
-    judul,jenis,
-    nomor:document.getElementById('m-nomor')?.value.trim()||null,
-    tahun:parseInt(document.getElementById('m-tahun')?.value)||null,
-    instansi:document.getElementById('m-instansi')?.value.trim()||null,
-    tentang:document.getElementById('m-tentang')?.value.trim()||null,
-    ringkasan:document.getElementById('m-ringkasan')?.value.trim()||null,
-    link_url:document.getElementById('m-link')?.value.trim()||null,
-    is_active:true,
-  };
-  let error;
-  if(editId){({error}=await supa.from('regulasi').update(payload).eq('id',editId));}
-  else{payload.created_by=user?.id;({error}=await supa.from('regulasi').insert(payload));}
-  if(error){showToast('Gagal: '+error.message,'danger');return;}
-  closeModal('modal-reg');
-  showToast(`✅ Regulasi berhasil ${editId?'diperbarui':'disimpan'}`,'success');
-  loadData();
-}
-async function deleteRow(id){
-  if(!confirm('Nonaktifkan regulasi ini?'))return;
-  const{error}=await supa.from('regulasi').update({is_active:false}).eq('id',id);
-  if(error){showToast('Gagal: '+error.message,'danger');return;}
-  showToast('🗑️ Regulasi dinonaktifkan','warn');loadData();
-}
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay-bg').classList.add('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('show');}
 
-(async function init(){
-  await simaresdaInit();
-  injectLayout('regulasi','📋 Regulasi');
-  // Inject tab 7 jenis regulasi
-  const toolbar=document.querySelector('.toolbar');
-  if(toolbar&&!document.querySelector('.reg-tab')){
-    const tabs=document.createElement('div');
-    tabs.style.cssText='display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;';
-    const items=[{v:'',l:'Semua'},...JENIS_LIST.map(j=>({v:j,l:`${JENIS_ICO[j]||''} ${j}`}))];
-    tabs.innerHTML=items.map((b,i)=>`<button class="reg-tab"
-      onclick="setJenis('${b.v}',this)"
-      style="padding:5px 12px;border-radius:6px;border:1px solid var(--border);font-size:12px;cursor:pointer;
-             background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#fff':'var(--text)'};">
-      ${b.l}
-    </button>`).join('');
-    toolbar.parentNode.insertBefore(tabs,toolbar);
-  }
-  // Inject field jenis di form modal jika belum ada
-  if(!document.getElementById('m-jenis')){
-    const mJudul=document.getElementById('m-judul');
-    if(mJudul){
-      const fg=mJudul.closest('.form-group');
-      if(fg){
-        const newFg=document.createElement('div');
-        newFg.className='form-group';newFg.style.marginBottom='12px';
-        newFg.innerHTML=`<label class="form-label">Jenis Regulasi <span style="color:red">*</span></label>
-          <select class="form-control" id="m-jenis">
-            ${JENIS_LIST.map(j=>`<option value="${j}">${JENIS_ICO[j]||''} ${j}</option>`).join('')}
-          </select>`;
-        fg.parentNode.insertBefore(newFg,fg);
-      }
-    }
-  }
-  if(user?.role!=='Admin'){const b=document.querySelector('[onclick="openAdd()"]');if(b)b.style.display='none';}
-  await loadData();
-})();
+function saveReg(){
+  const judul=document.getElementById('r-judul').value.trim();
+  const nomor=document.getElementById('r-nomor').value.trim();
+  const tahun=document.getElementById('r-tahun').value;
+  if(!judul||!nomor||!tahun){showToast('Harap isi field wajib (*)','danger');return;}
+  const obj={
+    id:editId||Date.now(),jenis:document.getElementById('r-jenis').value,nomor,tahun:Number(tahun),
+    instansi:document.getElementById('r-instansi').value||'—',judul,
+    ringkasan:document.getElementById('r-ringkasan').value,
+    link:document.getElementById('r-link').value||'#',aktif:true
+  };
+  if(editId){const i=regData.findIndex(r=>r.id===editId);if(i>=0)regData[i]=obj;}
+  else regData.unshift(obj);
+  editId=null;closeModal('modal-reg');renderReg();
+  showToast('✅ Regulasi berhasil disimpan','success');
+}
+function editReg(r){
+  editId=r.id;document.getElementById('reg-modal-title').textContent='✏️ Edit Regulasi';
+  document.getElementById('r-jenis').value=r.jenis;document.getElementById('r-nomor').value=r.nomor;
+  document.getElementById('r-tahun').value=r.tahun;document.getElementById('r-instansi').value=r.instansi;
+  document.getElementById('r-judul').value=r.judul;document.getElementById('r-ringkasan').value=r.ringkasan||'';
+  document.getElementById('r-link').value=r.link||'';
+  openModal('modal-reg');
+}
+function delReg(id){
+  if(!confirm('Hapus regulasi ini?'))return;
+  regData=regData.filter(r=>r.id!==id);renderReg();showToast('🗑️ Regulasi dihapus','warn');
+}
+
+// Reset modal saat open tambah baru
+document.querySelector('[onclick="openModal(\'modal-reg\')"]')?.addEventListener('click',()=>{
+  editId=null;document.getElementById('reg-modal-title').textContent='📋 Tambah Regulasi';
+  ['r-nomor','r-tahun','r-instansi','r-judul','r-ringkasan','r-link'].forEach(id=>document.getElementById(id).value='');
+});
+renderReg();
+
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
 </script>
 </body>
 </html>

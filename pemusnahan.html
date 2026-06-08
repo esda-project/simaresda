@@ -4,9 +4,6 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pemusnahan Arsip — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="assets/simaresda-ui.js"></script>
-<script src="assets/layout.js"></script>
 <style>
 /* ============================================================
    SIMARESDA — Global Stylesheet
@@ -586,6 +583,7 @@ const SIMARESDA_SEC = {
 window.logout = () => SIMARESDA_SEC.logout();
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="sidebar"></div>
@@ -865,181 +863,128 @@ document.head.appendChild(style);
 
 </script>
 <script>
-const supa=getSupabase(),user=window.SIMARESDA_USER;
-const BIDANG_LABEL={UMUM:'Umum / Sekretariat',BUMD:'BUMD',PEREKONOMIAN:'Perekonomian',SDA_DBHCHT:'SDA & DBH CHT'};
-let data=[],filtered=[],page=1,filterJenis='';const RPP=10;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item active" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+simaresdaInit();
+SIMARESDA_SEC.init();
 
-async function loadData(){
-  if(!supa){renderTable();return;}
-  const{data:rows,error}=await supa.from('penyusutan_arsip')
-    .select('id,arsip_id,jenis_penyusutan,tanggal_usul,tanggal_persetujuan,status,keterangan,dasar_hukum,arsip(perihal,kode_arsip,bidang,status)')
-    .order('tanggal_usul',{ascending:false});
-  if(error){showToast('Gagal memuat: '+error.message,'danger');return;}
-  data=rows||[]; applyFilter();
-}
+// ── Supabase init ─────────────────────────────
+(function(){
+  if(window._supaReady)return;
+  if(!window.supabase)return;
+  window._supa=window.supabase.createClient('https://zazjmmpuqtejxynuvzfj.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphemptbXB1cXRlanh5bnV2emZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTE5NTEsImV4cCI6MjA5NTUyNzk1MX0.MAyppwvI-G2gEpG4-bE5gMH1wV-Nb4jR5kgnQkQVjto');
+  window._supaReady=true;
+  try{const u=JSON.parse(sessionStorage.getItem('simaresda-user')||'null');
+    if(u){if(!u.nama_lengkap)u.nama_lengkap=u.nama||u.username||'';window._user=u;}
+  }catch(e){}
+})();
 
-function setJenis(jenis,btn){
-  filterJenis=jenis;
-  document.querySelectorAll('.jenis-tab').forEach(b=>{b.style.background='var(--surface)';b.style.color='var(--text)';});
-  if(btn){btn.style.background='var(--accent)';btn.style.color='#fff';}
-  applyFilter();
+async function loadPenyusutanFromDB(){
+  if(!window._supa)return;
+  try{
+    const{data:rows,error}=await window._supa.from('penyusutan_arsip')
+      .select('id,jenis_penyusutan,tanggal_usul,status,keterangan,arsip(perihal,kode_arsip,bidang)')
+      .order('tanggal_usul',{ascending:false});
+    if(error){console.error('penyusutan:',error);return;}
+    const BL={UMUM:'Umum',BUMD:'BUMD',PEREKONOMIAN:'Perekonomian',SDA_DBHCHT:'SDA & DBH CHT'};
+    const fromDB=(rows||[]).map(r=>({
+      id:r.id,
+      _uuid:r.id,
+      jenis:r.jenis_penyusutan||'Pemindahan',
+      arsip:r.arsip?.perihal||'—',
+      kode:r.arsip?.kode_arsip||'—',
+      bidang:r.arsip?.bidang||'',
+      bidangLabel:BL[r.arsip?.bidang]||r.arsip?.bidang||'—',
+      tglUsul:r.tanggal_usul||'',
+      status:r.status||'Menunggu',
+      ket:r.keterangan||'',
+    }));
+    // Inject ke variable pemuData jika ada
+    if(typeof pemuData!=='undefined'){
+      pemuData.length=0;
+      fromDB.forEach(r=>pemuData.push(r));
+      if(typeof renderPemu==='function')renderPemu();
+    }
+    console.log('[SIMARESDA] Penyusutan loaded:',fromDB.length);
+  }catch(e){console.error(e);}
 }
+setTimeout(loadPenyusutanFromDB,300);
+
+let data=[];
+let logData=[];
+let seq=3,filtered=[...data];
 
 function renderTable(){
-  const start=(page-1)*RPP,rows=filtered.slice(start,start+RPP);
-  const tbody=document.getElementById('body-susut');if(!tbody)return;
-  const isKS=user?.role==='Unit Kearsipan'||user?.role==='Admin';
-  tbody.innerHTML=rows.length?rows.map(p=>`<tr>
-    <td>${badgePlain(p.jenis_penyusutan||'—',
-      p.jenis_penyusutan==='Pemusnahan'?'b-red':
-      p.jenis_penyusutan==='Pemindahan'?'b-blue':'b-green')}</td>
-    <td class="td-mono" style="font-size:11px">${p.arsip?.kode_arsip||'—'}</td>
-    <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
-        title="${(p.arsip?.perihal||'').replace(/"/g,'&quot;')}">${p.arsip?.perihal||'—'}</td>
-    <td>${badgePlain(BIDANG_LABEL[p.arsip?.bidang]||p.arsip?.bidang||'—','b-blue')}</td>
-    <td>${formatTanggal(p.tanggal_usul)}</td>
-    <td>${badge(p.status||'—')}</td>
-    <td class="no-print" style="white-space:nowrap">
-      ${isKS&&p.status==='Menunggu'?`
-        <button class="btn btn-primary btn-xs" onclick="setujui('${p.id}','${p.arsip_id}','${p.jenis_penyusutan}')">✓ Setujui</button>
-        <button class="btn btn-danger btn-xs" onclick="tolak('${p.id}')">✗ Tolak</button>`:''}
-    </td>
-  </tr>`).join(''):`<tr><td colspan="7"><div class="empty"><div class="empty-ico">🗑️</div>
-    <div class="empty-txt">Tidak ada usulan penyusutan${filterJenis?' — '+filterJenis:''}</div></div></td></tr>`;
-  const rc=document.getElementById('row-count');
-  if(rc)rc.textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} usulan`:'';
-  renderPagination();
-}
-function renderPagination(){const total=Math.ceil(filtered.length/RPP),el=document.getElementById('pagination');if(!el||total<=1){if(el)el.innerHTML='';return;}let h=`<button class="page-btn" onclick="gp(${page-1})" ${page===1?'disabled':''}>‹</button>`;for(let i=1;i<=total;i++)h+=`<button class="page-btn ${i===page?'active':''}" onclick="gp(${i})">${i}</button>`;h+=`<button class="page-btn" onclick="gp(${page+1})" ${page===total?'disabled':''}>›</button>`;el.innerHTML=h;}
-function gp(p){const t=Math.ceil(filtered.length/RPP);if(p<1||p>t)return;page=p;renderTable();}
-function applyFilter(){
-  const q=(document.getElementById('g-search')?.value||'').toLowerCase();
-  const st=document.getElementById('filter-status')?.value||'';
-  filtered=data.filter(p=>{
-    if(filterJenis&&p.jenis_penyusutan!==filterJenis)return false;
-    if(q&&!JSON.stringify(p).toLowerCase().includes(q))return false;
-    if(st&&p.status!==st)return false;
+  const q=document.getElementById('g-search').value.toLowerCase();
+  const st=document.getElementById('f-status').value;
+  filtered=data.filter(d=>{
+    if(q&&!JSON.stringify(d).toLowerCase().includes(q))return false;
+    if(st&&d.status!==st)return false;
     return true;
-  });page=1;renderTable();
-}
-function resetFilter(){const e=document.getElementById('g-search');if(e)e.value='';const es=document.getElementById('filter-status');if(es)es.value='';filtered=[...data];page=1;renderTable();}
-
-async function loadArsipInaktif(){
-  if(!supa)return;
-  const sel=document.getElementById('m-arsip-id');if(!sel)return;
-  const{data:list}=await supa.from('arsip').select('id,kode_arsip,perihal,bidang').eq('status','Inaktif').eq('is_deleted',false).order('kode_arsip');
-  sel.innerHTML='<option value="">-- Pilih Arsip Inaktif --</option>';
-  (list||[]).forEach(a=>{
-    const o=document.createElement('option');
-    o.value=a.id;
-    o.textContent=`[${a.kode_arsip}] ${a.perihal} — ${BIDANG_LABEL[a.bidang]||a.bidang}`;
-    sel.appendChild(o);
   });
+  document.getElementById('body-musna').innerHTML=filtered.length?filtered.map(d=>`
+    <tr>
+      <td class="td-mono" style="color:var(--red);font-weight:600">${d.kode}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.perihal}</td>
+      <td>${d.alasan}</td>
+      <td class="td-mono">${d.ba||'—'}</td>
+      <td>${d.tglAjuan}</td>
+      <td>${d.diajukan}</td>
+      <td>${d.tglPersetujuan||'—'}</td>
+      <td>${badge(d.status)}</td>
+      <td class="no-print" style="white-space:nowrap">
+        ${d.status==='Menunggu'?`<button class="btn btn-success btn-xs" onclick="setujui('${d.kode}')" data-require-role="Admin">✅ Setujui</button><button class="btn btn-danger btn-xs" onclick="tolak('${d.kode}')" data-require-role="Admin">✕ Tolak</button>`:''}
+      </td>
+    </tr>`).join(''):`<tr><td colspan="9"><div class="empty"><div class="empty-ico">🗑️</div><div class="empty-txt">Tidak ada data pemusnahan</div></div></td></tr>`;
+  document.getElementById('row-count').textContent=filtered.length?`${filtered.length} record`:'';
+  renderLog();applyRoleGuards(window.SIMARESDA_USER?.role);
+}
+function applyFilter(){renderTable();}
+function renderLog(){
+  document.getElementById('body-log').innerHTML=logData.map(l=>`
+    <tr><td class="td-mono" style="font-size:11px">${l.waktu}</td><td class="td-mono" style="color:var(--red)">${l.kode}</td>
+    <td><span style="font-family:monospace;font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px">${l.aksi}</span></td>
+    <td>${l.user}</td><td style="color:var(--text2);font-size:12px">${l.ket}</td></tr>`).join('');
 }
 
-function openAdd(){
-  ['m-keterangan','m-dasar-hukum'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  const td=document.getElementById('m-tanggal-usul');if(td)td.value=new Date().toISOString().split('T')[0];
-  const mj=document.getElementById('m-jenis');if(mj)mj.value='Pemindahan';
-  loadArsipInaktif();
-  openModal('modal-susut');
+function saveMusna(){
+  const kode=document.getElementById('mn-kode').value.trim();
+  const perihal=document.getElementById('mn-perihal').value.trim();
+  const alasan=document.getElementById('mn-alasan').value;
+  if(!kode||!perihal){showToast('Harap isi field wajib (*)','danger');return;}
+  seq++;
+  const now=new Date().toISOString().slice(0,10);
+  const user=window.SIMARESDA_USER?.nama||'Admin';
+  const obj={kode,perihal,alasan,metode:document.getElementById('mn-metode').value,
+    ba:document.getElementById('mn-ba').value||'',tglAjuan:now,diajukan:user,tglPersetujuan:'',status:'Menunggu',ket:document.getElementById('mn-ket').value};
+  data.unshift(obj);
+  logData.unshift({waktu:now+' '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),kode,aksi:'DIAJUKAN',user,ket:alasan});
+  closeModal('modal-musna');renderTable();
+  showToast('✅ Pengajuan pemusnahan berhasil dikirim','success');
+  pushNotif(`🗑️ Pemusnahan arsip ${kode} diajukan — menunggu persetujuan`,'warn');
 }
-
-async function saveUsulPenyusutan(){
-  const arsipId=document.getElementById('m-arsip-id')?.value;
-  const jenis=document.getElementById('m-jenis')?.value;
-  const tgl=document.getElementById('m-tanggal-usul')?.value;
-  if(!arsipId||!jenis||!tgl){showToast('Arsip, jenis, dan tanggal wajib diisi','danger');return;}
-  if(!supa)return;
-  const{error}=await supa.from('penyusutan_arsip').insert({
-    arsip_id:arsipId,
-    jenis_penyusutan:jenis,
-    tanggal_usul:tgl,
-    status:'Menunggu',
-    keterangan:document.getElementById('m-keterangan')?.value||null,
-    dasar_hukum:document.getElementById('m-dasar-hukum')?.value||null,
-    diusulkan_oleh:user?.id,
-  });
-  if(error){showToast('Gagal: '+error.message,'danger');return;}
-  closeModal('modal-susut');
-  showToast('✅ Usulan penyusutan berhasil diajukan','success');
-  loadData();
+function setujui(kode){
+  if(!confirm(`Setujui pemusnahan arsip ${kode}?\nTindakan ini tidak dapat dibatalkan.`))return;
+  const d=data.find(x=>x.kode===kode);if(!d)return;
+  const now=new Date().toISOString().slice(0,10);
+  d.status='Disetujui';d.tglPersetujuan=now;
+  const user=window.SIMARESDA_USER?.nama||'Admin';
+  logData.unshift({waktu:now+' '+new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),kode,aksi:'DISETUJUI',user,ket:'Persetujuan kepala unit'});
+  renderTable();showToast(`✅ Pemusnahan ${kode} disetujui`,'success');
+  pushNotif(`🗑️ Pemusnahan ${kode} telah disetujui`,'danger');
 }
-
-async function setujui(id,arsipId,jenis){
-  if(!confirm(`Setujui usulan ${jenis} ini? Status arsip akan berubah.`))return;
-  await supa.from('penyusutan_arsip').update({
-    status:'Disetujui',
-    disetujui_oleh:user?.id,
-    tanggal_persetujuan:new Date().toISOString().split('T')[0],
-  }).eq('id',id);
-  const newStatus=jenis==='Pemusnahan'?'Dimusnahkan':'Dipindah';
-  const update={status:newStatus};
-  if(jenis==='Pemusnahan'){update.is_deleted=true;update.deleted_at=new Date().toISOString();}
-  await supa.from('arsip').update(update).eq('id',arsipId);
-  showToast(`✅ Arsip berhasil ${jenis.toLowerCase()}`,'success');
-  loadData();
+function tolak(kode){
+  const alasan=prompt('Alasan penolakan:');if(!alasan)return;
+  const d=data.find(x=>x.kode===kode);if(!d)return;
+  d.status='Ditolak';
+  const user=window.SIMARESDA_USER?.nama||'Admin';
+  logData.unshift({waktu:new Date().toISOString().slice(0,10),kode,aksi:'DITOLAK',user,ket:alasan});
+  renderTable();showToast(`❌ Pemusnahan ${kode} ditolak`,'warn');
 }
+renderTable();
 
-async function tolak(id){
-  if(!confirm('Tolak usulan penyusutan ini?'))return;
-  const{error}=await supa.from('penyusutan_arsip').update({status:'Ditolak'}).eq('id',id);
-  if(error){showToast('Gagal: '+error.message,'danger');return;}
-  showToast('❌ Usulan ditolak','warn');
-  loadData();
-}
-
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay-bg').classList.add('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('show');}
-
-(async function init(){
-  await simaresdaInit();
-  injectLayout('penyusutan','🗑️ Penyusutan Arsip');
-  // Inject tab jenis penyusutan
-  const toolbar=document.querySelector('.toolbar');
-  if(toolbar&&!document.querySelector('.jenis-tab')){
-    const tabs=document.createElement('div');
-    tabs.style.cssText='display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;';
-    const items=[
-      {v:'',l:'Semua'},
-      {v:'Pemindahan',l:'📦 Pemindahan'},
-      {v:'Pemusnahan',l:'🔥 Pemusnahan'},
-      {v:'Penyerahan Permanen',l:'🏛️ Penyerahan Permanen'},
-    ];
-    tabs.innerHTML=items.map((b,i)=>`<button class="jenis-tab"
-      onclick="setJenis('${b.v}',this)"
-      style="padding:5px 14px;border-radius:6px;border:1px solid var(--border);font-size:12px;cursor:pointer;
-             background:${i===0?'var(--accent)':'var(--surface)'};color:${i===0?'#fff':'var(--text)'};">
-      ${b.l}
-    </button>`).join('');
-    toolbar.parentNode.insertBefore(tabs,toolbar);
-  }
-  // Inject field jenis di form modal jika belum ada
-  const mJenis=document.getElementById('m-jenis');
-  if(!mJenis){
-    const mKet=document.getElementById('m-keterangan');
-    if(mKet){
-      const fg=mKet.closest('.form-group');
-      if(fg){
-        const newFg=document.createElement('div');
-        newFg.className='form-group';
-        newFg.style.marginBottom='12px';
-        newFg.innerHTML=`<label class="form-label">Jenis Penyusutan <span style="color:red">*</span></label>
-          <select class="form-control" id="m-jenis">
-            <option value="Pemindahan">📦 Pemindahan</option>
-            <option value="Pemusnahan">🔥 Pemusnahan</option>
-            <option value="Penyerahan Permanen">🏛️ Penyerahan Permanen</option>
-          </select>`;
-        fg.parentNode.insertBefore(newFg,fg);
-      }
-    }
-  }
-  // Sembunyikan tombol Tambah untuk TU dan Pengelola
-  if(user?.role==='TU'||user?.role==='Pengelola'){
-    const b=document.querySelector('[onclick="openAdd()"]');if(b)b.style.display='none';
-  }
-  await loadData();
-})();
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
 </script>
 </body>
 </html>

@@ -4,9 +4,6 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Peminjaman Arsip — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="assets/simaresda-ui.js"></script>
-<script src="assets/layout.js"></script>
 <style>
 /* ============================================================
    SIMARESDA — Global Stylesheet
@@ -602,6 +599,7 @@ const SIMARESDA_SEC = {
 window.logout = () => SIMARESDA_SEC.logout();
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 <div id="sidebar"></div>
@@ -924,140 +922,186 @@ document.head.appendChild(style);
 
 </script>
 <script>
-const supa=getSupabase(),user=window.SIMARESDA_USER;
-const BIDANG_LABEL={UMUM:'Umum / Sekretariat',BUMD:'BUMD',PEREKONOMIAN:'Perekonomian',SDA_DBHCHT:'SDA & DBH CHT'};
-let data=[],filtered=[],page=1;const RPP=10;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a><a class="nav-item active" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
+simaresdaInit();
+SIMARESDA_SEC.init();
 
-async function loadData(){
-  if(!supa){renderTable();return;}
-  let q=supa.from('peminjaman_arsip')
-    .select('id,nomor_formulir,arsip_id,nama_peminjam,jabatan_peminjam,unit_peminjam,keperluan,tanggal_pinjam,tanggal_kembali_rencana,tanggal_kembali_aktual,status,catatan,arsip(perihal,kode_arsip,bidang,status)')
-    .order('tanggal_pinjam',{ascending:false});
-  const{data:rows,error}=await q;
-  if(error){showToast('Gagal memuat: '+error.message,'danger');return;}
-  let result=rows||[];
-  if(user?.role==='Pengelola') result=result.filter(p=>p.arsip?.bidang===user.bidang&&p.arsip?.status==='Aktif');
-  if(user?.role==='Unit Kearsipan') result=result.filter(p=>['Inaktif','Dipindah'].includes(p.arsip?.status));
-  data=result; applyFilter();
+// Set default dates
+const today=new Date().toISOString().slice(0,10);
+const twoWeeks=new Date(Date.now()+14*86400000).toISOString().slice(0,10);
+document.getElementById('p-tgl').value=today;
+document.getElementById('p-kembali').value=twoWeeks;
+
+let seq=3, pinjamData=[];
+
+// ── Supabase init ──────────────────────────────
+(function(){
+  if(window._supaReady)return;
+  if(!window.supabase)return;
+  window._supa=window.supabase.createClient('https://zazjmmpuqtejxynuvzfj.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphemptbXB1cXRlanh5bnV2emZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5NTE5NTEsImV4cCI6MjA5NTUyNzk1MX0.MAyppwvI-G2gEpG4-bE5gMH1wV-Nb4jR5kgnQkQVjto');
+  window._supaReady=true;
+  try{const u=JSON.parse(sessionStorage.getItem('simaresda-user')||'null');
+    if(u){if(!u.nama_lengkap)u.nama_lengkap=u.nama||u.username||'';window._user=u;}
+  }catch(e){}
+})();
+
+async function loadPinjamanFromDB(){
+  if(!window._supa)return;
+  try{
+    const{data:rows,error}=await window._supa.from('peminjaman_arsip')
+      .select('id,nomor_formulir,nama_peminjam,jabatan_peminjam,unit_peminjam,keperluan,tanggal_pinjam,tanggal_kembali_rencana,tanggal_kembali_aktual,status,arsip(perihal,kode_arsip,bidang,status)')
+      .order('tanggal_pinjam',{ascending:false});
+    if(error){console.error('pinjam:',error);return;}
+    const u=window._user;
+    let result=rows||[];
+    if(u?.role==='Pengelola'&&u?.bidang) result=result.filter(p=>p.arsip?.bidang===u.bidang);
+    if(u?.role==='Unit Kearsipan') result=result.filter(p=>['Inaktif','Dipindah'].includes(p.arsip?.status));
+    pinjamData=result.map(r=>({
+      id:r.nomor_formulir||r.id.slice(0,8),
+      _uuid:r.id,
+      nama:r.nama_peminjam||'—',
+      jabatan:r.jabatan_peminjam||'—',
+      nip:'—',
+      jenis:r.arsip?.jenis||'Arsip Aktif',
+      kode:r.arsip?.kode_arsip||'—',
+      perihal:r.arsip?.perihal||'—',
+      tgl:r.tanggal_pinjam||'',
+      kembali:r.tanggal_kembali_rencana||'',
+      keperluan:r.keperluan||'—',
+      status:r.status||'Dipinjam',
+    }));
+    seq=pinjamData.length+3;
+    if(typeof renderPinjam==='function') renderPinjam();
+    console.log('[SIMARESDA] Peminjaman loaded:',pinjamData.length);
+  }catch(e){console.error(e);}
 }
 
-function renderTable(){
-  const today=new Date().toISOString().split('T')[0];
-  const start=(page-1)*RPP,rows=filtered.slice(start,start+RPP);
-  const tbody=document.getElementById('body-pinjam');if(!tbody)return;
-  tbody.innerHTML=rows.length?rows.map(p=>{
-    const terlambat=p.status==='Dipinjam'&&p.tanggal_kembali_rencana<today;
-    return`<tr style="${terlambat?'background:rgba(239,68,68,.05)':''}">
-      <td class="td-mono" style="font-size:11px">${p.nomor_formulir||'—'}</td>
-      <td>
-        <span class="td-mono" style="font-size:11px">${p.arsip?.kode_arsip||'—'}</span><br>
-        <span style="font-size:11px;color:var(--text3)">${(p.arsip?.perihal||'').substring(0,35)}</span>
-      </td>
-      <td>${badgePlain(BIDANG_LABEL[p.arsip?.bidang]||p.arsip?.bidang||'—','b-blue')}</td>
-      <td><strong>${p.nama_peminjam||'—'}</strong><br><span style="font-size:11px;color:var(--text3)">${p.unit_peminjam||''}</span></td>
-      <td>${formatTanggal(p.tanggal_pinjam)}</td>
-      <td>
-        ${formatTanggal(p.tanggal_kembali_rencana)}
-        ${terlambat?'<br>'+badgePlain('Terlambat','b-red'):''}
-      </td>
-      <td>${badge(p.status||'—')}</td>
-      <td class="no-print" style="white-space:nowrap">
-        ${p.status==='Dipinjam'?`<button class="btn btn-primary btn-xs" onclick="kembalikan('${p.id}')">↩ Kembali</button>`:''}
-      </td>
-    </tr>`;
-  }).join(''):`<tr><td colspan="8"><div class="empty"><div class="empty-ico">🔖</div><div class="empty-txt">Tidak ada peminjaman</div></div></td></tr>`;
-  const rc=document.getElementById('row-count');
-  if(rc)rc.textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} peminjaman`:'';
-  renderPagination();
-}
-function renderPagination(){const total=Math.ceil(filtered.length/RPP),el=document.getElementById('pagination');if(!el||total<=1){if(el)el.innerHTML='';return;}let h=`<button class="page-btn" onclick="gp(${page-1})" ${page===1?'disabled':''}>‹</button>`;for(let i=1;i<=total;i++)h+=`<button class="page-btn ${i===page?'active':''}" onclick="gp(${i})">${i}</button>`;h+=`<button class="page-btn" onclick="gp(${page+1})" ${page===total?'disabled':''}>›</button>`;el.innerHTML=h;}
-function gp(p){const t=Math.ceil(filtered.length/RPP);if(p<1||p>t)return;page=p;renderTable();}
-function applyFilter(){
-  const q=(document.getElementById('g-search')?.value||'').toLowerCase();
-  const st=document.getElementById('filter-status')?.value||'';
-  filtered=data.filter(p=>{
+// Override submitPinjam untuk simpan ke Supabase
+const _origSubmitPinjam = typeof submitPinjam==='function' ? submitPinjam : null;
+window._supaSubmitPinjam = async function(){
+  const nama=document.getElementById('p-nama').value.trim();
+  const kode=document.getElementById('p-kode').value.trim();
+  const perihal=document.getElementById('p-perihal').value.trim();
+  const tgl=document.getElementById('p-tgl').value;
+  const kembali=document.getElementById('p-kembali').value;
+  if(!nama||!tgl||!kembali){return;}
+  if(!window._supa){if(_origSubmitPinjam)_origSubmitPinjam();return;}
+  const yr=new Date().getFullYear();
+  const{count}=await window._supa.from('peminjaman_arsip').select('*',{count:'exact',head:true}).gte('tanggal_pinjam',);
+  const{error}=await window._supa.from('peminjaman_arsip').insert({
+    nomor_formulir:,
+    nama_peminjam:nama,
+    jabatan_peminjam:document.getElementById('p-jabatan')?.value||null,
+    nip_peminjam:document.getElementById('p-nip')?.value||null,
+    keperluan:document.getElementById('p-keperluan')?.value||'—',
+    tanggal_pinjam:tgl,
+    tanggal_kembali_rencana:kembali,
+    status:'Dipinjam',
+    is_deleted:false,
+  });
+  if(error){console.error('pinjam save:',error);return;}
+  showToast('✅ Peminjaman disimpan ke database','success');
+  closeModal('modal-pinjam');
+  await loadPinjamanFromDB();
+};
+
+setTimeout(loadPinjamanFromDB, 300);
+
+
+function renderPinjam(){
+  const q=(document.getElementById('f-cari-pinjam')||{value:''}).value.toLowerCase();
+  const st=(document.getElementById('f-status-pinjam')||{value:''}).value;
+  const rows=pinjamData.filter(p=>{
     if(q&&!JSON.stringify(p).toLowerCase().includes(q))return false;
     if(st&&p.status!==st)return false;
     return true;
-  });page=1;renderTable();
-}
-function resetFilter(){const e=document.getElementById('g-search');if(e)e.value='';const es=document.getElementById('filter-status');if(es)es.value='';filtered=[...data];page=1;renderTable();}
-
-async function loadArsipOptions(){
-  if(!supa)return;
-  const sel=document.getElementById('m-arsip-id');if(!sel)return;
-  let q=supa.from('arsip').select('id,kode_arsip,perihal,bidang,status').eq('is_deleted',false);
-  if(user?.role==='Pengelola') q=q.eq('bidang',user.bidang).eq('status','Aktif');
-  else if(user?.role==='Unit Kearsipan') q=q.in('status',['Inaktif','Dipindah']);
-  else q=q.in('status',['Aktif','Inaktif']);
-  const{data:list}=await q;
-  sel.innerHTML='<option value="">-- Pilih Arsip --</option>';
-  (list||[]).forEach(a=>{
-    const o=document.createElement('option');
-    o.value=a.id;
-    o.textContent=`[${a.kode_arsip}] ${a.perihal} — ${BIDANG_LABEL[a.bidang]||a.bidang} (${a.status})`;
-    sel.appendChild(o);
   });
+  document.getElementById('body-pinjam').innerHTML=rows.length?rows.map((p,i)=>`
+    <tr>
+      <td class="td-mono">${p.id}</td>
+      <td><strong>${p.nama}</strong><br><span style="font-size:11px;color:var(--text3)">${p.jabatan}</span></td>
+      <td class="td-mono" style="color:var(--accent)">${p.kode}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.perihal}</td>
+      <td>${p.tgl}</td>
+      <td style="color:${p.status==='Terlambat'?'var(--red)':'inherit'};font-weight:${p.status==='Terlambat'?'700':'400'}">${p.kembali}</td>
+      <td>${badge(p.status)}</td>
+      <td class="no-print" style="white-space:nowrap">
+        <button class="btn btn-success btn-xs" onclick="kembalikan('${p.id}')" ${p.status==='Dikembalikan'?'disabled':''}>↩ Kembali</button>
+        <button class="btn btn-secondary btn-xs" onclick="cetakFP(${i})">🖨️</button>
+      </td>
+    </tr>`).join(''):`<tr><td colspan="8"><div class="empty"><div class="empty-ico">🔖</div><div class="empty-txt">Tidak ada data peminjaman</div></div></td></tr>`;
+}
+function filterPinjam(){renderPinjam();}
+
+function submitPinjam(){
+  const nama=document.getElementById('p-nama').value.trim();
+  const kode=document.getElementById('p-kode').value.trim();
+  const perihal=document.getElementById('p-perihal').value.trim();
+  const tgl=document.getElementById('p-tgl').value;
+  const kembali=document.getElementById('p-kembali').value;
+  if(!nama||!kode||!perihal||!tgl||!kembali){showToast('Harap isi semua field wajib (*)','danger');return;}
+  if(kembali<=tgl){showToast('Tanggal kembali harus setelah tanggal pinjam','danger');return;}
+  seq++;
+  const obj={
+    id:`FP-2025-${String(seq).padStart(3,'0')}`,nama,
+    jabatan:document.getElementById('p-jabatan').value||'—',
+    nip:document.getElementById('p-nip').value||'—',
+    jenis:document.getElementById('p-jenis').value,
+    kode,perihal,tgl,kembali,
+    keperluan:document.getElementById('p-keperluan').value||'—',
+    status:'Dipinjam'
+  };
+  pinjamData.unshift(obj);
+  // Fill print template
+  document.getElementById('pr-no').textContent=obj.id;
+  document.getElementById('pr-nama').textContent=obj.nama;
+  document.getElementById('pr-jabatan').textContent=obj.jabatan;
+  document.getElementById('pr-nip').textContent=obj.nip;
+  document.getElementById('pr-jenis').textContent=obj.jenis;
+  document.getElementById('pr-kode').textContent=obj.kode;
+  document.getElementById('pr-perihal').textContent=obj.perihal;
+  document.getElementById('pr-tgl').textContent=obj.tgl;
+  document.getElementById('pr-kembali').textContent=obj.kembali;
+  document.getElementById('pr-keperluan').textContent=obj.keperluan;
+  document.getElementById('pr-ttd').textContent=`( ${obj.nama} )`;
+  renderPinjam();
+  showToast('✅ Peminjaman disimpan. Formulir siap cetak.','success');
+  pushNotif(`🔖 Arsip ${obj.kode} dipinjam oleh ${obj.nama}`,'info');
+  // Switch to print tab
+  document.querySelectorAll('.tab-btn')[2].click();
 }
 
-function openAdd(){
-  ['m-nama','m-jabatan','m-nip','m-unit','m-keperluan','m-catatan'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  const tp=document.getElementById('m-tgl-pinjam');if(tp)tp.value=new Date().toISOString().split('T')[0];
-  const tk=document.getElementById('m-tgl-kembali');if(tk)tk.value='';
-  loadArsipOptions();
-  openModal('modal-pinjam');
+function kembalikan(id){
+  const p=pinjamData.find(d=>d.id===id);
+  if(!p)return;
+  p.status='Dikembalikan';renderPinjam();
+  showToast(`✅ Arsip ${p.kode} berhasil dikembalikan`,'success');
+  pushNotif(`✅ Arsip ${p.kode} dikembalikan oleh ${p.nama}`,'success');
 }
-
-async function savePeminjaman(){
-  const arsipId=document.getElementById('m-arsip-id')?.value;
-  const nama=document.getElementById('m-nama')?.value.trim();
-  const tglPinjam=document.getElementById('m-tgl-pinjam')?.value;
-  const tglKembali=document.getElementById('m-tgl-kembali')?.value;
-  if(!arsipId||!nama||!tglPinjam||!tglKembali){showToast('Arsip, nama, dan tanggal wajib diisi','danger');return;}
-  if(!supa)return;
-  const yr=new Date().getFullYear();
-  const{count}=await supa.from('peminjaman_arsip').select('*',{count:'exact',head:true}).gte('tanggal_pinjam',`${yr}-01-01`);
-  const{error}=await supa.from('peminjaman_arsip').insert({
-    nomor_formulir:`PM-${yr}-${String((count||0)+1).padStart(3,'0')}`,
-    arsip_id:arsipId,
-    nama_peminjam:nama,
-    jabatan_peminjam:document.getElementById('m-jabatan')?.value.trim()||null,
-    nip_peminjam:document.getElementById('m-nip')?.value.trim()||null,
-    unit_peminjam:document.getElementById('m-unit')?.value.trim()||null,
-    keperluan:document.getElementById('m-keperluan')?.value.trim()||'Peminjaman arsip',
-    tanggal_pinjam:tglPinjam,
-    tanggal_kembali_rencana:tglKembali,
-    status:'Dipinjam',
-    catatan:document.getElementById('m-catatan')?.value||null,
-    created_by:user?.id,
-    dilayani_oleh:user?.id,
-  });
-  if(error){showToast('Gagal: '+error.message,'danger');return;}
-  closeModal('modal-pinjam');
-  showToast('✅ Peminjaman berhasil dicatat','success');
-  loadData();
+function cetakFP(i){
+  const p=pinjamData[i];
+  document.getElementById('pr-no').textContent=p.id;
+  document.getElementById('pr-nama').textContent=p.nama;
+  document.getElementById('pr-jabatan').textContent=p.jabatan;
+  document.getElementById('pr-nip').textContent=p.nip;
+  document.getElementById('pr-jenis').textContent=p.jenis;
+  document.getElementById('pr-kode').textContent=p.kode;
+  document.getElementById('pr-perihal').textContent=p.perihal;
+  document.getElementById('pr-tgl').textContent=p.tgl;
+  document.getElementById('pr-kembali').textContent=p.kembali;
+  document.getElementById('pr-keperluan').textContent=p.keperluan;
+  document.getElementById('pr-ttd').textContent=`( ${p.nama} )`;
+  document.querySelectorAll('.tab-btn')[2].click();
 }
-
-async function kembalikan(id){
-  if(!confirm('Tandai arsip ini sudah dikembalikan?'))return;
-  const{error}=await supa.from('peminjaman_arsip').update({
-    status:'Dikembalikan',
-    tanggal_kembali_aktual:new Date().toISOString().split('T')[0],
-    dikembalikan_oleh:user?.id,
-  }).eq('id',id);
-  if(error){showToast('Gagal: '+error.message,'danger');return;}
-  showToast('✅ Arsip berhasil dikembalikan','success');
-  loadData();
+function resetForm(){
+  ['p-nama','p-jabatan','p-nip','p-kode','p-perihal','p-keperluan'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-tgl').value=today;
+  document.getElementById('p-kembali').value=twoWeeks;
 }
+renderPinjam();
 
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay-bg').classList.add('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('show');}
-
-(async function init(){
-  await simaresdaInit();
-  injectLayout('peminjaman','🔖 Peminjaman Arsip');
-  await loadData();
-})();
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
 </script>
 </body>
 </html>
