@@ -2,16 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dashboard — SIMARESDA</title>
-<meta name="robots" content="noindex,nofollow">
+<title>Naskah Keluar — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="assets/simaresda-ui.js"></script>
-<script src="assets/layout.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <style>
-
 /* ============================================================
    SIMARESDA — Global Stylesheet
    Font: Instrument Sans + Fraunces (display)
@@ -405,82 +398,9 @@ textarea.form-control{resize:vertical;min-height:80px;line-height:1.5}
   .hamburger { display:none !important; }
   .overlay-bg { display:none !important; }
 }
-
-/* ── MOBILE ──────────────────────────────────────────────── */
-@media(max-width:768px){
-  :root{--sidebar-w:0px}
-  #sidebar{position:fixed;left:-280px;width:280px;height:100vh;z-index:500;transition:left .3s;box-shadow:var(--shadow-lg)}
-  #sidebar.open{left:0}
-  #main{width:100vw}
-  .topbar{padding:0 12px}
-  .content{padding:12px}
-  .stats-grid{grid-template-columns:1fr 1fr!important;gap:8px}
-  .stat-val{font-size:18px}
-  .stat-card{padding:10px}
-  .charts-grid{grid-template-columns:1fr!important}
-  .bidang-grid{grid-template-columns:1fr!important}
-  .bottom-grid{grid-template-columns:1fr!important}
-  .overlay-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:499}
-  .overlay-bg.show{display:block}
-  .hamburger{display:flex!important}
-  .topbar-title{font-size:13px}
-}
-@media(min-width:769px){
-  .hamburger{display:none!important}
-  .overlay-bg{display:none!important}
-}
-
-/* ── BIDANG KLASIFIKASI ──────────────────────────────────── */
-.bidang-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-  margin-bottom:18px;
-}
-.bidang-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius-lg);overflow:hidden;
-  cursor:pointer;transition:var(--t) var(--ease);
-}
-.bidang-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.bidang-header{
-  padding:14px 16px 10px;
-  display:flex;align-items:center;gap:10px;
-}
-.bidang-icon{
-  width:40px;height:40px;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:18px;flex-shrink:0;
-}
-.bidang-name{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--text)}
-.bidang-desc{font-size:11px;color:var(--text3);margin-top:1px}
-.bidang-stats{
-  display:grid;grid-template-columns:repeat(3,1fr);
-  border-top:1px solid var(--border);
-}
-.bidang-stat{
-  padding:10px 12px;text-align:center;
-  border-right:1px solid var(--border);
-}
-.bidang-stat:last-child{border-right:none}
-.bidang-stat-val{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--text)}
-.bidang-stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:.4px}
-
-/* ── BOTTOM GRID ─────────────────────────────────────────── */
-.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-.timeline{display:flex;flex-direction:column;gap:10px}
-.tl-item{display:flex;gap:10px}
-.tl-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
-.tl-body{flex:1}
-.tl-title{font-size:12px;font-weight:600;color:var(--text)}
-.tl-sub{font-size:11px;color:var(--text3);margin-top:2px}
-.tl-time{font-size:10px;color:var(--text3);margin-top:3px}
-.empty-timeline{text-align:center;padding:32px;color:var(--text3);font-size:13px}
 </style>
-</head>
-<body>
-<script>
 
+<script>
 // ============================================================
 // SIMARESDA — Security Module
 // Keamanan sesi, proteksi akses, dan deteksi ancaman
@@ -662,102 +582,132 @@ const SIMARESDA_SEC = {
 // Override fungsi logout global
 window.logout = () => SIMARESDA_SEC.logout();
 
-
 </script>
 
-<div class="overlay-bg" id="overlay-bg" onclick="closeSidebar()"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
 <div id="sidebar"></div>
 <div id="main">
-  <div class="notif-bar" id="notif-bar"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
+  <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
   <div class="topbar">
-    <button class="hamburger icon-btn" onclick="openSidebar()" style="display:none;flex-shrink:0">☰</button>
-    <div class="topbar-title">Dashboard</div>
-    <div id="dash-greeting" style="font-size:11px;color:var(--text3);flex:1;padding-left:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px"></div>
-    <div style="font-family:'Courier New',monospace;font-size:13px;font-weight:700;color:var(--accent);padding:0 12px;white-space:nowrap" id="dash-clock">--:--</div>
+    <div class="topbar-title">Naskah Keluar</div>
+    <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" id="g-search" placeholder="Cari nomor, tujuan, perihal..." oninput="applyFilter()"></div>
     <div class="topbar-actions no-print">
       <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
       <button class="icon-btn" onclick="window.print()">🖨️</button>
+      <div style="position:relative"><button class="icon-btn" onclick="openNotifModal()">🔔</button><span id="notif-count" style="position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center">0</span></div>
     </div>
   </div>
-
   <div class="content">
-    <!-- STATS GLOBAL -->
-    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr);margin-bottom:18px">
-      <div class="stat-card" onclick="location.href='surat-masuk.html'" style="padding:14px;cursor:pointer">
-        <div class="stat-ico" style="background:var(--accentL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">📥</div>
-        <div class="stat-label">Naskah Masuk</div>
-        <div class="stat-val" id="s-masuk">0</div>
-        <div class="stat-sub" id="s-masuk-sub" style="color:var(--text3)">Belum ada data</div>
-      </div>
-      <div class="stat-card" onclick="location.href='surat-keluar.html'" style="padding:14px;cursor:pointer">
-        <div class="stat-ico" style="background:var(--greenL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">📤</div>
-        <div class="stat-label">Naskah Keluar</div>
-        <div class="stat-val" id="s-keluar">0</div>
-        <div class="stat-sub" id="s-keluar-sub" style="color:var(--text3)">Belum ada data</div>
-      </div>
-      <div class="stat-card" onclick="location.href='penyimpanan.html'" style="padding:14px;cursor:pointer">
-        <div class="stat-ico" style="background:var(--yellowL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">🗄️</div>
-        <div class="stat-label">Total Arsip</div>
-        <div class="stat-val" id="s-arsip">0</div>
-        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
-      </div>
-      <div class="stat-card" onclick="location.href='peminjaman.html'" style="padding:14px;cursor:pointer">
-        <div class="stat-ico" style="background:var(--purpleL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">🔖</div>
-        <div class="stat-label">Dipinjam</div>
-        <div class="stat-val" id="s-pinjam">0</div>
-        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
-      </div>
-      <div class="stat-card" onclick="location.href='pemusnahan.html'" style="padding:14px;cursor:pointer">
-        <div class="stat-ico" style="background:var(--redL);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:14px">🗑️</div>
-        <div class="stat-label">Dimusnahkan</div>
-        <div class="stat-val" id="s-musna">0</div>
-        <div class="stat-sub" style="color:var(--text3)">Belum ada data</div>
-      </div>
+    <div class="toolbar no-print">
+      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Naskah Keluar</button>
+      <select id="filter-status" onchange="applyFilter()" style="width:148px"><option value="">Semua Status</option><option>Draft</option><option>Terkirim</option><option>Dibatalkan</option></select>
+      <select id="filter-bidang" onchange="applyFilter()" style="width:160px"><option value="">Semua Bidang</option><option value="UMUM">Umum / Sekretariat</option><option value="BUMD">BUMD &amp; BLUD</option><option value="PEREKONOMIAN">Perekonomian</option><option value="SDA_DBHCHT">SDA &amp; DBHCHT</option></select>
+      <select id="filter-kat" onchange="applyFilter()" style="width:160px"><option value="">Semua Kategori</option><option>Peraturan Daerah</option><option>Peraturan Kepala Daerah</option><option>Keputusan</option><option>Instruksi</option><option>Surat Dinas</option><option>Nota Dinas</option><option>Memo</option><option>Surat Undangan</option><option>Surat Tugas</option><option>Surat Kuasa</option><option>Surat Pengantar</option><option>Surat Keterangan</option><option>Surat Pernyataan</option><option>Surat Izin</option><option>Surat Perjanjian</option><option>Surat Perintah</option><option>Surat Rekomendasi</option><option>Surat Edaran</option><option>Berita Acara</option><option>Notulen Rapat</option><option>Laporan</option><option>Telaahan Staf</option><option>Pengumuman</option><option>Disposisi</option><option>Telegram Dinas</option><option>SK Kepegawaian</option><option>SK Keuangan</option><option>DPA / DPPA</option><option>Lainnya</option></select>
+      <button class="btn btn-secondary" onclick="exportCSV('tbl-keluar','naskah-keluar')">⬇ CSV</button>
+      <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
+      <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
     </div>
-
-    <!-- 4 BIDANG KLASIFIKASI -->
-    <div class="card-title" style="font-family:var(--font-d);font-size:14px;font-weight:700;margin-bottom:12px">
-      📂 Database Pengelompokan Arsip per Bidang
+    <div class="table-wrap">
+      <table id="tbl-keluar">
+        <thead><tr><th>No. Agenda</th><th>No. Surat</th><th>Tgl Surat</th><th>Tujuan</th><th>Perihal</th><th>Bidang</th><th>Kategori</th><th>Sifat</th><th>Penandatangan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
+        <tbody id="body-keluar"></tbody>
+      </table>
     </div>
-    <div class="bidang-grid" id="bidang-grid"></div>
-
-    <!-- CHARTS -->
-    <div class="charts-grid" style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:18px">
-      <div class="card">
-        <div class="card-title">Tren Surat Masuk & Keluar (per Bulan)</div>
-        <div style="position:relative;height:200px"><canvas id="chartTren"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Arsip per Bidang</div>
-        <div style="position:relative;height:200px"><canvas id="chartBidang"></canvas></div>
-      </div>
-    </div>
-
-    <!-- BOTTOM -->
-    <div class="bottom-grid">
-      <div class="card">
-        <div class="card-title">📋 Aktivitas Terkini</div>
-        <div id="timeline-wrap">
-          <div class="empty-timeline">📭<br>Belum ada aktivitas tercatat</div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📥 Naskah Masuk Terbaru</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>No. Agenda</th><th>Asal</th><th>Perihal</th><th>Bidang</th><th>Status</th></tr></thead>
-            <tbody id="tbl-recent-masuk">
-              <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text3)">Belum ada data</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <div class="pagination no-print" id="pagination"></div>
   </div>
 </div>
 
-<script>
+<!-- MODAL FORM -->
+<div class="modal-overlay" id="modal-keluar" style="display:none" onclick="if(event.target===this)closeModal('modal-keluar')">
+  <div class="modal modal-lg">
+    <div class="modal-header"><div class="modal-title" id="m-title">📤 Tambah Naskah Keluar</div><button class="icon-btn" onclick="closeModal('modal-keluar')">✕</button></div>
+    <div class="modal-body">
+      <div class="alert alert-info" style="margin-bottom:14px">💡 Nomor naskah akan di-generate otomatis dalam format <strong>{SEQ}/{KODE-BIDANG}/{BLN-ROMAWI}/{TAHUN}</strong></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Nomor Surat (auto)</label><input class="form-control" id="m-nosurat" placeholder="Akan diisi otomatis" readonly></div>
+        <div class="form-group"><label class="form-label">Tanggal Surat <span class="req">*</span></label><input class="form-control" type="date" id="m-tgl"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tujuan <span class="req">*</span></label><input class="form-control" id="m-tujuan" placeholder="Instansi / nama tujuan"></div>
+        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal surat keluar"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Bidang <span class="req">*</span></label><select class="form-control" id="m-bidang" onchange="updateKodeFromBidang()">
+          <option value="">-- Pilih Bidang --</option>
+          <option value="UMUM">Umum / Sekretariat</option>
+          <option value="BUMD">BUMD &amp; BLUD</option>
+          <option value="PEREKONOMIAN">Perekonomian</option>
+          <option value="SDA_DBHCHT">SDA &amp; DBHCHT</option>
+        </select></div>
+        <div class="form-group"><label class="form-label">Kategori Naskah <span class="req">*</span></label><select class="form-control" id="m-kat">
+          <optgroup label="Naskah Dinas Arahan">
+            <option>Peraturan Daerah</option>
+            <option>Peraturan Kepala Daerah</option>
+            <option>Keputusan</option>
+            <option>Instruksi</option>
+            <option>SOP / Standar Prosedur</option>
+          </optgroup>
+          <optgroup label="Naskah Dinas Korespondensi">
+            <option>Surat Dinas</option>
+            <option>Nota Dinas</option>
+            <option>Memo</option>
+            <option>Surat Undangan</option>
+            <option>Surat Tugas</option>
+            <option>Surat Kuasa</option>
+            <option>Surat Pengantar</option>
+            <option>Surat Keterangan</option>
+            <option>Surat Pernyataan</option>
+            <option>Surat Izin</option>
+            <option>Surat Perjanjian / MoU</option>
+            <option>Surat Perintah</option>
+            <option>Surat Rekomendasi</option>
+            <option>Surat Edaran</option>
+          </optgroup>
+          <optgroup label="Naskah Dinas Khusus">
+            <option>Berita Acara</option>
+            <option>Notulen Rapat</option>
+            <option>Laporan</option>
+            <option>Telaahan Staf</option>
+            <option>Pengumuman</option>
+            <option>Disposisi</option>
+            <option>Telegram Dinas</option>
+          </optgroup>
+          <optgroup label="Naskah Keuangan &amp; Kepegawaian">
+            <option>SK Kepegawaian</option>
+            <option>SK Keuangan / Anggaran</option>
+            <option>DPA / DPPA</option>
+            <option>SPM / SP2D</option>
+            <option>Laporan Keuangan</option>
+          </optgroup>
+          <optgroup label="Lainnya"><option>Lainnya</option></optgroup>
+        </select></div>
+      </div>
+      <div class="form-row3">
+        <div class="form-group"><label class="form-label">Sifat</label><select class="form-control" id="m-sifat"><option>Biasa</option><option>Penting</option><option>Segera</option></select></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="m-status"><option>Draft</option><option>Terkirim</option><option>Dibatalkan</option></select></div>
+        <div class="form-group"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Penandatangan</label><input class="form-control" id="m-ttd" placeholder="Nama / jabatan pejabat penanda tangan"></div>
+        <div class="form-group"><label class="form-label">Kode Unit</label><input class="form-control" id="m-kode" placeholder="ORG / KEU / SDM" value="ORG"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Tembusan</label><input class="form-control" id="m-tembusan" placeholder="Cth: Kepala Biro, Sekretaris (pisah koma)"></div>
+      <div class="form-group"><label class="form-label">Keterangan</label><textarea class="form-control" id="m-ket" placeholder="Catatan tambahan..."></textarea></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-keluar')">Batal</button><button class="btn btn-primary" onclick="saveSuratKeluar()">💾 Simpan</button></div>
+  </div>
+</div>
 
+<!-- MODAL DETAIL -->
+<div class="modal-overlay" id="modal-detail" style="display:none" onclick="if(event.target===this)closeModal('modal-detail')">
+  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Naskah Keluar</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
+</div>
+
+<div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
+
+<script>
 // ============================================================
 // SIMARESDA — Shared UI Utilities (simaresda-ui.js)
 // ============================================================
@@ -813,6 +763,13 @@ function badge(text) {
 }
 function badgePlain(text, cls) {
   return `<span class="badge ${cls || 'b-gray'}">${text}</span>`;
+}
+const BIDANG_LABEL_MAP={'UMUM':'Umum / Sekretariat','BUMD':'BUMD & BLUD','PEREKONOMIAN':'Perekonomian','SDA_DBHCHT':'SDA & DBHCHT'};
+const BIDANG_CLS={'UMUM':'b-accent','BUMD':'b-green','PEREKONOMIAN':'b-yellow','SDA_DBHCHT':'b-purple'};
+function badgeBidang(val){
+  const lbl=BIDANG_LABEL_MAP[val]||val||'—';
+  const cls=BIDANG_CLS[val]||'b-gray';
+  return `<span class="badge ${cls}" style="font-size:10px">${lbl}</span>`;
 }
 
 // ── MODAL ─────────────────────────────────────────────────
@@ -969,7 +926,7 @@ function openNotifModal() {
 function simaresdaInit() {
   initDarkMode();
   if (!requireLogin()) return;
- 
+  
 }
 
 // CSS animation for toast
@@ -977,373 +934,145 @@ const style = document.createElement('style');
 style.textContent = '@keyframes slideInRight{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}';
 document.head.appendChild(style);
 
-
 </script>
 <script>
-// ── SIDEBAR ──────────────────────────────────────────────────
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item active" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Naskah Masuk<span class="nav-badge" id="nav-badge">0</span></a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Naskah Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Naskah Masuk</a><a class="nav-item active" href="surat-keluar.html"><span class="nav-icon">📤</span>Naskah Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
 
-// ── 4 BIDANG KLASIFIKASI ──────────────────────────────────────
-const BIDANG = [
-  {
-    id:'sekretariat',
-    icon:'🏛️',
-    name:'Sekretariat / Umum',
-    desc:'Tata usaha, surat-menyurat, kepegawaian umum',
-    color:'var(--accentL)',
-    iconBg:'var(--accent)',
-    masuk:0, keluar:0, arsip:0,
-  },
-  {
-    id:'bumd',
-    icon:'🏢',
-    name:'BUMD & BLUD',
-    desc:'Badan Usaha Milik Daerah dan Layanan Umum Daerah',
-    color:'var(--greenL)',
-    iconBg:'var(--green)',
-    masuk:0, keluar:0, arsip:0,
-  },
-  {
-    id:'perekonomian',
-    icon:'💰',
-    name:'Perekonomian',
-    desc:'Bidang Perekonomian Daerah dan Pengembangan Usaha',
-    color:'var(--yellowL)',
-    iconBg:'var(--yellow)',
-    masuk:0, keluar:0, arsip:0,
-  },
-  {
-    id:'sda',
-    icon:'🌿',
-    name:'SDA & DBH CHT',
-    desc:'Sumber Daya Alam dan Dana Bagi Hasil Cukai',
-    color:'var(--purpleL)',
-    iconBg:'var(--purple)',
-    masuk:0, keluar:0, arsip:0,
-  },
-];
+const ROM=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+let seq = 1,editIdx=null,page=1;
+let data = [];
+let filtered=[...data];
+const RPP=10;
 
-function renderBidang(){
-  document.getElementById('bidang-grid').innerHTML = BIDANG.map(b=>`
-    <div class="bidang-card" onclick="location.href='cari-arsip.html?bidang=${b.id}'">
-      <div class="bidang-header" style="background:${b.color}">
-        <div class="bidang-icon" style="background:${b.iconBg};color:#fff">${b.icon}</div>
-        <div>
-          <div class="bidang-name">${b.name}</div>
-          <div class="bidang-desc">${b.desc}</div>
-        </div>
-      </div>
-      <div class="bidang-stats">
-        <div class="bidang-stat">
-          <div class="bidang-stat-val">${b.masuk}</div>
-          <div class="bidang-stat-lbl">Masuk</div>
-        </div>
-        <div class="bidang-stat">
-          <div class="bidang-stat-val">${b.keluar}</div>
-          <div class="bidang-stat-lbl">Keluar</div>
-        </div>
-        <div class="bidang-stat">
-          <div class="bidang-stat-val">${b.arsip}</div>
-          <div class="bidang-stat-lbl">Arsip</div>
-        </div>
-      </div>
-    </div>`).join('');
+const BIDANG_KODE={UMUM:'UMM',BUMD:'BMD',PEREKONOMIAN:'EKO',SDA_DBHCHT:'SDA'};
+function autoNo(kode){
+  const now=new Date();
+  return `${String(seq).padStart(3,'0')}/${kode||'UMM'}/${ROM[now.getMonth()]}/${now.getFullYear()}`;
+}
+function updateKodeFromBidang(){
+  const b=document.getElementById('m-bidang')?.value||'UMUM';
+  const kode=BIDANG_KODE[b]||'UMM';
+  document.getElementById('m-kode').value=kode;
+  document.getElementById('m-nosurat').value=autoNo(kode);
 }
 
-// ── CHARTS ────────────────────────────────────────────────────
-function getCC(){
-  return document.body.classList.contains('dark')
-    ? {text:'#9B9488',grid:'#2E2C28'}
-    : {text:'#6B6558',grid:'#E3DFD5'};
+function renderTable(){
+  const start=(page-1)*RPP,rows=filtered.slice(start,start+RPP);
+  document.getElementById('body-keluar').innerHTML=rows.length?rows.map(s=>`
+    <tr>
+      <td class="td-mono">${s.id}</td>
+      <td class="td-mono" style="font-size:11px">${s.no}</td>
+      <td>${s.tgl}</td>
+      <td><strong>${s.tujuan}</strong></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.perihal}">${s.perihal}</td>
+      <td>${badgeBidang(s.bidang)}</td>
+      <td>${badgePlain(s.kat,'b-gray')}</td>
+      <td>${badgePlain(s.sifat,s.sifat==='Segera'?'b-red':s.sifat==='Penting'?'b-yellow':'b-gray')}</td>
+      <td>${s.ttd}</td>
+      <td>${badge(s.status)}</td>
+      <td class="no-print" style="white-space:nowrap">
+        <button class="btn btn-secondary btn-xs" onclick='viewDetail(${JSON.stringify(s)})'>👁</button>
+        <button class="btn btn-secondary btn-xs" onclick='editRow(${JSON.stringify(s)})'>✏️</button>
+        <button class="btn btn-danger btn-xs" onclick="deleteRow('${s.id}')" data-require-role="Admin">🗑</button>
+      </td>
+    </tr>`).join(''):`<tr><td colspan="11"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tidak ada data</div></div></td></tr>`;
+  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} surat`:'';
+  renderPagination();applyRoleGuards(window.SIMARESDA_USER?.role);
 }
-let c1,c2;
-function initCharts(){
-  const {text,grid}=getCC();
-  if(c1)c1.destroy(); if(c2)c2.destroy();
-  c1=new Chart(document.getElementById('chartTren'),{
-    type:'bar',
-    data:{
-      labels:['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'],
-      datasets:[
-        {label:'Naskah Masuk',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(30,58,110,.7)',borderRadius:4},
-        {label:'Naskah Keluar',data:[0,0,0,0,0,0,0,0,0,0,0,0],backgroundColor:'rgba(26,92,58,.6)',borderRadius:4},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{labels:{color:text,font:{size:11}}}},
-      scales:{x:{ticks:{color:text},grid:{color:grid}},y:{ticks:{color:text},grid:{color:grid},beginAtZero:true}}}
+function renderPagination(){
+  const total=Math.ceil(filtered.length/RPP),el=document.getElementById('pagination');
+  if(total<=1){el.innerHTML='';return;}
+  let h=`<button class="page-btn" onclick="gp(${page-1})" ${page===1?'disabled':''}>‹</button>`;
+  for(let i=1;i<=total;i++)h+=`<button class="page-btn ${i===page?'active':''}" onclick="gp(${i})">${i}</button>`;
+  h+=`<button class="page-btn" onclick="gp(${page+1})" ${page===total?'disabled':''}>›</button>`;
+  el.innerHTML=h;
+}
+function gp(p){const t=Math.ceil(filtered.length/RPP);if(p<1||p>t)return;page=p;renderTable();}
+function applyFilter(){
+  const q=document.getElementById('g-search').value.toLowerCase();
+  const st=document.getElementById('filter-status').value;
+  const kt=document.getElementById('filter-kat').value;
+  const bd=document.getElementById('filter-bidang')?.value||'';
+  filtered=data.filter(s=>{
+    if(q&&!JSON.stringify(s).toLowerCase().includes(q))return false;
+    if(st&&s.status!==st)return false;
+    if(kt&&s.kat!==kt)return false;
+    if(bd&&s.bidang!==bd)return false;
+    return true;
   });
-  c2=new Chart(document.getElementById('chartBidang'),{
-    type:'doughnut',
-    data:{
-      labels:['Umum / Sekretariat','BUMD & BLUD','Perekonomian','SDA & DBHCHT'],
-      datasets:[{data:[0,0,0,0],
-        backgroundColor:['#1E3A6E','#1A5C3A','#7A5200','#4A2270'],borderWidth:0}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'bottom',labels:{color:text,font:{size:10},padding:8}}}}
-  });
+  page=1;renderTable();
 }
+function resetFilter(){document.getElementById('g-search').value='';document.getElementById('filter-status').value='';document.getElementById('filter-kat').value='';const fb=document.getElementById('filter-bidang');if(fb)fb.value='';filtered=[...data];page=1;renderTable();}
 
-// Toggle dark mode & re-init charts
-// Re-init charts saat dark mode toggle
-const _prevToggleDash = window.toggleDark;
-window.toggleDark = function() {
-  _prevToggleDash();
-  setTimeout(initCharts, 150);
-};
+function openAdd(){
+  editIdx=null;document.getElementById('m-title').textContent='📤 Tambah Naskah Keluar';
+  ['m-tgl','m-tujuan','m-perihal','m-ttd','m-tembusan','m-ket'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-kode').value='ORG';
+  document.getElementById('m-nosurat').value=autoNo('ORG');
+  openModal('modal-keluar');
+}
+document.getElementById('m-kode').addEventListener('input',function(){document.getElementById('m-nosurat').value=autoNo(this.value);});
 
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay-bg').classList.add('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('show');}
-
-renderBidang();
-initCharts();
-
-// ── JAM & SAPAAN DASHBOARD ─────────────────────────────────
-(function(){
-  const GR={
-    subuh: [{e:'🌙',t:'Subuh yang berkah, semoga hari ini penuh manfaat!'},{e:'🕌',t:'Bismillah, mulai hari baru dengan niat yang baik.'}],
-    pagi:  [{e:'☀️',t:'Selamat pagi! Semangat mengelola naskah hari ini.'},{e:'☕',t:'Good morning! Arsip rapi, kerja lebih produktif.'},{e:'🌸',t:'Ohayou! Semoga semua naskah hari ini berjalan lancar.'}],
-    siang: [{e:'🌞',t:'Selamat siang! Sudah makan? Jaga stamina ya.'},{e:'🍱',t:'Tengah hari — istirahat sebentar sebelum lanjut!'}],
-    sore:  [{e:'🌅',t:'Selamat sore! Hampir selesai, semangat!'},{e:'🍵',t:'Good afternoon! Sedikit lagi hari kerja tuntas.'}],
-    malam: [{e:'🌙',t:'Selamat malam! Kerja ekstra, hasil luar biasa.'},{e:'⭐',t:'Good evening! Pastikan semua naskah sudah tersimpan.'}],
-    tengahmalam:[{e:'🌌',t:'Masih terjaga? Dedikasi tinggi — jangan lupa istirahat.'}],
+function editRow(s){
+  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Naskah Keluar';
+  document.getElementById('m-nosurat').value=s.no;document.getElementById('m-tgl').value=s.tgl;
+  document.getElementById('m-tujuan').value=s.tujuan;document.getElementById('m-perihal').value=s.perihal;
+  document.getElementById('m-kat').value=s.kat;document.getElementById('m-sifat').value=s.sifat;
+  document.getElementById('m-status').value=s.status;document.getElementById('m-ttd').value=s.ttd;
+  document.getElementById('m-kode').value=s.kode||'UMM';
+  const mb=document.getElementById('m-bidang');if(mb)mb.value=s.bidang||'';;document.getElementById('m-tembusan').value=s.tembusan||'';
+  document.getElementById('m-ket').value=s.ket||'';
+  openModal('modal-keluar');
+}
+async function saveSuratKeluar(){
+  const tuj=document.getElementById('m-tujuan').value.trim();
+  const per=document.getElementById('m-perihal').value.trim();
+  if(!tuj||!per){showToast('Tujuan dan perihal wajib diisi','danger');return;}
+  const bidang=document.getElementById('m-bidang')?.value||window._user?.bidang||'UMUM';
+  const payload={
+    tujuan:tuj, perihal:per, bidang:bidang,
+    nomor_surat:document.getElementById('m-nosurat')?.value.trim()||null,
+    tanggal_surat:document.getElementById('m-tglsurat')?.value||null,
+    kategori:document.getElementById('m-kat').value,
+    sifat:document.getElementById('m-sifat').value,
+    penandatangan:document.getElementById('m-penandatangan')?.value||null,
+    keterangan:document.getElementById('m-ket')?.value||null,
+    is_deleted:false,
   };
-  let lastHour=-1;
-  function tick(){
-    const now=new Date();
-    const h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
-    const cl=document.getElementById('dash-clock');
-    if(cl)cl.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-    if(h!==lastHour){
-      lastHour=h;
-      let seg;
-      if(h>=4&&h<6)seg='subuh'; else if(h>=6&&h<11)seg='pagi';
-      else if(h>=11&&h<14)seg='siang'; else if(h>=14&&h<18)seg='sore';
-      else if(h>=18&&h<22)seg='malam'; else seg='tengahmalam';
-      const pool=GR[seg]; const g=pool[Math.floor(Math.random()*pool.length)];
-      const userName=window.SIMARESDA_USER?.nama||'';
-      const gEl=document.getElementById('dash-greeting');
-      if(gEl)gEl.textContent=g.e+' '+g.t+(userName?' — '+userName:'');
-    }
+  if(!window._supa){showToast('Database tidak tersedia','danger');return;}
+  let error;
+  if(editIdx && editIdx.length>20 && editIdx.includes('-')){
+    ({error}=await window._supa.from('surat_keluar').update(payload).eq('id',editIdx));
+  } else {
+    const yr=new Date().getFullYear();
+    const{count}=await window._supa.from('surat_keluar').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
+    payload.nomor_draft=`SKD-${yr}-${String((count||0)+1).padStart(3,'0')}`;
+    payload.status='Draft';
+    ({error}=await window._supa.from('surat_keluar').insert(payload));
   }
-  setInterval(tick,1000); tick();
-})();
-</script>
-<script>
-// ============================================================
-// Dashboard v4.0 — Supabase Integration
-// ============================================================
-const supa=getSupabase(), user=window.SIMARESDA_USER;
-const BIDANG_LABEL={UMUM:'Umum / Sekretariat',BUMD:'BUMD & BLUD',PEREKONOMIAN:'Perekonomian',SDA_DBHCHT:'SDA & DBHCHT'};
-const BIDANG_KEYS=Object.keys(BIDANG_LABEL);
-const MONTHS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-let tahunFilter=new Date().getFullYear(), bidangFilter='';
-
-async function loadDashboard(){
-  if(!supa){console.warn('Supabase belum siap');return;}
-  await Promise.all([loadSummary(),loadTrendChart(),loadBidangChart(),loadBidangCards(),loadSuratTerbaru()]);
+  if(error){showToast('Gagal: '+error.message,'danger');return;}
+  editIdx=null; closeModal('modal-keluar');
+  showToast('✅ Naskah keluar disimpan','success');
+  loadSupaData();
 }
-
-async function loadSummary(){
-  const{data,error}=await supa.from('v_dashboard_summary').select('*').single();
-  if(error||!data)return;
-  const map={
-    'stat-sm':data.surat_masuk_tahun_ini,
-    'stat-sk':data.surat_keluar_tahun_ini,
-    'stat-aktif':data.arsip_aktif,
-    'stat-inaktif':data.arsip_inaktif,
-    'stat-pinjam':data.peminjaman_aktif,
-    'stat-susut':data.penyusutan_pending,
-  };
-  Object.entries(map).forEach(([id,val])=>{
-    const el=document.getElementById(id);
-    if(el)el.textContent=val??0;
-  });
+function deleteRow(id){
+  if(!confirm(`Hapus surat keluar ${id}?`))return;
+  data=data.filter(d=>d.id!==id);filtered=[...data];renderTable();showToast(`🗑️ ${id} dihapus`,'warn');
 }
-
-async function loadTrendChart(){
-  const yr=tahunFilter;
-  const[smRes,skRes]=await Promise.all([
-    supa.from('v_statistik_surat_masuk').select('bulan,jumlah').eq('tahun',yr),
-    supa.from('v_statistik_surat_keluar').select('bulan,jumlah').eq('tahun',yr),
-  ]);
-  const smMap={},skMap={};
-  (smRes.data||[]).forEach(r=>smMap[r.bulan]=parseInt(r.jumlah));
-  (skRes.data||[]).forEach(r=>skMap[r.bulan]=parseInt(r.jumlah));
-  const smData=Array.from({length:12},(_,i)=>smMap[i+1]||0);
-  const skData=Array.from({length:12},(_,i)=>skMap[i+1]||0);
-  const ctx=document.getElementById('chart-trend');
-  if(!ctx||!window.Chart)return;
-  if(window._chartTrend)window._chartTrend.destroy();
-  const isDark=document.body.classList.contains('dark');
-  const gridColor=isDark?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';
-  const textColor=isDark?'#9ca3af':'#6b7280';
-  window._chartTrend=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:MONTHS,
-      datasets:[
-        {label:'Naskah Masuk',data:smData,borderColor:'#2B52A0',backgroundColor:'rgba(43,82,160,.1)',tension:.4,fill:true,pointRadius:3,pointHoverRadius:5},
-        {label:'Naskah Keluar',data:skData,borderColor:'#C9A84C',backgroundColor:'rgba(201,168,76,.08)',tension:.4,fill:true,pointRadius:3,pointHoverRadius:5},
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'top',labels:{color:textColor,font:{size:12}}}},
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:textColor}},
-        y:{beginAtZero:true,grid:{color:gridColor},ticks:{color:textColor,stepSize:1}},
-      }
-    }
-  });
+function viewDetail(s){
+  document.getElementById('detail-body').innerHTML=`
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    ${[['No. Agenda',s.id],['No. Surat',`<span class="td-mono">${s.no}</span>`],['Tanggal Surat',s.tgl],['Tujuan',`<strong>${s.tujuan}</strong>`],['Perihal',s.perihal],['Bidang',badgeBidang(s.bidang)],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Penandatangan',s.ttd||'—'],['Tembusan',s.tembusan||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
+  </table>`;
+  openModal('modal-detail');
 }
+loadSupaData();
 
-async function loadBidangChart(){
-  const{data,error}=await supa.from('v_statistik_arsip').select('bidang,status,jumlah');
-  if(error||!data)return;
-  const aktif={},inaktif={};
-  data.forEach(r=>{
-    if(r.status==='Aktif')aktif[r.bidang]=(aktif[r.bidang]||0)+parseInt(r.jumlah);
-    else inaktif[r.bidang]=(inaktif[r.bidang]||0)+parseInt(r.jumlah);
-  });
-  const ctx=document.getElementById('chart-bidang');
-  if(!ctx||!window.Chart)return;
-  if(window._chartBidang)window._chartBidang.destroy();
-  const isDark=document.body.classList.contains('dark');
-  const textColor=isDark?'#9ca3af':'#6b7280';
-  const gridColor=isDark?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';
-  window._chartBidang=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels:BIDANG_KEYS.map(b=>BIDANG_LABEL[b]),
-      datasets:[
-        {label:'Arsip Aktif',data:BIDANG_KEYS.map(b=>aktif[b]||0),backgroundColor:'rgba(43,82,160,.75)',borderRadius:4},
-        {label:'Arsip Inaktif',data:BIDANG_KEYS.map(b=>inaktif[b]||0),backgroundColor:'rgba(201,168,76,.65)',borderRadius:4},
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{position:'top',labels:{color:textColor,font:{size:12}}}},
-      scales:{
-        x:{grid:{color:gridColor},ticks:{color:textColor}},
-        y:{beginAtZero:true,grid:{color:gridColor},ticks:{color:textColor,stepSize:1}},
-      }
-    }
-  });
-}
-
-async function loadBidangCards(){
-  const el=document.getElementById('bidang-grid');
-  if(!el)return;
-  const{data}=await supa.from('v_statistik_arsip').select('bidang,status,jumlah');
-  const totals={};
-  (data||[]).forEach(r=>totals[r.bidang]=(totals[r.bidang]||0)+parseInt(r.jumlah));
-  const icons={UMUM:'🏛️',BUMD:'🏢',PEREKONOMIAN:'💰',SDA_DBHCHT:'🌿'};
-  el.innerHTML=BIDANG_KEYS.map(b=>`
-    <div class="bidang-card" onclick="location.href='penyimpanan.html?bidang=${b}'"
-      style="cursor:pointer;background:var(--surface);border:1px solid var(--border);
-             border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px;
-             transition:box-shadow .15s;min-width:140px;"
-      onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.12)'"
-      onmouseout="this.style.boxShadow=''">
-      <div style="font-size:24px">${icons[b]||'📁'}</div>
-      <div style="font-size:12px;font-weight:600;color:var(--text)">${BIDANG_LABEL[b]}</div>
-      <div style="font-size:22px;font-weight:700;color:var(--accent)">${totals[b]||0}</div>
-      <div style="font-size:11px;color:var(--text3)">total arsip</div>
-    </div>`).join('');
-}
-
-async function loadSuratTerbaru(){
-  if(!supa)return;
-  let q=supa.from('surat_masuk')
-    .select('nomor_agenda,asal_surat,perihal,status,bidang')
-    .eq('is_deleted',false)
-    .order('created_at',{ascending:false})
-    .limit(5);
-  if(bidangFilter)q=q.eq('bidang',bidangFilter);
-  if(user?.role==='Pengelola'&&user?.bidang)q=q.eq('bidang',user.bidang);
-  const{data}=await q;
-  const tbody=document.getElementById('body-sm-terbaru');
-  if(!tbody)return;
-  if(!data||!data.length){
-    tbody.innerHTML='<tr><td colspan="5"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Belum ada surat masuk</div></div></td></tr>';
-    return;
-  }
-  const BL={UMUM:'Umum',BUMD:'BUMD',PEREKONOMIAN:'Perekonomian',SDA_DBHCHT:'SDA & DBH CHT'};
-  const STATUS_CLS={Disposisi:'b-yellow',Diproses:'b-blue',Selesai:'b-green',Arsip:'b-gray'};
-  tbody.innerHTML=data.map(s=>`<tr>
-    <td class="td-mono" style="font-size:11px">${s.nomor_agenda||'—'}</td>
-    <td>${s.asal_surat||'—'}</td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.perihal||'—'}</td>
-    <td><span class="badge b-blue" style="font-size:10px">${BL[s.bidang]||s.bidang||'—'}</span></td>
-    <td><span class="badge ${STATUS_CLS[s.status]||'b-gray'}">${s.status||'—'}</span></td>
-  </tr>`).join('');
-}
-
-function applyDashboardFilter(){
-  tahunFilter=parseInt(document.getElementById('filter-tahun')?.value)||new Date().getFullYear();
-  bidangFilter=document.getElementById('filter-bidang-dash')?.value||'';
-  loadDashboard();
-}
-
-function injectFilterBar(){
-  const main=document.getElementById('main');
-  if(!main||document.getElementById('dash-filter-bar'))return;
-  const yr=new Date().getFullYear();
-  const yrs=Array.from({length:5},(_,i)=>yr-i).map(y=>`<option value="${y}" ${y===yr?'selected':''}>${y}</option>`).join('');
-  const bar=document.createElement('div');
-  bar.id='dash-filter-bar';
-  bar.style.cssText='display:flex;gap:8px;align-items:center;padding:10px 24px 0;flex-wrap:wrap;';
-  bar.innerHTML=`
-    <span style="font-size:12px;font-weight:600;color:var(--text2)">Filter:</span>
-    <select id="filter-tahun" onchange="applyDashboardFilter()"
-      style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
-      ${yrs}
-    </select>
-    <select id="filter-bidang-dash" onchange="applyDashboardFilter()"
-      style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text)">
-      <option value="">Semua Bidang</option>
-      <option value="UMUM">Umum / Sekretariat</option>
-      <option value="BUMD">BUMD</option>
-      <option value="PEREKONOMIAN">Perekonomian</option>
-      <option value="SDA_DBHCHT">SDA &amp; DBHCHT</option>
-    </select>`;
-  const content=document.getElementById('content');
-  if(content)main.insertBefore(bar,content);
-  else main.prepend(bar);
-}
-
-// Update stat element IDs di HTML agar cocok dengan kode
-function remapStatIds(){
-  // Map label teks ke id yang kita pakai
-  const stats=document.querySelectorAll('.stat-card, .stat-item, [class*="stat"]');
-  stats.forEach(el=>{
-    const txt=(el.textContent||'').toLowerCase();
-    const numEl=el.querySelector('.stat-num, .stat-value, h2, h3, [class*="count"]');
-    if(!numEl)return;
-    if(txt.includes('surat masuk'))numEl.id='stat-sm';
-    else if(txt.includes('surat keluar'))numEl.id='stat-sk';
-    else if(txt.includes('arsip aktif')||txt.includes('aktif'))numEl.id='stat-aktif';
-    else if(txt.includes('arsip inaktif')||txt.includes('inaktif'))numEl.id='stat-inaktif';
-    else if(txt.includes('dipinjam')||txt.includes('peminjaman'))numEl.id='stat-pinjam';
-    else if(txt.includes('penyusutan')||txt.includes('dimusnahkan'))numEl.id='stat-susut';
-  });
-}
-
-function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('overlay-bg').classList.add('show');}
-function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('overlay-bg').classList.remove('show');}
-
-(async function init(){
-  await simaresdaInit();
-  injectLayout('dashboard','📊 Dashboard');
-  injectFilterBar();
-  remapStatIds();
-  await loadDashboard();
-})();
+function openSidebar()  { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay-bg').classList.add('show'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay-bg').classList.remove('show'); }
 </script>
 </body>
 </html>
