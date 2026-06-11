@@ -482,7 +482,6 @@
         <label class="checkbox-wrap">
           <input type="checkbox" id="remember" /> Ingat saya
         </label>
-        <a href="reset-password.html" class="forgot">Lupa kata sandi?</a>
       </div>
 
       <button class="btn-submit" id="btn-login" type="button" onclick="doLogin()">
@@ -666,10 +665,10 @@ function showToast(msg){
 // AKUN HARDCODED
 // ──────────────────────────────────────────────
 const ACCOUNTS = [
-  { username: 'admin',      password: 'simaresda2024', role: 'admin',      nama: 'Administrator' },
-  { username: 'tatausaha',  password: 'simaresda2024', role: 'tatausaha',  nama: 'Tata Usaha' },
-  { username: 'pengelola',  password: 'simaresda2024', role: 'pengelola',  nama: 'Pengelola Arsip' },
-  { username: 'kearsipan',  password: 'simaresda2024', role: 'kearsipan',  nama: 'Unit Kearsipan' },
+  { username: 'admin',     password: 'bpsda#2026', role: 'admin',     nama: 'Administrator' },
+  { username: 'tatausaha', password: 'bpsda#2026', role: 'tatausaha', nama: 'Tata Usaha' },
+  { username: 'pengelola', password: 'bpsda#2026', role: 'pengelola', nama: 'Pengelola Arsip' },
+  { username: 'kearsipan', password: 'bpsda#2026', role: 'kearsipan', nama: 'Unit Kearsipan' },
 ];
 
 // ──────────────────────────────────────────────
@@ -678,27 +677,27 @@ const ACCOUNTS = [
 (function(){
   const params = new URLSearchParams(window.location.search);
   const msg = params.get('msg');
-  if(msg) showToast(decodeURIComponent(msg));
+  if(msg) setTimeout(() => showToast(decodeURIComponent(msg)), 400);
 })();
 
 // ──────────────────────────────────────────────
 // LOGIN
 // ──────────────────────────────────────────────
 function doLogin(){
-  const user = document.getElementById('username').value.trim().toLowerCase();
-  const pw   = document.getElementById('password').value;
+  const user    = document.getElementById('username').value.trim().toLowerCase();
+  const pw      = document.getElementById('password').value;
   const roleBtn = document.querySelector('.role-btn.active');
 
   let ok = true;
-
   const fu = document.getElementById('field-user');
   const fp = document.getElementById('field-pw');
   fu.classList.remove('has-error');
   fp.classList.remove('has-error');
+  document.getElementById('err-pw').textContent = 'Kata sandi tidak boleh kosong';
 
-  if(!user){ fu.classList.add('has-error'); ok=false; }
-  if(!pw)  { fp.classList.add('has-error'); ok=false; }
-  if(!roleBtn){ showToast('Silakan pilih peran terlebih dahulu.'); ok=false; }
+  if(!user)    { fu.classList.add('has-error'); ok = false; }
+  if(!pw)      { fp.classList.add('has-error'); ok = false; }
+  if(!roleBtn) { showToast('Silakan pilih peran terlebih dahulu.'); ok = false; }
   if(!ok) return;
 
   const btn = document.getElementById('btn-login');
@@ -706,21 +705,22 @@ function doLogin(){
   btn.disabled = true;
 
   setTimeout(()=>{
-    // Cari akun yang cocok
     const account = ACCOUNTS.find(a =>
-      a.username === user && a.password === pw && a.role === roleBtn.dataset.role
+      a.username === user &&
+      a.password === pw &&
+      a.role     === roleBtn.dataset.role
     );
 
     if(!account){
       btn.classList.remove('loading');
       btn.disabled = false;
       showToast('Username, kata sandi, atau peran tidak sesuai.');
-      document.getElementById('field-pw').classList.add('has-error');
+      fp.classList.add('has-error');
       document.getElementById('err-pw').textContent = 'Username / kata sandi / peran salah';
       return;
     }
 
-    // Simpan sesi sesuai format SIMARESDA_SEC.checkSession()
+    // Simpan sesi — key & format PERSIS sesuai SIMARESDA_SEC di dashboard.html
     const now = Date.now();
     const session = {
       username:  account.username,
@@ -728,17 +728,19 @@ function doLogin(){
       role:      account.role,
       token:     btoa(account.username + ':' + now),
       loginAt:   now,
-      expiresAt: now + (8 * 60 * 60 * 1000), // 8 jam
+      expiresAt: now + (8 * 60 * 60 * 1000), // 8 jam, sesuai SESSION_HOURS
     };
-    sessionStorage.setItem('simaresda_session', JSON.stringify(session));
 
-    // Redirect ke dashboard
+    // Key yang digunakan SIMARESDA_SEC.checkSession() adalah 'simaresda-user'
+    sessionStorage.setItem('simaresda-user', JSON.stringify(session));
+    sessionStorage.setItem('simaresda-last-active', now.toString());
+
     window.location.href = 'dashboard.html';
-  }, 800);
+  }, 700);
 }
 
 // Enter key
-document.addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+document.addEventListener('keydown', e => { if(e.key === 'Enter') doLogin(); });
 </script>
 </body>
 </html>
