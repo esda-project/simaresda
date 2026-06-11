@@ -663,12 +663,31 @@ function showToast(msg){
 }
 
 // ──────────────────────────────────────────────
+// AKUN HARDCODED
+// ──────────────────────────────────────────────
+const ACCOUNTS = [
+  { username: 'admin',      password: 'simaresda2024', role: 'admin',      nama: 'Administrator' },
+  { username: 'tatausaha',  password: 'simaresda2024', role: 'tatausaha',  nama: 'Tata Usaha' },
+  { username: 'pengelola',  password: 'simaresda2024', role: 'pengelola',  nama: 'Pengelola Arsip' },
+  { username: 'kearsipan',  password: 'simaresda2024', role: 'kearsipan',  nama: 'Unit Kearsipan' },
+];
+
+// ──────────────────────────────────────────────
+// TAMPILKAN PESAN DARI URL (?msg=...)
+// ──────────────────────────────────────────────
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const msg = params.get('msg');
+  if(msg) showToast(decodeURIComponent(msg));
+})();
+
+// ──────────────────────────────────────────────
 // LOGIN
 // ──────────────────────────────────────────────
 function doLogin(){
-  const user = document.getElementById('username').value.trim();
+  const user = document.getElementById('username').value.trim().toLowerCase();
   const pw   = document.getElementById('password').value;
-  const role = document.querySelector('.role-btn.active');
+  const roleBtn = document.querySelector('.role-btn.active');
 
   let ok = true;
 
@@ -679,20 +698,43 @@ function doLogin(){
 
   if(!user){ fu.classList.add('has-error'); ok=false; }
   if(!pw)  { fp.classList.add('has-error'); ok=false; }
-  if(!role){ showToast('Silakan pilih peran terlebih dahulu.'); ok=false; }
+  if(!roleBtn){ showToast('Silakan pilih peran terlebih dahulu.'); ok=false; }
   if(!ok) return;
 
   const btn = document.getElementById('btn-login');
   btn.classList.add('loading');
   btn.disabled = true;
 
-  // Simpan sesi (simulasi — sesuaikan dengan auth logic existing)
   setTimeout(()=>{
-    btn.classList.remove('loading');
-    btn.disabled = false;
-    // Redirect ke dashboard — SESUAIKAN path jika berbeda
+    // Cari akun yang cocok
+    const account = ACCOUNTS.find(a =>
+      a.username === user && a.password === pw && a.role === roleBtn.dataset.role
+    );
+
+    if(!account){
+      btn.classList.remove('loading');
+      btn.disabled = false;
+      showToast('Username, kata sandi, atau peran tidak sesuai.');
+      document.getElementById('field-pw').classList.add('has-error');
+      document.getElementById('err-pw').textContent = 'Username / kata sandi / peran salah';
+      return;
+    }
+
+    // Simpan sesi sesuai format SIMARESDA_SEC.checkSession()
+    const now = Date.now();
+    const session = {
+      username:  account.username,
+      nama:      account.nama,
+      role:      account.role,
+      token:     btoa(account.username + ':' + now),
+      loginAt:   now,
+      expiresAt: now + (8 * 60 * 60 * 1000), // 8 jam
+    };
+    sessionStorage.setItem('simaresda_session', JSON.stringify(session));
+
+    // Redirect ke dashboard
     window.location.href = 'dashboard.html';
-  }, 1200);
+  }, 800);
 }
 
 // Enter key
