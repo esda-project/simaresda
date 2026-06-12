@@ -465,8 +465,8 @@ const SIMARESDA_SEC = {
   can(user, resource, action) {
     const PERMS = {
       Admin: {
-        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
-        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        naskah_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        naskah_keluar:  { read:true,  create:true,  update:true,  delete:true  },
         arsip:         { read:true,  create:true,  update:true,  delete:true  },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true,  approve:true               },
@@ -475,8 +475,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
       },
       Pengelola: {
-        surat_masuk:   { read:true,  create:true,  update:true               },
-        surat_keluar:  { read:true,  create:true,  update:true               },
+        naskah_masuk:   { read:true,  create:true,  update:true               },
+        naskah_keluar:  { read:true,  create:true,  update:true               },
         arsip:         { read:true,  create:true,  update:true               },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true                              },
@@ -485,8 +485,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true                                             },
       },
       TU: {
-        surat_masuk:   { read:true,  create:true                              },
-        surat_keluar:  { read:true,  create:true                              },
+        naskah_masuk:   { read:true,  create:true                              },
+        naskah_keluar:  { read:true,  create:true                              },
         arsip:         { read:true                                             },
         peminjaman:    { read:true,  create:true                              },
         pemusnahan:    { read:true                                             },
@@ -604,14 +604,14 @@ window.logout = () => SIMARESDA_SEC.logout();
       <button class="btn btn-primary" onclick="openAdd()">+ Tambah Naskah Keluar</button>
       <select id="filter-status" onchange="applyFilter()" style="width:148px"><option value="">Semua Status</option><option>Draft</option><option>Terkirim</option><option>Dibatalkan</option></select>
       <select id="filter-bidang" onchange="applyFilter()" style="width:160px"><option value="">Semua Bidang</option><option value="UMUM">Umum / Sekretariat</option><option value="BUMD">BUMD &amp; BLUD</option><option value="PEREKONOMIAN">Perekonomian</option><option value="SDA_DBHCHT">SDA &amp; DBHCHT</option></select>
-      <select id="filter-kat" onchange="applyFilter()" style="width:160px"><option value="">Semua Kategori</option><option>Peraturan Daerah</option><option>Peraturan Kepala Daerah</option><option>Keputusan</option><option>Instruksi</option><option>Surat Dinas</option><option>Nota Dinas</option><option>Memo</option><option>Surat Undangan</option><option>Surat Tugas</option><option>Surat Kuasa</option><option>Surat Pengantar</option><option>Surat Keterangan</option><option>Surat Pernyataan</option><option>Surat Izin</option><option>Surat Perjanjian</option><option>Surat Perintah</option><option>Surat Rekomendasi</option><option>Surat Edaran</option><option>Berita Acara</option><option>Notulen Rapat</option><option>Laporan</option><option>Telaahan Staf</option><option>Pengumuman</option><option>Disposisi</option><option>Telegram Dinas</option><option>SK Kepegawaian</option><option>SK Keuangan</option><option>DPA / DPPA</option><option>Lainnya</option></select>
+      <select id="filter-kat" onchange="applyFilter()" style="width:160px"><option value="">Semua Kategori</option><option>Peraturan Daerah</option><option>Peraturan Kepala Daerah</option><option>Keputusan</option><option>Instruksi</option><option>naskah Dinas</option><option>Nota Dinas</option><option>Memo</option><option>naskah Undangan</option><option>naskah Tugas</option><option>naskah Kuasa</option><option>naskah Pengantar</option><option>naskah Keterangan</option><option>naskah Pernyataan</option><option>naskah Izin</option><option>naskah Perjanjian</option><option>naskah Perintah</option><option>naskah Rekomendasi</option><option>naskah Edaran</option><option>Berita Acara</option><option>Notulen Rapat</option><option>Laporan</option><option>Telaahan Staf</option><option>Pengumuman</option><option>Disposisi</option><option>Telegram Dinas</option><option>SK Kepegawaian</option><option>SK Keuangan</option><option>DPA / DPPA</option><option>Lainnya</option></select>
       <button class="btn btn-secondary" onclick="exportCSV('tbl-keluar','naskah-keluar')">⬇ CSV</button>
       <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
       <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
     </div>
     <div class="table-wrap">
       <table id="tbl-keluar">
-        <thead><tr><th>No. Agenda</th><th>No. Surat</th><th>Tgl Surat</th><th>Tujuan</th><th>Perihal</th><th>Bidang</th><th>Kategori</th><th>Sifat</th><th>Penandatangan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
+        <thead><tr><th>No. Agenda</th><th>No. naskah</th><th>Tgl naskah</th><th>Tujuan</th><th>Perihal</th><th>Bidang</th><th>Kategori</th><th>Sifat</th><th>Penandatangan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
         <tbody id="body-keluar"></tbody>
       </table>
     </div>
@@ -626,12 +626,12 @@ window.logout = () => SIMARESDA_SEC.logout();
     <div class="modal-body">
       <div class="alert alert-info" style="margin-bottom:14px">💡 Nomor naskah akan di-generate otomatis dalam format <strong>{SEQ}/{KODE-BIDANG}/{BLN-ROMAWI}/{TAHUN}</strong></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Nomor Surat (auto)</label><input class="form-control" id="m-nosurat" placeholder="Akan diisi otomatis" readonly></div>
-        <div class="form-group"><label class="form-label">Tanggal Surat <span class="req">*</span></label><input class="form-control" type="date" id="m-tgl"></div>
+        <div class="form-group"><label class="form-label">Nomor naskah (auto)</label><input class="form-control" id="m-nonaskah" placeholder="Akan diisi otomatis" readonly></div>
+        <div class="form-group"><label class="form-label">Tanggal naskah <span class="req">*</span></label><input class="form-control" type="date" id="m-tgl"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Tujuan <span class="req">*</span></label><input class="form-control" id="m-tujuan" placeholder="Instansi / nama tujuan"></div>
-        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal surat keluar"></div>
+        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal naskah keluar"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Bidang <span class="req">*</span></label><select class="form-control" id="m-bidang" onchange="updateKodeFromBidang()">
@@ -650,20 +650,20 @@ window.logout = () => SIMARESDA_SEC.logout();
             <option>SOP / Standar Prosedur</option>
           </optgroup>
           <optgroup label="Naskah Dinas Korespondensi">
-            <option>Surat Dinas</option>
+            <option>naskah Dinas</option>
             <option>Nota Dinas</option>
             <option>Memo</option>
-            <option>Surat Undangan</option>
-            <option>Surat Tugas</option>
-            <option>Surat Kuasa</option>
-            <option>Surat Pengantar</option>
-            <option>Surat Keterangan</option>
-            <option>Surat Pernyataan</option>
-            <option>Surat Izin</option>
-            <option>Surat Perjanjian / MoU</option>
-            <option>Surat Perintah</option>
-            <option>Surat Rekomendasi</option>
-            <option>Surat Edaran</option>
+            <option>naskah Undangan</option>
+            <option>naskah Tugas</option>
+            <option>naskah Kuasa</option>
+            <option>naskah Pengantar</option>
+            <option>naskah Keterangan</option>
+            <option>naskah Pernyataan</option>
+            <option>naskah Izin</option>
+            <option>naskah Perjanjian / MoU</option>
+            <option>naskah Perintah</option>
+            <option>naskah Rekomendasi</option>
+            <option>naskah Edaran</option>
           </optgroup>
           <optgroup label="Naskah Dinas Khusus">
             <option>Berita Acara</option>
@@ -696,7 +696,7 @@ window.logout = () => SIMARESDA_SEC.logout();
       <div class="form-group"><label class="form-label">Tembusan</label><input class="form-control" id="m-tembusan" placeholder="Cth: Kepala Biro, Sekretaris (pisah koma)"></div>
       <div class="form-group"><label class="form-label">Keterangan</label><textarea class="form-control" id="m-ket" placeholder="Catatan tambahan..."></textarea></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-keluar')">Batal</button><button class="btn btn-primary" onclick="saveSuratKeluar()">💾 Simpan</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-keluar')">Batal</button><button class="btn btn-primary" onclick="savenaskahKeluar()">💾 Simpan</button></div>
   </div>
 </div>
 
@@ -840,7 +840,7 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
-// ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
+// ── NOMOR ROMAWI (untuk nomor naskah keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
 
@@ -956,7 +956,7 @@ function updateKodeFromBidang(){
   const b=document.getElementById('m-bidang')?.value||'UMUM';
   const kode=BIDANG_KODE[b]||'UMM';
   document.getElementById('m-kode').value=kode;
-  document.getElementById('m-nosurat').value=autoNo(kode);
+  document.getElementById('m-nonaskah').value=autoNo(kode);
 }
 
 function renderTable(){
@@ -979,7 +979,7 @@ function renderTable(){
         <button class="btn btn-danger btn-xs" onclick="deleteRow('${s.id}')" data-require-role="Admin">🗑</button>
       </td>
     </tr>`).join(''):`<tr><td colspan="11"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tidak ada data</div></div></td></tr>`;
-  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} surat`:'';
+  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} naskah`:'';
   renderPagination();applyRoleGuards(window.SIMARESDA_USER?.role);
 }
 function renderPagination(){
@@ -1011,14 +1011,14 @@ function openAdd(){
   editIdx=null;document.getElementById('m-title').textContent='📤 Tambah Naskah Keluar';
   ['m-tgl','m-tujuan','m-perihal','m-ttd','m-tembusan','m-ket'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-kode').value='ORG';
-  document.getElementById('m-nosurat').value=autoNo('ORG');
+  document.getElementById('m-nonaskah').value=autoNo('ORG');
   openModal('modal-keluar');
 }
-document.getElementById('m-kode').addEventListener('input',function(){document.getElementById('m-nosurat').value=autoNo(this.value);});
+document.getElementById('m-kode').addEventListener('input',function(){document.getElementById('m-nonaskah').value=autoNo(this.value);});
 
 function editRow(s){
   editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Naskah Keluar';
-  document.getElementById('m-nosurat').value=s.no;document.getElementById('m-tgl').value=s.tgl;
+  document.getElementById('m-nonaskah').value=s.no;document.getElementById('m-tgl').value=s.tgl;
   document.getElementById('m-tujuan').value=s.tujuan;document.getElementById('m-perihal').value=s.perihal;
   document.getElementById('m-kat').value=s.kat;document.getElementById('m-sifat').value=s.sifat;
   document.getElementById('m-status').value=s.status;document.getElementById('m-ttd').value=s.ttd;
@@ -1027,15 +1027,15 @@ function editRow(s){
   document.getElementById('m-ket').value=s.ket||'';
   openModal('modal-keluar');
 }
-async function saveSuratKeluar(){
+async function savenaskahKeluar(){
   const tuj=document.getElementById('m-tujuan').value.trim();
   const per=document.getElementById('m-perihal').value.trim();
   if(!tuj||!per){showToast('Tujuan dan perihal wajib diisi','danger');return;}
   const bidang=document.getElementById('m-bidang')?.value||window._user?.bidang||'UMUM';
   const payload={
     tujuan:tuj, perihal:per, bidang:bidang,
-    nomor_surat:document.getElementById('m-nosurat')?.value.trim()||null,
-    tanggal_surat:document.getElementById('m-tgl')?.value||null,
+    nomor_naskah:document.getElementById('m-nonaskah')?.value.trim()||null,
+    tanggal_naskah:document.getElementById('m-tgl')?.value||null,
     kategori:document.getElementById('m-kat').value,
     sifat:document.getElementById('m-sifat').value,
     status:document.getElementById('m-status')?.value||'Draft',
@@ -1047,13 +1047,13 @@ async function saveSuratKeluar(){
   if(!window._supa){showToast('Database tidak tersedia','danger');return;}
   let error;
   if(editIdx && editIdx.length>20 && editIdx.includes('-')){
-    ({error}=await window._supa.from('surat_keluar').update(payload).eq('id',editIdx));
+    ({error}=await window._supa.from('naskah_keluar').update(payload).eq('id',editIdx));
   } else {
     const yr=new Date().getFullYear();
-    const{count}=await window._supa.from('surat_keluar').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
+    const{count}=await window._supa.from('naskah_keluar').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
     payload.nomor_draft=`SKD-${yr}-${String((count||0)+1).padStart(3,'0')}`;
     if(!payload.status) payload.status='Draft';
-    ({error}=await window._supa.from('surat_keluar').insert(payload));
+    ({error}=await window._supa.from('naskah_keluar').insert(payload));
   }
   if(error){showToast('Gagal: '+error.message,'danger');return;}
   editIdx=null; closeModal('modal-keluar');
@@ -1064,7 +1064,7 @@ async function deleteRow(id){
   const row=data.find(d=>d.id===id);
   if(!confirm(`Hapus naskah keluar ${id}?`))return;
   if(window._supa && row?._uuid){
-    const{error}=await window._supa.from('surat_keluar').update({is_deleted:true}).eq('id',row._uuid);
+    const{error}=await window._supa.from('naskah_keluar').update({is_deleted:true}).eq('id',row._uuid);
     if(error){showToast('Gagal hapus: '+error.message,'danger');return;}
   }
   data=data.filter(d=>d.id!==id);filtered=[...data];renderTable();showToast(`🗑️ ${id} dihapus`,'warn');
@@ -1072,8 +1072,8 @@ async function deleteRow(id){
 async function loadSupaData(){
   if(!window._supa){ renderTable(); return; }
   try{
-    let q=window._supa.from('surat_keluar')
-      .select('id,nomor_surat,nomor_draft,tanggal_surat,tujuan,perihal,kategori,sifat,status,bidang,penandatangan,tembusan,keterangan')
+    let q=window._supa.from('naskah_keluar')
+      .select('id,nomor_naskah,nomor_draft,tanggal_naskah,tujuan,perihal,kategori,sifat,status,bidang,penandatangan,tembusan,keterangan')
       .eq('is_deleted',false)
       .order('created_at',{ascending:false});
     const u=window._user;
@@ -1083,8 +1083,8 @@ async function loadSupaData(){
     data=(rows||[]).map(r=>({
       id:       r.nomor_draft||r.id,
       _uuid:    r.id,
-      no:       r.nomor_surat||r.nomor_draft||'—',
-      tgl:      r.tanggal_surat||'',
+      no:       r.nomor_naskah||r.nomor_draft||'—',
+      tgl:      r.tanggal_naskah||'',
       tujuan:   r.tujuan||'—',
       perihal:  r.perihal||'—',
       kat:      r.kategori||'Umum',
@@ -1103,7 +1103,7 @@ async function loadSupaData(){
 function viewDetail(s){
   document.getElementById('detail-body').innerHTML=`
   <table style="width:100%;border-collapse:collapse;font-size:13px">
-    ${[['No. Agenda',s.id],['No. Surat',`<span class="td-mono">${s.no}</span>`],['Tanggal Surat',s.tgl],['Tujuan',`<strong>${s.tujuan}</strong>`],['Perihal',s.perihal],['Bidang',badgeBidang(s.bidang)],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Penandatangan',s.ttd||'—'],['Tembusan',s.tembusan||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
+    ${[['No. Agenda',s.id],['No. naskah',`<span class="td-mono">${s.no}</span>`],['Tanggal naskah',s.tgl],['Tujuan',`<strong>${s.tujuan}</strong>`],['Perihal',s.perihal],['Bidang',badgeBidang(s.bidang)],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Penandatangan',s.ttd||'—'],['Tembusan',s.tembusan||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
   </table>`;
   openModal('modal-detail');
 }
