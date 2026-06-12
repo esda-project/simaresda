@@ -82,27 +82,27 @@ CREATE POLICY "profiles_tu_ks_select" ON public.profiles
 
 
 -- ================================================================
--- TABLE: surat_masuk
+-- TABLE: naskah_masuk
 -- Kolom disposisi: "disposisi_ke" (bukan tujuan_disposisi)
 -- ================================================================
 
-ALTER TABLE public.surat_masuk ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.naskah_masuk ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "sm_admin_all"  ON public.surat_masuk;
-DROP POLICY IF EXISTS "sm_tu_all"     ON public.surat_masuk;
-DROP POLICY IF EXISTS "sm_up_select"  ON public.surat_masuk;
-DROP POLICY IF EXISTS "sm_up_update"  ON public.surat_masuk;
-DROP POLICY IF EXISTS "sm_ks_select"  ON public.surat_masuk;
+DROP POLICY IF EXISTS "sm_admin_all"  ON public.naskah_masuk;
+DROP POLICY IF EXISTS "sm_tu_all"     ON public.naskah_masuk;
+DROP POLICY IF EXISTS "sm_up_select"  ON public.naskah_masuk;
+DROP POLICY IF EXISTS "sm_up_update"  ON public.naskah_masuk;
+DROP POLICY IF EXISTS "sm_ks_select"  ON public.naskah_masuk;
 
-CREATE POLICY "sm_admin_all" ON public.surat_masuk
+CREATE POLICY "sm_admin_all" ON public.naskah_masuk
   FOR ALL TO authenticated
   USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY "sm_tu_all" ON public.surat_masuk
+CREATE POLICY "sm_tu_all" ON public.naskah_masuk
   FOR ALL TO authenticated
   USING (public.is_tu()) WITH CHECK (public.is_tu());
 
-CREATE POLICY "sm_up_select" ON public.surat_masuk
+CREATE POLICY "sm_up_select" ON public.naskah_masuk
   FOR SELECT TO authenticated
   USING (
     public.is_pengelola()
@@ -113,41 +113,41 @@ CREATE POLICY "sm_up_select" ON public.surat_masuk
     )
   );
 
-CREATE POLICY "sm_up_update" ON public.surat_masuk
+CREATE POLICY "sm_up_update" ON public.naskah_masuk
   FOR UPDATE TO authenticated
   USING (
     public.is_pengelola()
     AND disposisi_ke = auth.uid()
   );
 
-CREATE POLICY "sm_ks_select" ON public.surat_masuk
+CREATE POLICY "sm_ks_select" ON public.naskah_masuk
   FOR SELECT TO authenticated
   USING (public.is_kearsipan() AND is_deleted = FALSE);
 
 
 -- ================================================================
--- TABLE: surat_keluar
+-- TABLE: naskah_keluar
 -- status existing: 'Draft', 'Terkirim', 'Dibatalkan'
 -- ================================================================
 
-ALTER TABLE public.surat_keluar ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.naskah_keluar ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "sk_admin_all"  ON public.surat_keluar;
-DROP POLICY IF EXISTS "sk_tu_all"     ON public.surat_keluar;
-DROP POLICY IF EXISTS "sk_up_insert"  ON public.surat_keluar;
-DROP POLICY IF EXISTS "sk_up_select"  ON public.surat_keluar;
-DROP POLICY IF EXISTS "sk_up_update"  ON public.surat_keluar;
-DROP POLICY IF EXISTS "sk_ks_select"  ON public.surat_keluar;
+DROP POLICY IF EXISTS "sk_admin_all"  ON public.naskah_keluar;
+DROP POLICY IF EXISTS "sk_tu_all"     ON public.naskah_keluar;
+DROP POLICY IF EXISTS "sk_up_insert"  ON public.naskah_keluar;
+DROP POLICY IF EXISTS "sk_up_select"  ON public.naskah_keluar;
+DROP POLICY IF EXISTS "sk_up_update"  ON public.naskah_keluar;
+DROP POLICY IF EXISTS "sk_ks_select"  ON public.naskah_keluar;
 
-CREATE POLICY "sk_admin_all" ON public.surat_keluar
+CREATE POLICY "sk_admin_all" ON public.naskah_keluar
   FOR ALL TO authenticated
   USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY "sk_tu_all" ON public.surat_keluar
+CREATE POLICY "sk_tu_all" ON public.naskah_keluar
   FOR ALL TO authenticated
   USING (public.is_tu()) WITH CHECK (public.is_tu());
 
-CREATE POLICY "sk_up_insert" ON public.surat_keluar
+CREATE POLICY "sk_up_insert" ON public.naskah_keluar
   FOR INSERT TO authenticated
   WITH CHECK (
     public.is_pengelola()
@@ -155,7 +155,7 @@ CREATE POLICY "sk_up_insert" ON public.surat_keluar
     AND created_by = auth.uid()
   );
 
-CREATE POLICY "sk_up_select" ON public.surat_keluar
+CREATE POLICY "sk_up_select" ON public.naskah_keluar
   FOR SELECT TO authenticated
   USING (
     public.is_pengelola()
@@ -163,7 +163,7 @@ CREATE POLICY "sk_up_select" ON public.surat_keluar
     AND is_deleted = FALSE
   );
 
-CREATE POLICY "sk_up_update" ON public.surat_keluar
+CREATE POLICY "sk_up_update" ON public.naskah_keluar
   FOR UPDATE TO authenticated
   USING (
     public.is_pengelola()
@@ -171,7 +171,7 @@ CREATE POLICY "sk_up_update" ON public.surat_keluar
     AND status = 'Draft'
   );
 
-CREATE POLICY "sk_ks_select" ON public.surat_keluar
+CREATE POLICY "sk_ks_select" ON public.naskah_keluar
   FOR SELECT TO authenticated
   USING (public.is_kearsipan() AND is_deleted = FALSE);
 
@@ -337,15 +337,15 @@ CREATE POLICY "reg_all_select" ON public.regulasi
 -- ================================================================
 
 GRANT SELECT, INSERT, UPDATE ON public.profiles         TO authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.surat_masuk      TO authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.surat_keluar     TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.naskah_masuk      TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.naskah_keluar     TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.arsip            TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.peminjaman_arsip TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.penyusutan_arsip TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.regulasi         TO authenticated;
 
-GRANT SELECT ON public.v_statistik_surat_masuk  TO authenticated;
-GRANT SELECT ON public.v_statistik_surat_keluar TO authenticated;
+GRANT SELECT ON public.v_statistik_naskah_masuk  TO authenticated;
+GRANT SELECT ON public.v_statistik_naskah_keluar TO authenticated;
 GRANT SELECT ON public.v_statistik_arsip        TO authenticated;
 GRANT SELECT ON public.v_peminjaman_aktif       TO authenticated;
 GRANT SELECT ON public.v_dashboard_summary      TO authenticated;
