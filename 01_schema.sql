@@ -13,10 +13,10 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ============================================================
 
 CREATE TYPE role_user AS ENUM ('Admin', 'Pengelola', 'TU');
-CREATE TYPE status_surat_masuk AS ENUM ('Disposisi', 'Diproses', 'Selesai', 'Arsip');
-CREATE TYPE status_surat_keluar AS ENUM ('Draft', 'Terkirim', 'Dibatalkan');
+CREATE TYPE status_naskah_masuk AS ENUM ('Disposisi', 'Diproses', 'Selesai', 'Arsip');
+CREATE TYPE status_naskah_keluar AS ENUM ('Draft', 'Terkirim', 'Dibatalkan');
 CREATE TYPE kategori_arsip AS ENUM ('Umum', 'Keuangan', 'Kepegawaian', 'Teknis', 'Rahasia');
-CREATE TYPE sifat_surat AS ENUM ('Biasa', 'Penting', 'Segera', 'Rahasia');
+CREATE TYPE sifat_naskah AS ENUM ('Biasa', 'Penting', 'Segera', 'Rahasia');
 CREATE TYPE status_arsip AS ENUM ('Aktif', 'Inaktif', 'Dipindah', 'Dimusnahkan');
 CREATE TYPE status_pinjam AS ENUM ('Dipinjam', 'Dikembalikan', 'Terlambat');
 CREATE TYPE status_musna AS ENUM ('Menunggu', 'Disetujui', 'Ditolak', 'Selesai');
@@ -44,20 +44,20 @@ CREATE TABLE public.profiles (
 COMMENT ON TABLE public.profiles IS 'Profil pengguna sistem, terhubung ke auth.users';
 
 -- ============================================================
--- TABLE: surat_masuk
+-- TABLE: naskah_masuk
 -- ============================================================
 
-CREATE TABLE public.surat_masuk (
+CREATE TABLE public.naskah_masuk (
   id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nomor_agenda  TEXT UNIQUE NOT NULL,  -- SM-{YYYY}-{SEQ}
-  nomor_surat   TEXT NOT NULL,
-  tanggal_surat DATE NOT NULL,
+  nomor_naskah   TEXT NOT NULL,
+  tanggal_naskah DATE NOT NULL,
   tanggal_terima DATE NOT NULL DEFAULT CURRENT_DATE,
-  asal_surat    TEXT NOT NULL,
+  asal_naskah    TEXT NOT NULL,
   perihal       TEXT NOT NULL,
   kategori      kategori_arsip NOT NULL DEFAULT 'Umum',
-  sifat         sifat_surat NOT NULL DEFAULT 'Biasa',
-  status        status_surat_masuk NOT NULL DEFAULT 'Disposisi',
+  sifat         sifat_naskah NOT NULL DEFAULT 'Biasa',
+  status        status_naskah_masuk NOT NULL DEFAULT 'Disposisi',
   keterangan    TEXT,
   file_url      TEXT,                  -- path ke Supabase Storage
   disposisi_ke  UUID REFERENCES public.profiles(id),
@@ -68,25 +68,25 @@ CREATE TABLE public.surat_masuk (
   is_deleted    BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-COMMENT ON TABLE public.surat_masuk IS 'Arsip surat masuk sesuai standar tata kearsipan';
-CREATE INDEX idx_surat_masuk_status ON public.surat_masuk(status);
-CREATE INDEX idx_surat_masuk_tanggal ON public.surat_masuk(tanggal_terima DESC);
-CREATE INDEX idx_surat_masuk_deleted ON public.surat_masuk(is_deleted);
+COMMENT ON TABLE public.naskah_masuk IS 'Arsip naskah masuk sesuai standar tata kearsipan';
+CREATE INDEX idx_naskah_masuk_status ON public.naskah_masuk(status);
+CREATE INDEX idx_naskah_masuk_tanggal ON public.naskah_masuk(tanggal_terima DESC);
+CREATE INDEX idx_naskah_masuk_deleted ON public.naskah_masuk(is_deleted);
 
 -- ============================================================
--- TABLE: surat_keluar
+-- TABLE: naskah_keluar
 -- ============================================================
 
-CREATE TABLE public.surat_keluar (
+CREATE TABLE public.naskah_keluar (
   id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   nomor_agenda    TEXT UNIQUE NOT NULL,  -- SK-{YYYY}-{SEQ}
-  nomor_surat     TEXT UNIQUE NOT NULL,  -- auto-generate: {SEQ}/{KODE}/{BLN}/{YYYY}
-  tanggal_surat   DATE NOT NULL DEFAULT CURRENT_DATE,
+  nomor_naskah     TEXT UNIQUE NOT NULL,  -- auto-generate: {SEQ}/{KODE}/{BLN}/{YYYY}
+  tanggal_naskah   DATE NOT NULL DEFAULT CURRENT_DATE,
   tujuan          TEXT NOT NULL,
   perihal         TEXT NOT NULL,
   kategori        kategori_arsip NOT NULL DEFAULT 'Umum',
-  sifat           sifat_surat NOT NULL DEFAULT 'Biasa',
-  status          status_surat_keluar NOT NULL DEFAULT 'Draft',
+  sifat           sifat_naskah NOT NULL DEFAULT 'Biasa',
+  status          status_naskah_keluar NOT NULL DEFAULT 'Draft',
   penandatangan   TEXT,
   tembusan        TEXT[],               -- array instansi tembusan
   keterangan      TEXT,
@@ -98,9 +98,9 @@ CREATE TABLE public.surat_keluar (
   is_deleted      BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-COMMENT ON TABLE public.surat_keluar IS 'Arsip surat keluar dengan auto-generate nomor surat';
-CREATE INDEX idx_surat_keluar_status ON public.surat_keluar(status);
-CREATE INDEX idx_surat_keluar_tanggal ON public.surat_keluar(tanggal_surat DESC);
+COMMENT ON TABLE public.naskah_keluar IS 'Arsip naskah keluar dengan auto-generate nomor naskah';
+CREATE INDEX idx_naskah_keluar_status ON public.naskah_keluar(status);
+CREATE INDEX idx_naskah_keluar_tanggal ON public.naskah_keluar(tanggal_naskah DESC);
 
 -- ============================================================
 -- TABLE: arsip (penyimpanan)
@@ -123,8 +123,8 @@ CREATE TABLE public.arsip (
   nasib_akhir     TEXT DEFAULT 'Musnah', -- Musnah / Permanen
   deskripsi       TEXT,
   file_url        TEXT,
-  surat_masuk_id  UUID REFERENCES public.surat_masuk(id),
-  surat_keluar_id UUID REFERENCES public.surat_keluar(id),
+  naskah_masuk_id  UUID REFERENCES public.naskah_masuk(id),
+  naskah_keluar_id UUID REFERENCES public.naskah_keluar(id),
   created_by      UUID NOT NULL REFERENCES public.profiles(id),
   updated_by      UUID REFERENCES public.profiles(id),
   created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -243,23 +243,23 @@ CREATE TABLE public.regulasi (
 COMMENT ON TABLE public.regulasi IS 'Repository regulasi dan peraturan kearsipan (CMS)';
 
 -- ============================================================
--- AUTO-INCREMENT SEQUENCES (untuk nomor surat baku)
+-- AUTO-INCREMENT SEQUENCES (untuk nomor naskah baku)
 -- ============================================================
 
-CREATE SEQUENCE seq_surat_masuk START 1;
-CREATE SEQUENCE seq_surat_keluar START 1;
+CREATE SEQUENCE seq_naskah_masuk START 1;
+CREATE SEQUENCE seq_naskah_keluar START 1;
 CREATE SEQUENCE seq_arsip START 1;
 CREATE SEQUENCE seq_peminjaman START 1;
 
 -- ============================================================
--- FUNCTIONS: Auto-generate nomor surat
+-- FUNCTIONS: Auto-generate nomor naskah
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION generate_nomor_agenda_masuk()
 RETURNS TEXT AS $$
 DECLARE
   tahun TEXT := TO_CHAR(NOW(), 'YYYY');
-  seq   TEXT := LPAD(NEXTVAL('seq_surat_masuk')::TEXT, 3, '0');
+  seq   TEXT := LPAD(NEXTVAL('seq_naskah_masuk')::TEXT, 3, '0');
 BEGIN
   RETURN 'SM-' || tahun || '-' || seq;
 END;
@@ -269,17 +269,17 @@ CREATE OR REPLACE FUNCTION generate_nomor_agenda_keluar()
 RETURNS TEXT AS $$
 DECLARE
   tahun TEXT := TO_CHAR(NOW(), 'YYYY');
-  seq   TEXT := LPAD(NEXTVAL('seq_surat_keluar')::TEXT, 3, '0');
+  seq   TEXT := LPAD(NEXTVAL('seq_naskah_keluar')::TEXT, 3, '0');
 BEGIN
   RETURN 'SK-' || tahun || '-' || seq;
 END;
 $$ LANGUAGE plpgsql;
 
--- Format baku nomor surat keluar: {SEQ}/{KODE_UNIT}/{BLN_ROMAWI}/{YYYY}
-CREATE OR REPLACE FUNCTION generate_nomor_surat_keluar(kode_unit TEXT DEFAULT 'ORG')
+-- Format baku nomor naskah keluar: {SEQ}/{KODE_UNIT}/{BLN_ROMAWI}/{YYYY}
+CREATE OR REPLACE FUNCTION generate_nomor_naskah_keluar(kode_unit TEXT DEFAULT 'ORG')
 RETURNS TEXT AS $$
 DECLARE
-  seq       INT := CURRVAL('seq_surat_keluar');
+  seq       INT := CURRVAL('seq_naskah_keluar');
   bulan_rom TEXT[] := ARRAY['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
   bln       TEXT := bulan_rom[EXTRACT(MONTH FROM NOW())::INT];
   thn       TEXT := TO_CHAR(NOW(), 'YYYY');
@@ -322,8 +322,8 @@ $$ LANGUAGE plpgsql;
 
 -- Apply updated_at trigger to all tables
 CREATE TRIGGER trg_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-CREATE TRIGGER trg_surat_masuk_updated_at BEFORE UPDATE ON public.surat_masuk FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-CREATE TRIGGER trg_surat_keluar_updated_at BEFORE UPDATE ON public.surat_keluar FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_naskah_masuk_updated_at BEFORE UPDATE ON public.naskah_masuk FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+CREATE TRIGGER trg_naskah_keluar_updated_at BEFORE UPDATE ON public.naskah_keluar FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_arsip_updated_at BEFORE UPDATE ON public.arsip FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_pinjam_updated_at BEFORE UPDATE ON public.peminjaman_arsip FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 CREATE TRIGGER trg_musna_updated_at BEFORE UPDATE ON public.pemusnahan_arsip FOR EACH ROW EXECUTE FUNCTION set_updated_at();
