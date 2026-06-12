@@ -12,11 +12,11 @@ function buildSidebar(activeNav) {
     // Menu Utama
     { section: 'Menu Utama' },
     { id:'dashboard',  icon:'📊', label:'Dashboard',           href:'dashboard.html' },
-    // Surat
-    { section: 'Surat' },
-    { id:'masuk',      icon:'📥', label:'Surat Masuk',          href:'surat-masuk.html',
+    // Naskah
+    { section: 'Naskah' },
+    { id:'masuk',      icon:'📥', label:'Naskah Masuk',          href:'Naskah-masuk.html',
       badge:'', requireRole:'Admin,TU,Pengelola,Unit Kearsipan' },
-    { id:'keluar',     icon:'📤', label:'Surat Keluar',         href:'surat-keluar.html',
+    { id:'keluar',     icon:'📤', label:'Naskah Keluar',         href:'Naskah-keluar.html',
       requireRole:'Admin,TU,Pengelola,Unit Kearsipan' },
     // Arsip
     { section: 'Arsip' },
@@ -109,7 +109,7 @@ function buildTopbar(title) {
     <div class="topbar-title">${title}</div>
     <div class="search-wrap no-print">
       <span class="search-ico">🔍</span>
-      <input type="text" placeholder="Cari arsip, nomor surat..." id="global-search">
+      <input type="text" placeholder="Cari arsip, nomor Naskah..." id="global-search">
     </div>
     <div class="topbar-actions no-print">
       <button class="icon-btn" id="btn-theme" onclick="toggleDark()" title="Ganti tema">🌙</button>
