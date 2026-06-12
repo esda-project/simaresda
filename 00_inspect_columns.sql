@@ -14,8 +14,8 @@ FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name IN (
     'profiles',
-    'surat_masuk',
-    'surat_keluar',
+    'naskah_masuk',
+    'naskah_keluar',
     'arsip',
     'peminjaman_arsip',
     'penyusutan_arsip',
