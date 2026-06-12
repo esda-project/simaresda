@@ -465,8 +465,8 @@ const SIMARESDA_SEC = {
   can(user, resource, action) {
     const PERMS = {
       Admin: {
-        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
-        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        naskah_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        naskah_keluar:  { read:true,  create:true,  update:true,  delete:true  },
         arsip:         { read:true,  create:true,  update:true,  delete:true  },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true,  approve:true               },
@@ -475,8 +475,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
       },
       Pengelola: {
-        surat_masuk:   { read:true,  create:true,  update:true               },
-        surat_keluar:  { read:true,  create:true,  update:true               },
+        naskah_masuk:   { read:true,  create:true,  update:true               },
+        naskah_keluar:  { read:true,  create:true,  update:true               },
         arsip:         { read:true,  create:true,  update:true               },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true                              },
@@ -485,8 +485,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true                                             },
       },
       TU: {
-        surat_masuk:   { read:true,  create:true                              },
-        surat_keluar:  { read:true,  create:true                              },
+        naskah_masuk:   { read:true,  create:true                              },
+        naskah_keluar:  { read:true,  create:true                              },
         arsip:         { read:true                                             },
         peminjaman:    { read:true,  create:true                              },
         pemusnahan:    { read:true                                             },
@@ -605,7 +605,7 @@ window.logout = () => SIMARESDA_SEC.logout();
       <button class="tab-btn" onclick="setKat('UU',this)">Undang-Undang</button>
       <button class="tab-btn" onclick="setKat('PP',this)">Peraturan Pemerintah</button>
       <button class="tab-btn" onclick="setKat('ANRI',this)">Peraturan ANRI</button>
-      <button class="tab-btn" onclick="setKat('SE',this)">Surat Edaran</button>
+      <button class="tab-btn" onclick="setKat('SE',this)">naskah Edaran</button>
       <button class="tab-btn" onclick="setKat('PERDA',this)">Perda</button>
     </div>
 
@@ -773,7 +773,7 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
-// ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
+// ── NOMOR ROMAWI (untuk nomor naskah keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
 
@@ -870,7 +870,7 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="surat-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item" href="surat-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="naskah-masuk.html"><span class="nav-icon">📥</span>naskah Masuk</a><a class="nav-item" href="naskah-keluar.html"><span class="nav-icon">📤</span>naskah Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item active" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
@@ -883,7 +883,7 @@ let regData=[
   {id:3,jenis:'ANRI',nomor:'37',tahun:2016,instansi:'ANRI',judul:'Pedoman Penyusutan Arsip',ringkasan:'Pedoman teknis penyusutan arsip meliputi pemindahan arsip inaktif, pemusnahan arsip yang tidak bernilai guna, dan penyerahan arsip statis ke lembaga kearsipan.',link:'https://jdih.anri.go.id',aktif:true},
   {id:4,jenis:'ANRI',nomor:'9',tahun:2018,instansi:'ANRI',judul:'Pedoman Pembuatan dan Penggunaan Arsip dalam Pelaksanaan Kegiatan',ringkasan:'Mengatur standar pembuatan naskah dinas, tata cara penggunaan arsip, dan pengelolaan arsip aktif pada unit pengolah.',link:'https://jdih.anri.go.id',aktif:true},
   {id:5,jenis:'ANRI',nomor:'19',tahun:2012,instansi:'ANRI',judul:'Pedoman Pengelolaan Arsip Aktif di Lingkungan Pemerintahan',ringkasan:'Panduan teknis pengelolaan arsip aktif di unit pengolah, meliputi pemberkasan, penataan, penemuan kembali, dan pemeliharaan arsip aktif.',link:'https://jdih.anri.go.id',aktif:true},
-  {id:6,jenis:'SE',nomor:'6',tahun:2020,instansi:'KemenPANRB',judul:'Surat Edaran tentang Digitalisasi Arsip dan Dokumen Pemerintah',ringkasan:'Mendorong instansi pemerintah untuk melakukan digitalisasi arsip dan dokumen dalam rangka mendukung transformasi digital pemerintahan.',link:'#',aktif:true},
+  {id:6,jenis:'SE',nomor:'6',tahun:2020,instansi:'KemenPANRB',judul:'naskah Edaran tentang Digitalisasi Arsip dan Dokumen Pemerintah',ringkasan:'Mendorong instansi pemerintah untuk melakukan digitalisasi arsip dan dokumen dalam rangka mendukung transformasi digital pemerintahan.',link:'#',aktif:true},
   {id:7,jenis:'PP',nomor:'45',tahun:2017,instansi:'Presiden RI',judul:'Partisipasi Masyarakat dalam Penyelenggaraan Pemerintahan Daerah',ringkasan:'Mengatur bentuk partisipasi masyarakat termasuk akses terhadap arsip dan dokumen publik di lingkungan pemerintah daerah.',link:'#',aktif:true},
   {id:8,jenis:'ANRI',nomor:'5',tahun:2021,instansi:'ANRI',judul:'Pedoman Alih Media Arsip',ringkasan:'Ketentuan teknis pelaksanaan alih media arsip dari media kertas ke media elektronik, termasuk standar kualitas, autentikasi, dan penyimpanan arsip digital.',link:'#',aktif:true},
 ];
@@ -914,7 +914,7 @@ async function loadRegulasiFromDB(){
       .select('id,kode,judul,nomor,tahun,instansi,jenis,tentang,ringkasan,file_url,link_url,is_active')
       .eq('is_active',true).order('tahun',{ascending:false});
     if(error){console.error('regulasi:',error);return;}
-    const JENIS_MAP={'UU':'UU','PP':'PP','Peraturan ANRI':'ANRI','Permendagri':'SE','Perda':'PERDA','Perwali':'PERWALI','Surat Edaran':'SE'};
+    const JENIS_MAP={'UU':'UU','PP':'PP','Peraturan ANRI':'ANRI','Permendagri':'SE','Perda':'PERDA','Perwali':'PERWALI','naskah Edaran':'SE'};
     const fromDB=(rows||[]).map((r,i)=>({
       id:1000+i,
       _uuid:r.id,
