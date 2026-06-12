@@ -12,7 +12,7 @@
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES
   (
-    'surat-masuk', 'surat-masuk', false,
+    'naskah-masuk', 'naskah-masuk', false,
     20971520, -- 20 MB
     ARRAY[
       'application/pdf',
@@ -22,7 +22,7 @@ VALUES
     ]
   ),
   (
-    'surat-keluar', 'surat-keluar', false,
+    'naskah-keluar', 'naskah-keluar', false,
     20971520,
     ARRAY[
       'application/pdf',
@@ -52,7 +52,7 @@ ON CONFLICT (id) DO NOTHING;
 
 
 -- ================================================================
--- STORAGE POLICIES — surat-masuk
+-- STORAGE POLICIES — naskah-masuk
 -- ================================================================
 
 DROP POLICY IF EXISTS "sm_storage_admin"    ON storage.objects;
@@ -63,21 +63,21 @@ DROP POLICY IF EXISTS "sm_storage_ks_read"  ON storage.objects;
 -- Admin: full
 CREATE POLICY "sm_storage_admin" ON storage.objects
   FOR ALL TO authenticated
-  USING (bucket_id = 'surat-masuk' AND public.is_admin())
-  WITH CHECK (bucket_id = 'surat-masuk' AND public.is_admin());
+  USING (bucket_id = 'naskah-masuk' AND public.is_admin())
+  WITH CHECK (bucket_id = 'naskah-masuk' AND public.is_admin());
 
 -- TU: full (upload, read, delete)
 CREATE POLICY "sm_storage_tu" ON storage.objects
   FOR ALL TO authenticated
-  USING (bucket_id = 'surat-masuk' AND public.is_tu())
-  WITH CHECK (bucket_id = 'surat-masuk' AND public.is_tu());
+  USING (bucket_id = 'naskah-masuk' AND public.is_tu())
+  WITH CHECK (bucket_id = 'naskah-masuk' AND public.is_tu());
 
 -- Pengelola: baca file di folder bidangnya
--- Konvensi path: surat-masuk/{bidang}/{tahun}/{file}
+-- Konvensi path: naskah-masuk/{bidang}/{tahun}/{file}
 CREATE POLICY "sm_storage_up_read" ON storage.objects
   FOR SELECT TO authenticated
   USING (
-    bucket_id = 'surat-masuk'
+    bucket_id = 'naskah-masuk'
     AND public.is_pengelola()
     AND (storage.foldername(name))[1] = LOWER(public.get_my_bidang()::TEXT)
   );
@@ -85,11 +85,11 @@ CREATE POLICY "sm_storage_up_read" ON storage.objects
 -- Unit Kearsipan: baca semua
 CREATE POLICY "sm_storage_ks_read" ON storage.objects
   FOR SELECT TO authenticated
-  USING (bucket_id = 'surat-masuk' AND public.is_kearsipan());
+  USING (bucket_id = 'naskah-masuk' AND public.is_kearsipan());
 
 
 -- ================================================================
--- STORAGE POLICIES — surat-keluar
+-- STORAGE POLICIES — naskah-keluar
 -- ================================================================
 
 DROP POLICY IF EXISTS "sk_storage_admin"   ON storage.objects;
@@ -99,31 +99,31 @@ DROP POLICY IF EXISTS "sk_storage_ks_read" ON storage.objects;
 
 CREATE POLICY "sk_storage_admin" ON storage.objects
   FOR ALL TO authenticated
-  USING (bucket_id = 'surat-keluar' AND public.is_admin())
-  WITH CHECK (bucket_id = 'surat-keluar' AND public.is_admin());
+  USING (bucket_id = 'naskah-keluar' AND public.is_admin())
+  WITH CHECK (bucket_id = 'naskah-keluar' AND public.is_admin());
 
 CREATE POLICY "sk_storage_tu" ON storage.objects
   FOR ALL TO authenticated
-  USING (bucket_id = 'surat-keluar' AND public.is_tu())
-  WITH CHECK (bucket_id = 'surat-keluar' AND public.is_tu());
+  USING (bucket_id = 'naskah-keluar' AND public.is_tu())
+  WITH CHECK (bucket_id = 'naskah-keluar' AND public.is_tu());
 
 -- Pengelola: upload & baca di folder bidangnya
 CREATE POLICY "sk_storage_up_rw" ON storage.objects
   FOR ALL TO authenticated
   USING (
-    bucket_id = 'surat-keluar'
+    bucket_id = 'naskah-keluar'
     AND public.is_pengelola()
     AND (storage.foldername(name))[1] = LOWER(public.get_my_bidang()::TEXT)
   )
   WITH CHECK (
-    bucket_id = 'surat-keluar'
+    bucket_id = 'naskah-keluar'
     AND public.is_pengelola()
     AND (storage.foldername(name))[1] = LOWER(public.get_my_bidang()::TEXT)
   );
 
 CREATE POLICY "sk_storage_ks_read" ON storage.objects
   FOR SELECT TO authenticated
-  USING (bucket_id = 'surat-keluar' AND public.is_kearsipan());
+  USING (bucket_id = 'naskah-keluar' AND public.is_kearsipan());
 
 
 -- ================================================================
@@ -185,12 +185,12 @@ CREATE POLICY "reg_storage_all_read" ON storage.objects
 -- KONVENSI PENAMAAN FILE DI STORAGE
 -- ================================================================
 --
--- Bucket: surat-masuk
+-- Bucket: naskah-masuk
 --   /{bidang_lower}/{yyyy}/{nomor_agenda}_{nama_file}.pdf
 --   Contoh: /umum/2025/SM-001-2025_undangan_rapat.pdf
 --           /perekonomian/2025/SM-045-2025_lampiran_1.pdf
 --
--- Bucket: surat-keluar
+-- Bucket: naskah-keluar
 --   /{bidang_lower}/{yyyy}/{nomor_agenda}_{draft|final}.pdf
 --   Contoh: /bumd/2025/SK-012-2025_draft.pdf
 --           /bumd/2025/SK-012-2025_final.pdf
