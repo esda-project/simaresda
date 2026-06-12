@@ -25,16 +25,16 @@
 DROP VIEW IF EXISTS public.v_dashboard_summary;
 DROP VIEW IF EXISTS public.v_peminjaman_aktif;
 DROP VIEW IF EXISTS public.v_statistik_arsip;
-DROP VIEW IF EXISTS public.v_statistik_surat_keluar;
-DROP VIEW IF EXISTS public.v_statistik_surat_masuk;
+DROP VIEW IF EXISTS public.v_statistik_naskah_keluar;
+DROP VIEW IF EXISTS public.v_statistik_naskah_masuk;
 
 
 -- ================================================================
--- RECREATE: v_statistik_surat_masuk
+-- RECREATE: v_statistik_naskah_masuk
 -- SECURITY INVOKER = RLS tetap aktif
 -- ================================================================
 
-CREATE OR REPLACE VIEW public.v_statistik_surat_masuk
+CREATE OR REPLACE VIEW public.v_statistik_naskah_masuk
 WITH (security_invoker = true)
 AS
 SELECT
@@ -42,35 +42,35 @@ SELECT
   EXTRACT(YEAR  FROM tanggal_terima)::INTEGER AS tahun,
   EXTRACT(MONTH FROM tanggal_terima)::INTEGER AS bulan,
   COUNT(*)                                    AS jumlah
-FROM public.surat_masuk
+FROM public.naskah_masuk
 WHERE is_deleted = FALSE
 GROUP BY bidang, tahun, bulan
 ORDER BY tahun DESC, bulan DESC;
 
 -- Grant akses
-GRANT SELECT ON public.v_statistik_surat_masuk TO authenticated;
-GRANT SELECT ON public.v_statistik_surat_masuk TO anon;
+GRANT SELECT ON public.v_statistik_naskah_masuk TO authenticated;
+GRANT SELECT ON public.v_statistik_naskah_masuk TO anon;
 
 
 -- ================================================================
--- RECREATE: v_statistik_surat_keluar
+-- RECREATE: v_statistik_naskah_keluar
 -- ================================================================
 
-CREATE OR REPLACE VIEW public.v_statistik_surat_keluar
+CREATE OR REPLACE VIEW public.v_statistik_naskah_keluar
 WITH (security_invoker = true)
 AS
 SELECT
   bidang,
-  EXTRACT(YEAR  FROM COALESCE(tanggal_surat, created_at::DATE))::INTEGER AS tahun,
-  EXTRACT(MONTH FROM COALESCE(tanggal_surat, created_at::DATE))::INTEGER AS bulan,
+  EXTRACT(YEAR  FROM COALESCE(tanggal_naskah, created_at::DATE))::INTEGER AS tahun,
+  EXTRACT(MONTH FROM COALESCE(tanggal_naskah, created_at::DATE))::INTEGER AS bulan,
   COUNT(*)                                                                AS jumlah
-FROM public.surat_keluar
+FROM public.naskah_keluar
 WHERE is_deleted = FALSE
 GROUP BY bidang, tahun, bulan
 ORDER BY tahun DESC, bulan DESC;
 
-GRANT SELECT ON public.v_statistik_surat_keluar TO authenticated;
-GRANT SELECT ON public.v_statistik_surat_keluar TO anon;
+GRANT SELECT ON public.v_statistik_naskah_keluar TO authenticated;
+GRANT SELECT ON public.v_statistik_naskah_keluar TO anon;
 
 
 -- ================================================================
@@ -136,21 +136,21 @@ CREATE OR REPLACE VIEW public.v_dashboard_summary
 WITH (security_invoker = true)
 AS
 SELECT
-  -- Surat masuk tahun ini
+  -- naskah masuk tahun ini
   (
     SELECT COUNT(*)
-    FROM public.surat_masuk
+    FROM public.naskah_masuk
     WHERE EXTRACT(YEAR FROM tanggal_terima) = EXTRACT(YEAR FROM NOW())
       AND is_deleted = FALSE
-  ) AS surat_masuk_tahun_ini,
+  ) AS naskah_masuk_tahun_ini,
 
-  -- Surat keluar tahun ini
+  -- naskah keluar tahun ini
   (
     SELECT COUNT(*)
-    FROM public.surat_keluar
+    FROM public.naskah_keluar
     WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM NOW())
       AND is_deleted = FALSE
-  ) AS surat_keluar_tahun_ini,
+  ) AS naskah_keluar_tahun_ini,
 
   -- Arsip aktif
   (
