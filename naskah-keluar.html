@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Surat Keluar — SIMARESDA</title>
+<title>Naskah Keluar — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -465,8 +465,8 @@ const SIMARESDA_SEC = {
   can(user, resource, action) {
     const PERMS = {
       Admin: {
-        naskah_masuk:   { read:true,  create:true,  update:true,  delete:true  },
-        naskah_keluar:  { read:true,  create:true,  update:true,  delete:true  },
+        surat_masuk:   { read:true,  create:true,  update:true,  delete:true  },
+        surat_keluar:  { read:true,  create:true,  update:true,  delete:true  },
         arsip:         { read:true,  create:true,  update:true,  delete:true  },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true,  approve:true               },
@@ -475,8 +475,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
       },
       Pengelola: {
-        naskah_masuk:   { read:true,  create:true,  update:true               },
-        naskah_keluar:  { read:true,  create:true,  update:true               },
+        surat_masuk:   { read:true,  create:true,  update:true               },
+        surat_keluar:  { read:true,  create:true,  update:true               },
         arsip:         { read:true,  create:true,  update:true               },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true                              },
@@ -485,8 +485,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true                                             },
       },
       TU: {
-        naskah_masuk:   { read:true,  create:true                              },
-        naskah_keluar:  { read:true,  create:true                              },
+        surat_masuk:   { read:true,  create:true                              },
+        surat_keluar:  { read:true,  create:true                              },
         arsip:         { read:true                                             },
         peminjaman:    { read:true,  create:true                              },
         pemusnahan:    { read:true                                             },
@@ -591,7 +591,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 <div id="main">
   <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
   <div class="topbar">
-    <div class="topbar-title">Surat Keluar</div>
+    <div class="topbar-title">Naskah Keluar</div>
     <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" id="g-search" placeholder="Cari nomor, tujuan, perihal..." oninput="applyFilter()"></div>
     <div class="topbar-actions no-print">
       <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
@@ -601,16 +601,17 @@ window.logout = () => SIMARESDA_SEC.logout();
   </div>
   <div class="content">
     <div class="toolbar no-print">
-      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Surat Keluar</button>
+      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Naskah Keluar</button>
       <select id="filter-status" onchange="applyFilter()" style="width:148px"><option value="">Semua Status</option><option>Draft</option><option>Terkirim</option><option>Dibatalkan</option></select>
-      <select id="filter-kat" onchange="applyFilter()" style="width:148px"><option value="">Semua Kategori</option><option>Umum</option><option>Keuangan</option><option>Kepegawaian</option><option>Teknis</option></select>
+      <select id="filter-bidang" onchange="applyFilter()" style="width:160px"><option value="">Semua Bidang</option><option value="UMUM">Umum / Sekretariat</option><option value="BUMD">BUMD &amp; BLUD</option><option value="PEREKONOMIAN">Perekonomian</option><option value="SDA_DBHCHT">SDA &amp; DBHCHT</option></select>
+      <select id="filter-kat" onchange="applyFilter()" style="width:160px"><option value="">Semua Kategori</option><option>Peraturan Daerah</option><option>Peraturan Kepala Daerah</option><option>Keputusan</option><option>Instruksi</option><option>Surat Dinas</option><option>Nota Dinas</option><option>Memo</option><option>Surat Undangan</option><option>Surat Tugas</option><option>Surat Kuasa</option><option>Surat Pengantar</option><option>Surat Keterangan</option><option>Surat Pernyataan</option><option>Surat Izin</option><option>Surat Perjanjian</option><option>Surat Perintah</option><option>Surat Rekomendasi</option><option>Surat Edaran</option><option>Berita Acara</option><option>Notulen Rapat</option><option>Laporan</option><option>Telaahan Staf</option><option>Pengumuman</option><option>Disposisi</option><option>Telegram Dinas</option><option>SK Kepegawaian</option><option>SK Keuangan</option><option>DPA / DPPA</option><option>Lainnya</option></select>
       <button class="btn btn-secondary" onclick="exportCSV('tbl-keluar','naskah-keluar')">⬇ CSV</button>
       <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
       <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
     </div>
     <div class="table-wrap">
       <table id="tbl-keluar">
-        <thead><tr><th>No. Agenda</th><th>No. Surat</th><th>Tgl Surat</th><th>Tujuan</th><th>Perihal</th><th>Kategori</th><th>Sifat</th><th>Penandatangan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
+        <thead><tr><th>No. Agenda</th><th>No. Surat</th><th>Tgl Surat</th><th>Tujuan</th><th>Perihal</th><th>Bidang</th><th>Kategori</th><th>Sifat</th><th>Penandatangan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
         <tbody id="body-keluar"></tbody>
       </table>
     </div>
@@ -621,21 +622,72 @@ window.logout = () => SIMARESDA_SEC.logout();
 <!-- MODAL FORM -->
 <div class="modal-overlay" id="modal-keluar" style="display:none" onclick="if(event.target===this)closeModal('modal-keluar')">
   <div class="modal modal-lg">
-    <div class="modal-header"><div class="modal-title" id="m-title">📤 Tambah Surat Keluar</div><button class="icon-btn" onclick="closeModal('modal-keluar')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="m-title">📤 Tambah Naskah Keluar</div><button class="icon-btn" onclick="closeModal('modal-keluar')">✕</button></div>
     <div class="modal-body">
-      <div class="alert alert-info" style="margin-bottom:14px">💡 Nomor naskah akan di-generate otomatis dalam format <strong>{SEQ}/{KODE}/{BLN-ROMAWI}/{TAHUN}</strong></div>
+      <div class="alert alert-info" style="margin-bottom:14px">💡 Nomor naskah akan di-generate otomatis dalam format <strong>{SEQ}/{KODE-BIDANG}/{BLN-ROMAWI}/{TAHUN}</strong></div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Nomor Surat (auto)</label><input class="form-control" id="m-nonaskah" placeholder="Akan diisi otomatis" readonly></div>
+        <div class="form-group"><label class="form-label">Nomor Surat (auto)</label><input class="form-control" id="m-nosurat" placeholder="Akan diisi otomatis" readonly></div>
         <div class="form-group"><label class="form-label">Tanggal Surat <span class="req">*</span></label><input class="form-control" type="date" id="m-tgl"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Tujuan <span class="req">*</span></label><input class="form-control" id="m-tujuan" placeholder="Instansi / nama tujuan"></div>
-        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal naskah keluar"></div>
+        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal surat keluar"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Bidang <span class="req">*</span></label><select class="form-control" id="m-bidang" onchange="updateKodeFromBidang()">
+          <option value="">-- Pilih Bidang --</option>
+          <option value="UMUM">Umum / Sekretariat</option>
+          <option value="BUMD">BUMD &amp; BLUD</option>
+          <option value="PEREKONOMIAN">Perekonomian</option>
+          <option value="SDA_DBHCHT">SDA &amp; DBHCHT</option>
+        </select></div>
+        <div class="form-group"><label class="form-label">Kategori Naskah <span class="req">*</span></label><select class="form-control" id="m-kat">
+          <optgroup label="Naskah Dinas Arahan">
+            <option>Peraturan Daerah</option>
+            <option>Peraturan Kepala Daerah</option>
+            <option>Keputusan</option>
+            <option>Instruksi</option>
+            <option>SOP / Standar Prosedur</option>
+          </optgroup>
+          <optgroup label="Naskah Dinas Korespondensi">
+            <option>Surat Dinas</option>
+            <option>Nota Dinas</option>
+            <option>Memo</option>
+            <option>Surat Undangan</option>
+            <option>Surat Tugas</option>
+            <option>Surat Kuasa</option>
+            <option>Surat Pengantar</option>
+            <option>Surat Keterangan</option>
+            <option>Surat Pernyataan</option>
+            <option>Surat Izin</option>
+            <option>Surat Perjanjian / MoU</option>
+            <option>Surat Perintah</option>
+            <option>Surat Rekomendasi</option>
+            <option>Surat Edaran</option>
+          </optgroup>
+          <optgroup label="Naskah Dinas Khusus">
+            <option>Berita Acara</option>
+            <option>Notulen Rapat</option>
+            <option>Laporan</option>
+            <option>Telaahan Staf</option>
+            <option>Pengumuman</option>
+            <option>Disposisi</option>
+            <option>Telegram Dinas</option>
+          </optgroup>
+          <optgroup label="Naskah Keuangan &amp; Kepegawaian">
+            <option>SK Kepegawaian</option>
+            <option>SK Keuangan / Anggaran</option>
+            <option>DPA / DPPA</option>
+            <option>SPM / SP2D</option>
+            <option>Laporan Keuangan</option>
+          </optgroup>
+          <optgroup label="Lainnya"><option>Lainnya</option></optgroup>
+        </select></div>
       </div>
       <div class="form-row3">
-        <div class="form-group"><label class="form-label">Kategori</label><select class="form-control" id="m-kat"><option>Umum</option><option>Keuangan</option><option>Kepegawaian</option><option>Teknis</option></select></div>
         <div class="form-group"><label class="form-label">Sifat</label><select class="form-control" id="m-sifat"><option>Biasa</option><option>Penting</option><option>Segera</option></select></div>
         <div class="form-group"><label class="form-label">Status</label><select class="form-control" id="m-status"><option>Draft</option><option>Terkirim</option><option>Dibatalkan</option></select></div>
+        <div class="form-group"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Penandatangan</label><input class="form-control" id="m-ttd" placeholder="Nama / jabatan pejabat penanda tangan"></div>
@@ -650,7 +702,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 
 <!-- MODAL DETAIL -->
 <div class="modal-overlay" id="modal-detail" style="display:none" onclick="if(event.target===this)closeModal('modal-detail')">
-  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Surat Keluar</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
+  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Naskah Keluar</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
 </div>
 
 <div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
@@ -711,6 +763,13 @@ function badge(text) {
 }
 function badgePlain(text, cls) {
   return `<span class="badge ${cls || 'b-gray'}">${text}</span>`;
+}
+const BIDANG_LABEL_MAP={'UMUM':'Umum / Sekretariat','BUMD':'BUMD & BLUD','PEREKONOMIAN':'Perekonomian','SDA_DBHCHT':'SDA & DBHCHT'};
+const BIDANG_CLS={'UMUM':'b-accent','BUMD':'b-green','PEREKONOMIAN':'b-yellow','SDA_DBHCHT':'b-purple'};
+function badgeBidang(val){
+  const lbl=BIDANG_LABEL_MAP[val]||val||'—';
+  const cls=BIDANG_CLS[val]||'b-gray';
+  return `<span class="badge ${cls}" style="font-size:10px">${lbl}</span>`;
 }
 
 // ── MODAL ─────────────────────────────────────────────────
@@ -781,7 +840,7 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
-// ── NOMOR ROMAWI (untuk nomor naskah keluar) ───────────────
+// ── NOMOR ROMAWI (untuk nomor surat keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
 
@@ -877,7 +936,7 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="naskah-masuk.html"><span class="nav-icon">📥</span>Surat Masuk</a><a class="nav-item active" href="naskah-keluar.html"><span class="nav-icon">📤</span>Surat Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="naskah-masuk.html"><span class="nav-icon">📥</span>Naskah Masuk</a><a class="nav-item active" href="naskah-keluar.html"><span class="nav-icon">📤</span>Naskah Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
     <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
@@ -888,9 +947,16 @@ let data = [];
 let filtered=[...data];
 const RPP=10;
 
+const BIDANG_KODE={UMUM:'UMM',BUMD:'BMD',PEREKONOMIAN:'EKO',SDA_DBHCHT:'SDA'};
 function autoNo(kode){
   const now=new Date();
-  return `${99+seq}/${kode||'ORG'}/${ROM[now.getMonth()]}/${now.getFullYear()}`;
+  return `${String(seq).padStart(3,'0')}/${kode||'UMM'}/${ROM[now.getMonth()]}/${now.getFullYear()}`;
+}
+function updateKodeFromBidang(){
+  const b=document.getElementById('m-bidang')?.value||'UMUM';
+  const kode=BIDANG_KODE[b]||'UMM';
+  document.getElementById('m-kode').value=kode;
+  document.getElementById('m-nosurat').value=autoNo(kode);
 }
 
 function renderTable(){
@@ -902,6 +968,7 @@ function renderTable(){
       <td>${s.tgl}</td>
       <td><strong>${s.tujuan}</strong></td>
       <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${s.perihal}">${s.perihal}</td>
+      <td>${badgeBidang(s.bidang)}</td>
       <td>${badgePlain(s.kat,'b-gray')}</td>
       <td>${badgePlain(s.sifat,s.sifat==='Segera'?'b-red':s.sifat==='Penting'?'b-yellow':'b-gray')}</td>
       <td>${s.ttd}</td>
@@ -911,8 +978,8 @@ function renderTable(){
         <button class="btn btn-secondary btn-xs" onclick='editRow(${JSON.stringify(s)})'>✏️</button>
         <button class="btn btn-danger btn-xs" onclick="deleteRow('${s.id}')" data-require-role="Admin">🗑</button>
       </td>
-    </tr>`).join(''):`<tr><td colspan="10"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tidak ada data</div></div></td></tr>`;
-  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} naskah`:'';
+    </tr>`).join(''):`<tr><td colspan="11"><div class="empty"><div class="empty-ico">📭</div><div class="empty-txt">Tidak ada data</div></div></td></tr>`;
+  document.getElementById('row-count').textContent=filtered.length?`${start+1}–${Math.min(start+RPP,filtered.length)} dari ${filtered.length} surat`:'';
   renderPagination();applyRoleGuards(window.SIMARESDA_USER?.role);
 }
 function renderPagination(){
@@ -928,32 +995,35 @@ function applyFilter(){
   const q=document.getElementById('g-search').value.toLowerCase();
   const st=document.getElementById('filter-status').value;
   const kt=document.getElementById('filter-kat').value;
+  const bd=document.getElementById('filter-bidang')?.value||'';
   filtered=data.filter(s=>{
     if(q&&!JSON.stringify(s).toLowerCase().includes(q))return false;
     if(st&&s.status!==st)return false;
     if(kt&&s.kat!==kt)return false;
+    if(bd&&s.bidang!==bd)return false;
     return true;
   });
   page=1;renderTable();
 }
-function resetFilter(){document.getElementById('g-search').value='';document.getElementById('filter-status').value='';document.getElementById('filter-kat').value='';filtered=[...data];page=1;renderTable();}
+function resetFilter(){document.getElementById('g-search').value='';document.getElementById('filter-status').value='';document.getElementById('filter-kat').value='';const fb=document.getElementById('filter-bidang');if(fb)fb.value='';filtered=[...data];page=1;renderTable();}
 
 function openAdd(){
-  editIdx=null;document.getElementById('m-title').textContent='📤 Tambah Surat Keluar';
+  editIdx=null;document.getElementById('m-title').textContent='📤 Tambah Naskah Keluar';
   ['m-tgl','m-tujuan','m-perihal','m-ttd','m-tembusan','m-ket'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-kode').value='ORG';
-  document.getElementById('m-nonaskah').value=autoNo('ORG');
+  document.getElementById('m-nosurat').value=autoNo('ORG');
   openModal('modal-keluar');
 }
-document.getElementById('m-kode').addEventListener('input',function(){document.getElementById('m-nonaskah').value=autoNo(this.value);});
+document.getElementById('m-kode').addEventListener('input',function(){document.getElementById('m-nosurat').value=autoNo(this.value);});
 
 function editRow(s){
-  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Surat Keluar';
-  document.getElementById('m-nonaskah').value=s.no;document.getElementById('m-tgl').value=s.tgl;
+  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Naskah Keluar';
+  document.getElementById('m-nosurat').value=s.no;document.getElementById('m-tgl').value=s.tgl;
   document.getElementById('m-tujuan').value=s.tujuan;document.getElementById('m-perihal').value=s.perihal;
   document.getElementById('m-kat').value=s.kat;document.getElementById('m-sifat').value=s.sifat;
   document.getElementById('m-status').value=s.status;document.getElementById('m-ttd').value=s.ttd;
-  document.getElementById('m-kode').value=s.kode||'ORG';document.getElementById('m-tembusan').value=s.tembusan||'';
+  document.getElementById('m-kode').value=s.kode||'UMM';
+  const mb=document.getElementById('m-bidang');if(mb)mb.value=s.bidang||'';;document.getElementById('m-tembusan').value=s.tembusan||'';
   document.getElementById('m-ket').value=s.ket||'';
   openModal('modal-keluar');
 }
@@ -964,38 +1034,76 @@ async function saveSuratKeluar(){
   const bidang=document.getElementById('m-bidang')?.value||window._user?.bidang||'UMUM';
   const payload={
     tujuan:tuj, perihal:per, bidang:bidang,
-    nomor_naskah:document.getElementById('m-nonaskah')?.value.trim()||null,
-    tanggal_naskah:document.getElementById('m-tglnaskah')?.value||null,
+    nomor_surat:document.getElementById('m-nosurat')?.value.trim()||null,
+    tanggal_surat:document.getElementById('m-tgl')?.value||null,
     kategori:document.getElementById('m-kat').value,
     sifat:document.getElementById('m-sifat').value,
-    penandatangan:document.getElementById('m-penandatangan')?.value||null,
+    status:document.getElementById('m-status')?.value||'Draft',
+    penandatangan:document.getElementById('m-ttd')?.value||null,
+    tembusan:document.getElementById('m-tembusan')?.value||null,
     keterangan:document.getElementById('m-ket')?.value||null,
     is_deleted:false,
   };
   if(!window._supa){showToast('Database tidak tersedia','danger');return;}
   let error;
   if(editIdx && editIdx.length>20 && editIdx.includes('-')){
-    ({error}=await window._supa.from('naskah_keluar').update(payload).eq('id',editIdx));
+    ({error}=await window._supa.from('surat_keluar').update(payload).eq('id',editIdx));
   } else {
     const yr=new Date().getFullYear();
-    const{count}=await window._supa.from('naskah_keluar').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
+    const{count}=await window._supa.from('surat_keluar').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
     payload.nomor_draft=`SKD-${yr}-${String((count||0)+1).padStart(3,'0')}`;
-    payload.status='Draft';
-    ({error}=await window._supa.from('naskah_keluar').insert(payload));
+    if(!payload.status) payload.status='Draft';
+    ({error}=await window._supa.from('surat_keluar').insert(payload));
   }
   if(error){showToast('Gagal: '+error.message,'danger');return;}
   editIdx=null; closeModal('modal-keluar');
-  showToast('✅ Surat keluar disimpan','success');
+  showToast('✅ Naskah keluar disimpan','success');
   loadSupaData();
 }
-function deleteRow(id){
+async function deleteRow(id){
+  const row=data.find(d=>d.id===id);
   if(!confirm(`Hapus naskah keluar ${id}?`))return;
+  if(window._supa && row?._uuid){
+    const{error}=await window._supa.from('surat_keluar').update({is_deleted:true}).eq('id',row._uuid);
+    if(error){showToast('Gagal hapus: '+error.message,'danger');return;}
+  }
   data=data.filter(d=>d.id!==id);filtered=[...data];renderTable();showToast(`🗑️ ${id} dihapus`,'warn');
+}
+async function loadSupaData(){
+  if(!window._supa){ renderTable(); return; }
+  try{
+    let q=window._supa.from('surat_keluar')
+      .select('id,nomor_surat,nomor_draft,tanggal_surat,tujuan,perihal,kategori,sifat,status,bidang,penandatangan,tembusan,keterangan')
+      .eq('is_deleted',false)
+      .order('created_at',{ascending:false});
+    const u=window._user;
+    if(u?.role==='Pengelola'&&u?.bidang) q=q.eq('bidang',u.bidang);
+    const{data:rows,error}=await q;
+    if(error){console.error('loadData error:',error);renderTable();return;}
+    data=(rows||[]).map(r=>({
+      id:       r.nomor_draft||r.id,
+      _uuid:    r.id,
+      no:       r.nomor_surat||r.nomor_draft||'—',
+      tgl:      r.tanggal_surat||'',
+      tujuan:   r.tujuan||'—',
+      perihal:  r.perihal||'—',
+      kat:      r.kategori||'Umum',
+      sifat:    r.sifat||'Biasa',
+      status:   r.status||'Draft',
+      bidang:   r.bidang||'',
+      ttd:      r.penandatangan||'—',
+      tembusan: r.tembusan||'',
+      ket:      r.keterangan||'',
+      kode:     r.bidang?({UMUM:'UMM',BUMD:'BMD',PEREKONOMIAN:'EKO',SDA_DBHCHT:'SDA'}[r.bidang]||'UMM'):'UMM',
+    }));
+    seq=data.length+1;
+    filtered=[...data]; renderTable();
+  }catch(e){console.error(e);renderTable();}
 }
 function viewDetail(s){
   document.getElementById('detail-body').innerHTML=`
   <table style="width:100%;border-collapse:collapse;font-size:13px">
-    ${[['No. Agenda',s.id],['No. Surat',`<span class="td-mono">${s.no}</span>`],['Tanggal Surat',s.tgl],['Tujuan',`<strong>${s.tujuan}</strong>`],['Perihal',s.perihal],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Penandatangan',s.ttd||'—'],['Tembusan',s.tembusan||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
+    ${[['No. Agenda',s.id],['No. Surat',`<span class="td-mono">${s.no}</span>`],['Tanggal Surat',s.tgl],['Tujuan',`<strong>${s.tujuan}</strong>`],['Perihal',s.perihal],['Bidang',badgeBidang(s.bidang)],['Kategori',s.kat],['Sifat',s.sifat],['Status',badge(s.status)],['Penandatangan',s.ttd||'—'],['Tembusan',s.tembusan||'—'],['Keterangan',s.ket||'—']].map(([k,v])=>`<tr><td style="padding:8px 12px;width:38%;font-weight:600;color:var(--text2);border:1px solid var(--border)">${k}</td><td style="padding:8px 12px;border:1px solid var(--border)">${v}</td></tr>`).join('')}
   </table>`;
   openModal('modal-detail');
 }
