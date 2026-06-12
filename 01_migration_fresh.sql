@@ -38,7 +38,7 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE sifat_surat AS ENUM (
+  CREATE TYPE sifat_naskah AS ENUM (
     'Biasa', 'Penting', 'Segera', 'Rahasia'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -56,13 +56,13 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE status_surat_masuk AS ENUM (
+  CREATE TYPE status_naskah_masuk AS ENUM (
     'Disposisi', 'Diproses', 'Selesai', 'Arsip'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-  CREATE TYPE status_surat_keluar AS ENUM (
+  CREATE TYPE status_naskah_keluar AS ENUM (
     'Draft', 'Terverifikasi', 'Terkirim', 'Dibatalkan'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -88,7 +88,7 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN
   CREATE TYPE jenis_regulasi_enum AS ENUM (
     'UU', 'PP', 'Peraturan ANRI', 'Permendagri',
-    'Perda', 'Perwali', 'Surat Edaran'
+    'Perda', 'Perwali', 'naskah Edaran'
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
@@ -161,21 +161,21 @@ CREATE TRIGGER on_auth_user_created
 
 
 -- ================================================================
--- BLOK 5: TABEL surat_masuk
+-- BLOK 5: TABEL naskah_masuk
 -- ================================================================
 
-CREATE TABLE IF NOT EXISTS public.surat_masuk (
+CREATE TABLE IF NOT EXISTS public.naskah_masuk (
   id                  UUID              PRIMARY KEY DEFAULT uuid_generate_v4(),
   nomor_agenda        TEXT              UNIQUE NOT NULL,
-  nomor_surat         TEXT              NOT NULL,
-  tanggal_surat       DATE              NOT NULL,
+  nomor_naskah         TEXT              NOT NULL,
+  tanggal_naskah       DATE              NOT NULL,
   tanggal_terima      DATE              NOT NULL DEFAULT CURRENT_DATE,
-  asal_surat          TEXT              NOT NULL,
+  asal_naskah          TEXT              NOT NULL,
   perihal             TEXT              NOT NULL,
   bidang              bidang_enum       NOT NULL,
   kategori            kategori_arsip    NOT NULL DEFAULT 'Umum',
-  sifat               sifat_surat       NOT NULL DEFAULT 'Biasa',
-  status              status_surat_masuk NOT NULL DEFAULT 'Disposisi',
+  sifat               sifat_naskah       NOT NULL DEFAULT 'Biasa',
+  status              status_naskah_masuk NOT NULL DEFAULT 'Disposisi',
   keterangan          TEXT,
   file_url            TEXT,
   file_lampiran_urls  TEXT[],
@@ -192,33 +192,33 @@ CREATE TABLE IF NOT EXISTS public.surat_masuk (
   updated_at          TIMESTAMPTZ       NOT NULL DEFAULT NOW()
 );
 
-DROP TRIGGER IF EXISTS surat_masuk_updated_at ON public.surat_masuk;
-CREATE TRIGGER surat_masuk_updated_at
-  BEFORE UPDATE ON public.surat_masuk
+DROP TRIGGER IF EXISTS naskah_masuk_updated_at ON public.naskah_masuk;
+CREATE TRIGGER naskah_masuk_updated_at
+  BEFORE UPDATE ON public.naskah_masuk
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
-CREATE INDEX IF NOT EXISTS idx_sm_bidang   ON public.surat_masuk(bidang);
-CREATE INDEX IF NOT EXISTS idx_sm_status   ON public.surat_masuk(status);
-CREATE INDEX IF NOT EXISTS idx_sm_terima   ON public.surat_masuk(tanggal_terima);
-CREATE INDEX IF NOT EXISTS idx_sm_disp     ON public.surat_masuk(disposisi_ke);
-CREATE INDEX IF NOT EXISTS idx_sm_deleted  ON public.surat_masuk(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_sm_bidang   ON public.naskah_masuk(bidang);
+CREATE INDEX IF NOT EXISTS idx_sm_status   ON public.naskah_masuk(status);
+CREATE INDEX IF NOT EXISTS idx_sm_terima   ON public.naskah_masuk(tanggal_terima);
+CREATE INDEX IF NOT EXISTS idx_sm_disp     ON public.naskah_masuk(disposisi_ke);
+CREATE INDEX IF NOT EXISTS idx_sm_deleted  ON public.naskah_masuk(is_deleted);
 
 
 -- ================================================================
--- BLOK 6: TABEL surat_keluar
+-- BLOK 6: TABEL naskah_keluar
 -- ================================================================
 
-CREATE TABLE IF NOT EXISTS public.surat_keluar (
+CREATE TABLE IF NOT EXISTS public.naskah_keluar (
   id                  UUID                  PRIMARY KEY DEFAULT uuid_generate_v4(),
   nomor_draft         TEXT                  UNIQUE NOT NULL,
-  nomor_surat         TEXT,
-  tanggal_surat       DATE,
+  nomor_naskah         TEXT,
+  tanggal_naskah       DATE,
   tujuan              TEXT                  NOT NULL,
   perihal             TEXT                  NOT NULL,
   bidang              bidang_enum           NOT NULL,
   kategori            kategori_arsip        NOT NULL DEFAULT 'Umum',
-  sifat               sifat_surat           NOT NULL DEFAULT 'Biasa',
-  status              status_surat_keluar   NOT NULL DEFAULT 'Draft',
+  sifat               sifat_naskah           NOT NULL DEFAULT 'Biasa',
+  status              status_naskah_keluar   NOT NULL DEFAULT 'Draft',
   penandatangan       TEXT,
   tembusan            TEXT[],
   keterangan          TEXT,
@@ -239,14 +239,14 @@ CREATE TABLE IF NOT EXISTS public.surat_keluar (
   updated_at          TIMESTAMPTZ           NOT NULL DEFAULT NOW()
 );
 
-DROP TRIGGER IF EXISTS surat_keluar_updated_at ON public.surat_keluar;
-CREATE TRIGGER surat_keluar_updated_at
-  BEFORE UPDATE ON public.surat_keluar
+DROP TRIGGER IF EXISTS naskah_keluar_updated_at ON public.naskah_keluar;
+CREATE TRIGGER naskah_keluar_updated_at
+  BEFORE UPDATE ON public.naskah_keluar
   FOR EACH ROW EXECUTE PROCEDURE public.set_updated_at();
 
-CREATE INDEX IF NOT EXISTS idx_sk_bidang  ON public.surat_keluar(bidang);
-CREATE INDEX IF NOT EXISTS idx_sk_status  ON public.surat_keluar(status);
-CREATE INDEX IF NOT EXISTS idx_sk_deleted ON public.surat_keluar(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_sk_bidang  ON public.naskah_keluar(bidang);
+CREATE INDEX IF NOT EXISTS idx_sk_status  ON public.naskah_keluar(status);
+CREATE INDEX IF NOT EXISTS idx_sk_deleted ON public.naskah_keluar(is_deleted);
 
 
 -- ================================================================
@@ -272,8 +272,8 @@ CREATE TABLE IF NOT EXISTS public.arsip (
   deskripsi         TEXT,
   file_url          TEXT,
   file_urls         TEXT[],
-  surat_masuk_id    UUID              REFERENCES public.surat_masuk(id),
-  surat_keluar_id   UUID              REFERENCES public.surat_keluar(id),
+  naskah_masuk_id    UUID              REFERENCES public.naskah_masuk(id),
+  naskah_keluar_id   UUID              REFERENCES public.naskah_keluar(id),
   tanggal_inaktif   DATE,
   diserahkan_oleh   UUID              REFERENCES public.profiles(id),
   diterima_oleh     UUID              REFERENCES public.profiles(id),
@@ -402,24 +402,24 @@ CREATE INDEX IF NOT EXISTS idx_reg_tahun ON public.regulasi(tahun);
 -- BLOK 11: VIEWS DASHBOARD
 -- ================================================================
 
-CREATE OR REPLACE VIEW public.v_statistik_surat_masuk AS
+CREATE OR REPLACE VIEW public.v_statistik_naskah_masuk AS
 SELECT
   bidang,
   EXTRACT(YEAR  FROM tanggal_terima)::INTEGER AS tahun,
   EXTRACT(MONTH FROM tanggal_terima)::INTEGER AS bulan,
   COUNT(*) AS jumlah
-FROM public.surat_masuk
+FROM public.naskah_masuk
 WHERE is_deleted = FALSE
 GROUP BY bidang, tahun, bulan
 ORDER BY tahun DESC, bulan DESC;
 
-CREATE OR REPLACE VIEW public.v_statistik_surat_keluar AS
+CREATE OR REPLACE VIEW public.v_statistik_naskah_keluar AS
 SELECT
   bidang,
-  EXTRACT(YEAR  FROM COALESCE(tanggal_surat, created_at::DATE))::INTEGER AS tahun,
-  EXTRACT(MONTH FROM COALESCE(tanggal_surat, created_at::DATE))::INTEGER AS bulan,
+  EXTRACT(YEAR  FROM COALESCE(tanggal_naskah, created_at::DATE))::INTEGER AS tahun,
+  EXTRACT(MONTH FROM COALESCE(tanggal_naskah, created_at::DATE))::INTEGER AS bulan,
   COUNT(*) AS jumlah
-FROM public.surat_keluar
+FROM public.naskah_keluar
 WHERE is_deleted = FALSE
 GROUP BY bidang, tahun, bulan
 ORDER BY tahun DESC, bulan DESC;
@@ -459,12 +459,12 @@ WHERE p.status = 'Dipinjam';
 
 CREATE OR REPLACE VIEW public.v_dashboard_summary AS
 SELECT
-  (SELECT COUNT(*) FROM public.surat_masuk
+  (SELECT COUNT(*) FROM public.naskah_masuk
    WHERE EXTRACT(YEAR FROM tanggal_terima) = EXTRACT(YEAR FROM NOW())
-     AND is_deleted = FALSE)                              AS surat_masuk_tahun_ini,
-  (SELECT COUNT(*) FROM public.surat_keluar
+     AND is_deleted = FALSE)                              AS naskah_masuk_tahun_ini,
+  (SELECT COUNT(*) FROM public.naskah_keluar
    WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM NOW())
-     AND is_deleted = FALSE)                              AS surat_keluar_tahun_ini,
+     AND is_deleted = FALSE)                              AS naskah_keluar_tahun_ini,
   (SELECT COUNT(*) FROM public.arsip
    WHERE status = 'Aktif' AND is_deleted = FALSE)         AS arsip_aktif,
   (SELECT COUNT(*) FROM public.arsip
@@ -480,15 +480,15 @@ SELECT
 -- ================================================================
 
 GRANT SELECT, INSERT, UPDATE ON public.profiles          TO authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.surat_masuk       TO authenticated;
-GRANT SELECT, INSERT, UPDATE ON public.surat_keluar      TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.naskah_masuk       TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.naskah_keluar      TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.arsip             TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.peminjaman_arsip  TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.penyusutan_arsip  TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.regulasi          TO authenticated;
 
-GRANT SELECT ON public.v_statistik_surat_masuk   TO authenticated;
-GRANT SELECT ON public.v_statistik_surat_keluar  TO authenticated;
+GRANT SELECT ON public.v_statistik_naskah_masuk   TO authenticated;
+GRANT SELECT ON public.v_statistik_naskah_keluar  TO authenticated;
 GRANT SELECT ON public.v_statistik_arsip          TO authenticated;
 GRANT SELECT ON public.v_peminjaman_aktif         TO authenticated;
 GRANT SELECT ON public.v_dashboard_summary        TO authenticated;
