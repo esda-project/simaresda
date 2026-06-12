@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Naskah Masuk — SIMARESDA</title>
+<title>Naskah Keluar — SIMARESDA</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
@@ -454,7 +454,7 @@ const SIMARESDA_SEC = {
   // ── LOGOUT ────────────────────────────────────────────────
   logout(confirmed = false) {
     if (!confirmed) {
-      if (!confirm('Apakah Anda yakin ingin Masuk dari sistem?')) return;
+      if (!confirm('Apakah Anda yakin ingin Keluar dari sistem?')) return;
     }
     sessionStorage.removeItem(this.SESSION_KEY);
     sessionStorage.removeItem('simaresda-last-active');
@@ -465,8 +465,8 @@ const SIMARESDA_SEC = {
   can(user, resource, action) {
     const PERMS = {
       Admin: {
-        naskah_masuk:   { read:true,  create:true,  update:true,  delete:true  },
-        naskah_Masuk:  { read:true,  create:true,  update:true,  delete:true  },
+        naskah_Keluar:   { read:true,  create:true,  update:true,  delete:true  },
+        naskah_Keluar:  { read:true,  create:true,  update:true,  delete:true  },
         arsip:         { read:true,  create:true,  update:true,  delete:true  },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true,  approve:true               },
@@ -475,8 +475,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true,  create:true,  update:true,  delete:true  },
       },
       Pengelola: {
-        naskah_masuk:   { read:true,  create:true,  update:true               },
-        naskah_Masuk:  { read:true,  create:true,  update:true               },
+        naskah_Keluar:   { read:true,  create:true,  update:true               },
+        naskah_Keluar:  { read:true,  create:true,  update:true               },
         arsip:         { read:true,  create:true,  update:true               },
         peminjaman:    { read:true,  create:true,  update:true,  approve:true },
         pemusnahan:    { read:true,  create:true                              },
@@ -485,8 +485,8 @@ const SIMARESDA_SEC = {
         user_mgmt:     { read:true                                             },
       },
       TU: {
-        naskah_masuk:   { read:true,  create:true                              },
-        naskah_Masuk:  { read:true,  create:true                              },
+        naskah_Keluar:   { read:true,  create:true                              },
+        naskah_Keluar:  { read:true,  create:true                              },
         arsip:         { read:true                                             },
         peminjaman:    { read:true,  create:true                              },
         pemusnahan:    { read:true                                             },
@@ -591,7 +591,7 @@ window.logout = () => SIMARESDA_SEC.logout();
 <div id="main">
   <div class="notif-bar" onclick="openNotifModal()"><span class="notif-pulse"></span><span id="notif-text">Sistem aktif</span></div>
   <div class="topbar">
-    <div class="topbar-title">Naskah Masuk</div>
+    <div class="topbar-title">Naskah Keluar</div>
     <div class="search-wrap no-print"><span class="search-ico">🔍</span><input type="text" id="g-search" placeholder="Cari nomor, tujuan, perihal..." oninput="applyFilter()"></div>
     <div class="topbar-actions no-print">
       <button class="icon-btn" id="btn-theme" onclick="toggleDark()">🌙</button>
@@ -601,18 +601,18 @@ window.logout = () => SIMARESDA_SEC.logout();
   </div>
   <div class="content">
     <div class="toolbar no-print">
-      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Naskah Masuk</button>
+      <button class="btn btn-primary" onclick="openAdd()">+ Tambah Naskah Keluar</button>
       <select id="filter-status" onchange="applyFilter()" style="width:148px"><option value="">Semua Status</option><option>Draft</option><option>Terkirim</option><option>Dibatalkan</option></select>
       <select id="filter-bidang" onchange="applyFilter()" style="width:160px"><option value="">Semua Bidang</option><option value="UMUM">Umum / Sekretariat</option><option value="BUMD">BUMD &amp; BLUD</option><option value="PEREKONOMIAN">Perekonomian</option><option value="SDA_DBHCHT">SDA &amp; DBHCHT</option></select>
       <select id="filter-kat" onchange="applyFilter()" style="width:160px"><option value="">Semua Kategori</option><option>Peraturan Daerah</option><option>Peraturan Kepala Daerah</option><option>Keputusan</option><option>Instruksi</option><option>naskah Dinas</option><option>Nota Dinas</option><option>Memo</option><option>naskah Undangan</option><option>naskah Tugas</option><option>naskah Kuasa</option><option>naskah Pengantar</option><option>naskah Keterangan</option><option>naskah Pernyataan</option><option>naskah Izin</option><option>naskah Perjanjian</option><option>naskah Perintah</option><option>naskah Rekomendasi</option><option>naskah Edaran</option><option>Berita Acara</option><option>Notulen Rapat</option><option>Laporan</option><option>Telaahan Staf</option><option>Pengumuman</option><option>Disposisi</option><option>Telegram Dinas</option><option>SK Kepegawaian</option><option>SK Keuangan</option><option>DPA / DPPA</option><option>Lainnya</option></select>
-      <button class="btn btn-secondary" onclick="exportCSV('tbl-Masuk','naskah-Masuk')">⬇ CSV</button>
+      <button class="btn btn-secondary" onclick="exportCSV('tbl-Keluar','naskah-Keluar')">⬇ CSV</button>
       <button class="btn btn-secondary" onclick="resetFilter()">↺ Reset</button>
       <span id="row-count" style="font-size:12px;color:var(--text3);margin-left:auto"></span>
     </div>
     <div class="table-wrap">
-      <table id="tbl-Masuk">
+      <table id="tbl-Keluar">
         <thead><tr><th>No. Agenda</th><th>No. naskah</th><th>Tgl naskah</th><th>Tujuan</th><th>Perihal</th><th>Bidang</th><th>Kategori</th><th>Sifat</th><th>Penandatangan</th><th>Status</th><th class="no-print">Aksi</th></tr></thead>
-        <tbody id="body-Masuk"></tbody>
+        <tbody id="body-Keluar"></tbody>
       </table>
     </div>
     <div class="pagination no-print" id="pagination"></div>
@@ -620,9 +620,9 @@ window.logout = () => SIMARESDA_SEC.logout();
 </div>
 
 <!-- MODAL FORM -->
-<div class="modal-overlay" id="modal-Masuk" style="display:none" onclick="if(event.target===this)closeModal('modal-Masuk')">
+<div class="modal-overlay" id="modal-Keluar" style="display:none" onclick="if(event.target===this)closeModal('modal-Keluar')">
   <div class="modal modal-lg">
-    <div class="modal-header"><div class="modal-title" id="m-title">📤 Tambah Naskah Masuk</div><button class="icon-btn" onclick="closeModal('modal-Masuk')">✕</button></div>
+    <div class="modal-header"><div class="modal-title" id="m-title">📤 Tambah Naskah Keluar</div><button class="icon-btn" onclick="closeModal('modal-Keluar')">✕</button></div>
     <div class="modal-body">
       <div class="alert alert-info" style="margin-bottom:14px">💡 Nomor naskah akan di-generate otomatis dalam format <strong>{SEQ}/{KODE-BIDANG}/{BLN-ROMAWI}/{TAHUN}</strong></div>
       <div class="form-row">
@@ -631,7 +631,7 @@ window.logout = () => SIMARESDA_SEC.logout();
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Tujuan <span class="req">*</span></label><input class="form-control" id="m-tujuan" placeholder="Instansi / nama tujuan"></div>
-        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal naskah Masuk"></div>
+        <div class="form-group"><label class="form-label">Perihal <span class="req">*</span></label><input class="form-control" id="m-perihal" placeholder="Perihal naskah Keluar"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Bidang <span class="req">*</span></label><select class="form-control" id="m-bidang" onchange="updateKodeFromBidang()">
@@ -696,13 +696,13 @@ window.logout = () => SIMARESDA_SEC.logout();
       <div class="form-group"><label class="form-label">Tembusan</label><input class="form-control" id="m-tembusan" placeholder="Cth: Kepala Biro, Sekretaris (pisah koma)"></div>
       <div class="form-group"><label class="form-label">Keterangan</label><textarea class="form-control" id="m-ket" placeholder="Catatan tambahan..."></textarea></div>
     </div>
-    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-Masuk')">Batal</button><button class="btn btn-primary" onclick="savenaskahMasuk()">💾 Simpan</button></div>
+    <div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-Keluar')">Batal</button><button class="btn btn-primary" onclick="savenaskahKeluar()">💾 Simpan</button></div>
   </div>
 </div>
 
 <!-- MODAL DETAIL -->
 <div class="modal-overlay" id="modal-detail" style="display:none" onclick="if(event.target===this)closeModal('modal-detail')">
-  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Naskah Masuk</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
+  <div class="modal"><div class="modal-header"><div class="modal-title">📄 Detail Naskah Keluar</div><button class="icon-btn" onclick="closeModal('modal-detail')">✕</button></div><div class="modal-body" id="detail-body"></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('modal-detail')">Tutup</button><button class="btn btn-primary" onclick="window.print()">🖨️ Print</button></div></div>
 </div>
 
 <div class="modal-overlay" id="modal-notif" style="display:none" onclick="if(event.target===this)closeModal('modal-notif')"><div class="modal" style="width:min(420px,95vw)"><div class="modal-header"><div class="modal-title">🔔 Notifikasi</div><button class="icon-btn" onclick="closeModal('modal-notif')">✕</button></div><div class="modal-body" id="notif-list" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div></div></div>
@@ -840,7 +840,7 @@ function exportCSV(tableId, filename) {
   a.click();
 }
 
-// ── NOMOR ROMAWI (untuk nomor naskah Masuk) ───────────────
+// ── NOMOR ROMAWI (untuk nomor naskah Keluar) ───────────────
 const ROMAWI = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 function bulanRomawi(n) { return ROMAWI[(n||new Date().getMonth()+1) - 1]; }
 
@@ -936,8 +936,8 @@ document.head.appendChild(style);
 
 </script>
 <script>
-document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="naskah-masuk.html"><span class="nav-icon">📥</span>Naskah Masuk</a><a class="nav-item active" href="naskah-Masuk.html"><span class="nav-icon">📤</span>Naskah Masuk</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
-    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Masuk</button></div>`;
+document.getElementById('sidebar').innerHTML=`<div class="logo-wrap"><div class="logo-icon">📁</div><div><div class="logo-title">SIMARESDA</div><div class="logo-year">Arsip Daerah · 2025–2030</div></div></div><nav class="nav-scroll"><div class="nav-section">Menu Utama</div><a class="nav-item" href="index.html"><span class="nav-icon">📊</span>Dashboard</a><a class="nav-item" href="naskah-Keluar.html"><span class="nav-icon">📥</span>Naskah Keluar</a><a class="nav-item active" href="naskah-Keluar.html"><span class="nav-icon">📤</span>Naskah Keluar</a><div class="nav-section">Arsip</div><a class="nav-item" href="cari-arsip.html"><span class="nav-icon">🔍</span>Cari Arsip</a>
+    <a class="nav-item" href="peminjaman.html"><span class="nav-icon">🔖</span>Peminjaman</a><a class="nav-item" href="penyimpanan.html"><span class="nav-icon">🗄️</span>Penyimpanan</a><a class="nav-item" href="pemusnahan.html"><span class="nav-icon">🗑️</span>Pemusnahan</a><div class="nav-section">Referensi</div><a class="nav-item" href="regulasi.html"><span class="nav-icon">📋</span>Regulasi</a><a class="nav-item" href="audit.html"><span class="nav-icon">📝</span>Audit Trail</a></nav><div class="sidebar-footer"><div class="user-pill"><div class="avatar" data-user-avatar>AD</div><div class="user-info"><div class="user-name" data-user-name>Administrator</div><div class="user-role" data-user-role>Admin</div></div></div><button class="logout-btn" onclick="logout()">↩ Keluar</button></div>`;
 simaresdaInit();
 SIMARESDA_SEC.init();
 
@@ -961,7 +961,7 @@ function updateKodeFromBidang(){
 
 function renderTable(){
   const start=(page-1)*RPP,rows=filtered.slice(start,start+RPP);
-  document.getElementById('body-Masuk').innerHTML=rows.length?rows.map(s=>`
+  document.getElementById('body-Keluar').innerHTML=rows.length?rows.map(s=>`
     <tr>
       <td class="td-mono">${s.id}</td>
       <td class="td-mono" style="font-size:11px">${s.no}</td>
@@ -1008,16 +1008,16 @@ function applyFilter(){
 function resetFilter(){document.getElementById('g-search').value='';document.getElementById('filter-status').value='';document.getElementById('filter-kat').value='';const fb=document.getElementById('filter-bidang');if(fb)fb.value='';filtered=[...data];page=1;renderTable();}
 
 function openAdd(){
-  editIdx=null;document.getElementById('m-title').textContent='📤 Tambah Naskah Masuk';
+  editIdx=null;document.getElementById('m-title').textContent='📤 Tambah Naskah Keluar';
   ['m-tgl','m-tujuan','m-perihal','m-ttd','m-tembusan','m-ket'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-kode').value='ORG';
   document.getElementById('m-nonaskah').value=autoNo('ORG');
-  openModal('modal-Masuk');
+  openModal('modal-Keluar');
 }
 document.getElementById('m-kode').addEventListener('input',function(){document.getElementById('m-nonaskah').value=autoNo(this.value);});
 
 function editRow(s){
-  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Naskah Masuk';
+  editIdx=s.id;document.getElementById('m-title').textContent='✏️ Edit Naskah Keluar';
   document.getElementById('m-nonaskah').value=s.no;document.getElementById('m-tgl').value=s.tgl;
   document.getElementById('m-tujuan').value=s.tujuan;document.getElementById('m-perihal').value=s.perihal;
   document.getElementById('m-kat').value=s.kat;document.getElementById('m-sifat').value=s.sifat;
@@ -1025,9 +1025,9 @@ function editRow(s){
   document.getElementById('m-kode').value=s.kode||'UMM';
   const mb=document.getElementById('m-bidang');if(mb)mb.value=s.bidang||'';;document.getElementById('m-tembusan').value=s.tembusan||'';
   document.getElementById('m-ket').value=s.ket||'';
-  openModal('modal-Masuk');
+  openModal('modal-Keluar');
 }
-async function savenaskahMasuk(){
+async function savenaskahKeluar(){
   const tuj=document.getElementById('m-tujuan').value.trim();
   const per=document.getElementById('m-perihal').value.trim();
   if(!tuj||!per){showToast('Tujuan dan perihal wajib diisi','danger');return;}
@@ -1047,24 +1047,24 @@ async function savenaskahMasuk(){
   if(!window._supa){showToast('Database tidak tersedia','danger');return;}
   let error;
   if(editIdx && editIdx.length>20 && editIdx.includes('-')){
-    ({error}=await window._supa.from('naskah_Masuk').update(payload).eq('id',editIdx));
+    ({error}=await window._supa.from('naskah_Keluar').update(payload).eq('id',editIdx));
   } else {
     const yr=new Date().getFullYear();
-    const{count}=await window._supa.from('naskah_Masuk').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
+    const{count}=await window._supa.from('naskah_Keluar').select('*',{count:'exact',head:true}).gte('created_at',`${yr}-01-01`);
     payload.nomor_draft=`SKD-${yr}-${String((count||0)+1).padStart(3,'0')}`;
     if(!payload.status) payload.status='Draft';
-    ({error}=await window._supa.from('naskah_Masuk').insert(payload));
+    ({error}=await window._supa.from('naskah_Keluar').insert(payload));
   }
   if(error){showToast('Gagal: '+error.message,'danger');return;}
-  editIdx=null; closeModal('modal-Masuk');
-  showToast('✅ Naskah Masuk disimpan','success');
+  editIdx=null; closeModal('modal-Keluar');
+  showToast('✅ Naskah Keluar disimpan','success');
   loadSupaData();
 }
 async function deleteRow(id){
   const row=data.find(d=>d.id===id);
-  if(!confirm(`Hapus naskah Masuk ${id}?`))return;
+  if(!confirm(`Hapus naskah Keluar ${id}?`))return;
   if(window._supa && row?._uuid){
-    const{error}=await window._supa.from('naskah_Masuk').update({is_deleted:true}).eq('id',row._uuid);
+    const{error}=await window._supa.from('naskah_Keluar').update({is_deleted:true}).eq('id',row._uuid);
     if(error){showToast('Gagal hapus: '+error.message,'danger');return;}
   }
   data=data.filter(d=>d.id!==id);filtered=[...data];renderTable();showToast(`🗑️ ${id} dihapus`,'warn');
@@ -1072,7 +1072,7 @@ async function deleteRow(id){
 async function loadSupaData(){
   if(!window._supa){ renderTable(); return; }
   try{
-    let q=window._supa.from('naskah_Masuk')
+    let q=window._supa.from('naskah_Keluar')
       .select('id,nomor_naskah,nomor_draft,tanggal_naskah,tujuan,perihal,kategori,sifat,status,bidang,penandatangan,tembusan,keterangan')
       .eq('is_deleted',false)
       .order('created_at',{ascending:false});
