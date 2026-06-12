@@ -45,8 +45,8 @@ $$ LANGUAGE sql STABLE SECURITY DEFINER;
 -- ============================================================
 
 ALTER TABLE public.profiles           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.surat_masuk        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.surat_keluar       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.naskah_masuk        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.naskah_keluar       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.arsip              ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.peminjaman_arsip   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.pemusnahan_arsip   ENABLE ROW LEVEL SECURITY;
@@ -82,28 +82,28 @@ CREATE POLICY "profiles: admin manage semua"
   USING (auth.is_admin());
 
 -- ============================================================
--- POLICIES: surat_masuk
+-- POLICIES: naskah_masuk
 -- ============================================================
 
--- Semua user aktif bisa SELECT surat masuk yang tidak dihapus
-CREATE POLICY "surat_masuk: semua user bisa baca"
-  ON public.surat_masuk FOR SELECT
+-- Semua user aktif bisa SELECT naskah masuk yang tidak dihapus
+CREATE POLICY "naskah_masuk: semua user bisa baca"
+  ON public.naskah_masuk FOR SELECT
   USING (is_deleted = FALSE AND auth.is_active_user());
 
 -- TU dan Pengelola dan Admin bisa INSERT
-CREATE POLICY "surat_masuk: user aktif bisa tambah"
-  ON public.surat_masuk FOR INSERT
+CREATE POLICY "naskah_masuk: user aktif bisa tambah"
+  ON public.naskah_masuk FOR INSERT
   WITH CHECK (auth.is_active_user() AND created_by = auth.uid());
 
 -- Pengelola + Admin bisa UPDATE
-CREATE POLICY "surat_masuk: pengelola dan admin bisa edit"
-  ON public.surat_masuk FOR UPDATE
+CREATE POLICY "naskah_masuk: pengelola dan admin bisa edit"
+  ON public.naskah_masuk FOR UPDATE
   USING (auth.is_pengelola_or_admin())
   WITH CHECK (auth.is_pengelola_or_admin());
 
--- TU bisa update surat yang dia buat sendiri, dalam 24 jam
-CREATE POLICY "surat_masuk: TU edit milik sendiri (24 jam)"
-  ON public.surat_masuk FOR UPDATE
+-- TU bisa update naskah yang dia buat sendiri, dalam 24 jam
+CREATE POLICY "naskah_masuk: TU edit milik sendiri (24 jam)"
+  ON public.naskah_masuk FOR UPDATE
   USING (
     created_by = auth.uid() AND
     created_at > NOW() - INTERVAL '24 hours' AND
@@ -111,28 +111,28 @@ CREATE POLICY "surat_masuk: TU edit milik sendiri (24 jam)"
   );
 
 -- Hanya Admin bisa DELETE (soft delete via is_deleted)
-CREATE POLICY "surat_masuk: hanya admin bisa hapus"
-  ON public.surat_masuk FOR DELETE
+CREATE POLICY "naskah_masuk: hanya admin bisa hapus"
+  ON public.naskah_masuk FOR DELETE
   USING (auth.is_admin());
 
 -- ============================================================
--- POLICIES: surat_keluar
+-- POLICIES: naskah_keluar
 -- ============================================================
 
-CREATE POLICY "surat_keluar: semua user aktif bisa baca"
-  ON public.surat_keluar FOR SELECT
+CREATE POLICY "naskah_keluar: semua user aktif bisa baca"
+  ON public.naskah_keluar FOR SELECT
   USING (is_deleted = FALSE AND auth.is_active_user());
 
-CREATE POLICY "surat_keluar: user aktif bisa tambah"
-  ON public.surat_keluar FOR INSERT
+CREATE POLICY "naskah_keluar: user aktif bisa tambah"
+  ON public.naskah_keluar FOR INSERT
   WITH CHECK (auth.is_active_user() AND created_by = auth.uid());
 
-CREATE POLICY "surat_keluar: pengelola dan admin bisa edit"
-  ON public.surat_keluar FOR UPDATE
+CREATE POLICY "naskah_keluar: pengelola dan admin bisa edit"
+  ON public.naskah_keluar FOR UPDATE
   USING (auth.is_pengelola_or_admin());
 
-CREATE POLICY "surat_keluar: hanya admin bisa hapus"
-  ON public.surat_keluar FOR DELETE
+CREATE POLICY "naskah_keluar: hanya admin bisa hapus"
+  ON public.naskah_keluar FOR DELETE
   USING (auth.is_admin());
 
 -- ============================================================
@@ -260,8 +260,8 @@ CREATE POLICY "regulasi: admin kelola"
 
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.profiles TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.surat_masuk TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.surat_keluar TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.naskah_masuk TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.naskah_keluar TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.arsip TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.peminjaman_arsip TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.pemusnahan_arsip TO authenticated;
@@ -270,8 +270,8 @@ GRANT SELECT ON public.regulasi TO authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.regulasi TO authenticated;
 
 -- Grant sequence usage
-GRANT USAGE ON SEQUENCE seq_surat_masuk TO authenticated;
-GRANT USAGE ON SEQUENCE seq_surat_keluar TO authenticated;
+GRANT USAGE ON SEQUENCE seq_naskah_masuk TO authenticated;
+GRANT USAGE ON SEQUENCE seq_naskah_keluar TO authenticated;
 GRANT USAGE ON SEQUENCE seq_arsip TO authenticated;
 GRANT USAGE ON SEQUENCE seq_peminjaman TO authenticated;
 GRANT USAGE ON SEQUENCE public.audit_trail_id_seq TO authenticated;
